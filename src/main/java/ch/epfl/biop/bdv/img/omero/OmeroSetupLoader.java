@@ -93,7 +93,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 
         if (t instanceof FloatType) {
             cvt = null;
-            cvtRaiToFloatRai = rai -> (RandomAccessibleInterval<FloatType>) rai; // Nothing to be done
+            cvtRaiToFloatRai = rai -> null;//(RandomAccessibleInterval<FloatType>) rai; // Nothing to be done
         } else if (t instanceof ARGBType) {
             // Average of RGB value
             cvt = (input, output) -> {
