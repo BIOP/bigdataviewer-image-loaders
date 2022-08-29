@@ -154,6 +154,8 @@
 	</repositories>
 
 	<dependencies>
+
+		<!-- bio-formats dependencies -->
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
@@ -197,6 +199,44 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<!-- OME dependencies -->
+		<dependency>
+			<groupId>com.zeroc</groupId>
+			<artifactId>glacier2</artifactId>
+			<version>${glacier2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zeroc</groupId>
+			<artifactId>ice</artifactId>
+			<version>${ice.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>ome-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-blitz</artifactId>
+			<version>${omero-blitz.version}</version>
+			<exclusions>
+				<exclusion>  <!-- declare the exclusion here -->
+					<groupId>net.sourceforge.findbugs</groupId>
+					<artifactId>annotations</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-gateway</artifactId>
+			<version>${omero-gateway.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-model</artifactId>
+		</dependency>
+
+		<!-- other dependencies -->
 
 		<dependency>
 			<groupId>sc.fiji</groupId>

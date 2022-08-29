@@ -357,7 +357,7 @@ public class BioFormatsBdvOpener {
 	}
 
 	public BioFormatsBdvOpener unit(String u) {
-		this.u = BioFormatsMetaDataHelper.getUnitFromString(u);
+		this.u = BioFormatsTools.getUnitFromString(u);
 		return this;
 	}
 

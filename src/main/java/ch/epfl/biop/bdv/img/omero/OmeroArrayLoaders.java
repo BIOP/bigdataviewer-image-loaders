@@ -31,47 +31,50 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats;
+package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.bioformats.ReaderPool;
 import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileIntArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
+import omero.api.RawPixelsStorePrx;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 // Copied from N5 Array Loader
-public class BioFormatsArrayLoaders {
+public class OmeroArrayLoaders {
 
-	abstract static class BioformatsArrayLoader {
+	abstract static class OmeroArrayLoader {
 
-		final protected ReaderPool readerPool;
-		final protected int series;
+		final protected RawPixelsStorePool pixelStorePool;
 		final protected int channel;
-		final protected boolean switchZandC;
+		final protected int nResolutionLevels;
+		final protected int sx, sy, sz;
 
-		public BioformatsArrayLoader(ReaderPool readerPool, int series, int channel,
-			boolean switchZandC)
+		public OmeroArrayLoader(RawPixelsStorePool pixelStorePool, int channel, int nResolutionLevels, int sx, int sy, int sz)
 		{
-			this.readerPool = readerPool;
-			this.series = series;
+			this.pixelStorePool = pixelStorePool;
 			this.channel = channel;
-			this.switchZandC = switchZandC;
+			this.nResolutionLevels = nResolutionLevels;
+			this.sx = sx;
+			this.sy = sy;
+			this.sz = sz;
 		}
 
 	}
 
-	public static class BioFormatsUnsignedByteArrayLoader extends
-		BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
+	public static class OmeroUnsignedByteArrayLoader extends
+			OmeroArrayLoader implements CacheArrayLoader<VolatileByteArray>
 	{
 
-		public BioFormatsUnsignedByteArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC)
+		public OmeroUnsignedByteArrayLoader(RawPixelsStorePool pixelStorePool,
+											int channel, int nResolutionLevels, int sx, int sy, int sz)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 		}
 
 		@Override
@@ -79,15 +82,14 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
-				reader.setResolution(level);
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int maxX = Math.min(minX + dimensions[0], sx);
+				int maxY = Math.min(minY + dimensions[1], sy);
+				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
@@ -95,23 +97,19 @@ public class BioFormatsArrayLoaders {
 				if (dimensions[2] == 1) {
 					// Optimisation (maybe useful ? should avoid an array allocation and
 					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, minZ, timepoint) : reader.getIndex(minZ, channel,
-							timepoint), minX, minY, w, h);
-					readerPool.recycle(reader);
+					byte[] bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w, h);
+					pixelStorePool.recycle(rawPixStore);
 					return new VolatileByteArray(bytes, true);
 				}
 				else {
 					byte[] bytes = new byte[nElements];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
+						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
 						offset += nElements;
 					}
-					readerPool.recycle(reader);
+					pixelStorePool.recycle(rawPixStore);
 					return new VolatileByteArray(bytes, true);
 				}
 			}
@@ -126,8 +124,9 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+/*
 	public static class BioFormatsUnsignedShortArrayLoader extends
-		BioformatsArrayLoader implements CacheArrayLoader<VolatileShortArray>
+			OmeroArrayLoader implements CacheArrayLoader<VolatileShortArray>
 	{
 
 		final ByteOrder byteOrder;
@@ -149,7 +148,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = readerPool.acquire();
+				IFormatReader reader = pixelStorePool.acquire();
 				reader.setSeries(series);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -169,7 +168,7 @@ public class BioFormatsArrayLoaders {
 						w, h);
 					buffer.put(bytes);
 				}
-				readerPool.recycle(reader);
+				pixelStorePool.recycle(reader);
 				short[] shorts = new short[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asShortBuffer().get(shorts);
@@ -186,7 +185,7 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsFloatArrayLoader extends BioformatsArrayLoader
+	public static class BioFormatsFloatArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileFloatArray>
 	{
 
@@ -209,7 +208,8 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = readerPool.acquire();
+
+				IFormatReader reader = pixelStorePool.acquire();
 				reader.setSeries(series);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -229,7 +229,7 @@ public class BioFormatsArrayLoaders {
 						w, h);
 					buffer.put(bytes);
 				}
-				readerPool.recycle(reader);
+				pixelStorePool.recycle(reader);
 				float[] floats = new float[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asFloatBuffer().get(floats);
@@ -246,7 +246,7 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsRGBArrayLoader extends BioformatsArrayLoader
+	public static class BioFormatsRGBArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
@@ -263,7 +263,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = readerPool.acquire();
+				IFormatReader reader = pixelStorePool.acquire();
 				reader.setSeries(series);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -296,7 +296,7 @@ public class BioFormatsArrayLoaders {
 						offset += nBytesPerPlane;
 					}
 				}
-				readerPool.recycle(reader);
+				pixelStorePool.recycle(reader);
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				for (int i = 0; i < nElements; i++) {
@@ -317,7 +317,7 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsIntArrayLoader extends BioformatsArrayLoader
+	public static class BioFormatsIntArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
@@ -340,7 +340,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = readerPool.acquire();
+				IFormatReader reader = pixelStorePool.acquire();
 				reader.setSeries(series);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -360,7 +360,7 @@ public class BioFormatsArrayLoaders {
 						w, h);
 					buffer.put(bytes);
 				}
-				readerPool.recycle(reader);
+				pixelStorePool.recycle(reader);
 				int[] ints = new int[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asIntBuffer().get(ints);
@@ -376,5 +376,5 @@ public class BioFormatsArrayLoaders {
 			return 4;
 		}
 	}
-
+*/
 }

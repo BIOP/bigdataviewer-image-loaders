@@ -31,53 +31,35 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats.command;
+package ch.epfl.biop.bdv.img.omero.entity;
 
-import bdv.util.BdvFunctions;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
-import mpicbg.spim.data.generic.AbstractSpimData;
-import org.scijava.command.Command;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
+import mpicbg.spim.data.generic.base.NamedEntity;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+public class OmeroUri extends NamedEntity implements Comparable<OmeroUri> {
 
-@SuppressWarnings({ "Unused", "CanBeFinal" })
-@Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
-	description = "Support bioformats multiresolution api. Attempts to set colors based " +
-		"on bioformats metadata. Do not attempt auto contrast.")
-public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
-	implements Command
-{
-
-	@Parameter(required = false, label = "Physical units of the dataset",
-		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
-	public String unit = "MILLIMETER";
-
-	@Parameter(label = "File to open", style = "open")
-	File file;
-
-	@Parameter(required = false,
-		label = "Split RGB channels if you have 16 bits RGB images")
-	boolean splitrgbchannels = true; // Split rgb channels to allow for best
-																		// compatibility (RGB 16 bits)
-
-	public void run() {
-
-		BioformatsBigdataviewerBridgeDatasetCommand settings =
-			new BioformatsBigdataviewerBridgeDatasetCommand();
-		settings.splitrgbchannels = splitrgbchannels;
-		settings.unit = unit;
-
-		List<BioFormatsBdvOpener> openers = new ArrayList<>();
-		openers.add(settings.getOpener(file));
-		final AbstractSpimData spimData = BioFormatsToSpimData
-			.getSpimData(openers);
-		BdvFunctions.show(spimData);
+	public OmeroUri(final int id, final String name) {
+		super(id, name);
 	}
 
+	public OmeroUri(final int id) {
+		this(id, Integer.toString(id));
+	}
+
+	/**
+	 * Set the name of this tile.
+	 */
+	@Override
+	public void setName(final String name) {
+		super.setName(name);
+	}
+
+	/**
+	 * Compares the {@link #getId() ids}.
+	 */
+	@Override
+	public int compareTo(final OmeroUri o) {
+		return getId() - o.getId();
+	}
+
+	protected OmeroUri() {}
 }

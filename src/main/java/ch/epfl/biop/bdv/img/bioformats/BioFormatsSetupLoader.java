@@ -181,7 +181,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1
 						: (int) opener.cacheBlockSize.dimension(2) };
 
-			voxelsDimensions = BioFormatsMetaDataHelper.getSeriesVoxelDimensions(
+			voxelsDimensions = BioFormatsTools.getSeriesVoxelDimensions(
 				omeMeta, iSerie, opener.u, opener.voxSizeReferenceFrameLength);
 
 			dimensions = new Dimensions[numMipmapLevels];

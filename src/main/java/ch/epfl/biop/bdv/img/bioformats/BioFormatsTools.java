@@ -53,10 +53,10 @@ import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class BioFormatsMetaDataHelper {
+public class BioFormatsTools {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
-		BioFormatsMetaDataHelper.class);
+		BioFormatsTools.class);
 
 	public static class BioformatsChannel {
 

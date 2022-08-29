@@ -34,7 +34,7 @@
 package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsMetaDataHelper;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
 import org.scijava.command.Command;
@@ -108,7 +108,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 
 	public BioFormatsBdvOpener getOpener(String datalocation) {
 
-		Unit<Length> bfUnit = BioFormatsMetaDataHelper.getUnitFromString(unit);
+		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(unit);
 
 		Length positionReferenceFrameLength = new Length(refframesizeinunitlocation,
 			bfUnit);

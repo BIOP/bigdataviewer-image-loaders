@@ -34,7 +34,7 @@
 package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsConvertFilesToSpimData;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.ItemIO;
@@ -92,7 +92,7 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 		StopWatch watch = new StopWatch();
 		logger.debug("All openers obtained, converting to spimdata object ");
 		watch.start();
-		spimdata = BioFormatsConvertFilesToSpimData.getSpimData(openers);
+		spimdata = BioFormatsToSpimData.getSpimData(openers);
 		watch.stop();
 		logger.debug("Converted to SpimData in " + (int) (watch.getTime() / 1000) +
 			" s");

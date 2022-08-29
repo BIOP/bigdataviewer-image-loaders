@@ -31,53 +31,28 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats.command;
+package ch.epfl.biop.bdv.img.omero.io;
 
-import bdv.util.BdvFunctions;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
-import mpicbg.spim.data.generic.AbstractSpimData;
-import org.scijava.command.Command;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
+import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
+import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
+import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
+import org.jdom2.Element;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+@ViewSetupAttributeIo(name = "omerouri", type = OmeroUri.class)
+public class XmlIoOmeroUri extends XmlIoNamedEntity<OmeroUri> {
 
-@SuppressWarnings({ "Unused", "CanBeFinal" })
-@Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
-	description = "Support bioformats multiresolution api. Attempts to set colors based " +
-		"on bioformats metadata. Do not attempt auto contrast.")
-public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
-	implements Command
-{
-
-	@Parameter(required = false, label = "Physical units of the dataset",
-		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
-	public String unit = "MILLIMETER";
-
-	@Parameter(label = "File to open", style = "open")
-	File file;
-
-	@Parameter(required = false,
-		label = "Split RGB channels if you have 16 bits RGB images")
-	boolean splitrgbchannels = true; // Split rgb channels to allow for best
-																		// compatibility (RGB 16 bits)
-
-	public void run() {
-
-		BioformatsBigdataviewerBridgeDatasetCommand settings =
-			new BioformatsBigdataviewerBridgeDatasetCommand();
-		settings.splitrgbchannels = splitrgbchannels;
-		settings.unit = unit;
-
-		List<BioFormatsBdvOpener> openers = new ArrayList<>();
-		openers.add(settings.getOpener(file));
-		final AbstractSpimData spimData = BioFormatsToSpimData
-			.getSpimData(openers);
-		BdvFunctions.show(spimData);
+	public XmlIoOmeroUri() {
+		super("omerouri", OmeroUri.class);
 	}
 
+	@Override
+	public Element toXml(final OmeroUri ou) {
+		return super.toXml(ou);
+	}
+
+	@Override
+	public OmeroUri fromXml(final Element elem) throws SpimDataException {
+		return super.fromXml(elem);
+	}
 }

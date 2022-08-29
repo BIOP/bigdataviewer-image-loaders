@@ -76,16 +76,16 @@ import java.util.stream.IntStream;
  * @author nicolas.chiaruttini@epfl.ch, BIOP, EPFL 2020
  */
 
-public class BioFormatsConvertFilesToSpimData {
+public class BioFormatsToSpimData {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
-		BioFormatsConvertFilesToSpimData.class);
+		BioFormatsToSpimData.class);
 
 	private int getChannelId(IMetadata omeMeta, int iSerie, int iChannel,
 		boolean isRGB)
 	{
-		BioFormatsMetaDataHelper.BioformatsChannel channel =
-			new BioFormatsMetaDataHelper.BioformatsChannel(omeMeta, iSerie, iChannel,
+		BioFormatsTools.BioformatsChannel channel =
+			new BioFormatsTools.BioformatsChannel(omeMeta, iSerie, iChannel,
 				false);
 		if (!channelToId.containsKey(channel)) {
 			// No : add it in the channel hashmap
@@ -109,7 +109,7 @@ public class BioFormatsConvertFilesToSpimData {
 	int channelCounter = 0;
 
 	final Map<Integer, Channel> channelIdToChannel = new HashMap<>();
-	final Map<BioFormatsMetaDataHelper.BioformatsChannel, Integer> channelToId =
+	final Map<BioFormatsTools.BioformatsChannel, Integer> channelToId =
 		new HashMap<>();
 	final Map<Integer, Integer> fileIdxToNumberOfSeries = new HashMap<>();
 	final Map<Integer, SeriesTps> fileIdxToNumberOfSeriesAndTimepoints =
@@ -184,11 +184,11 @@ public class BioFormatsConvertFilesToSpimData {
 					String imageName = getImageName(dataLocation, seriesCount, omeMeta,
 						iSerie);
 					sn.setName(imageName);
-					Dimensions dims = BioFormatsMetaDataHelper.getSeriesDimensions(
+					Dimensions dims = BioFormatsTools.getSeriesDimensions(
 						omeMeta, iSerie); // number of pixels .. no calibration
 					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) +
 						" Z:" + dims.dimension(2));
-					VoxelDimensions voxDims = BioFormatsMetaDataHelper
+					VoxelDimensions voxDims = BioFormatsTools
 						.getSeriesVoxelDimensions(omeMeta, iSerie, openers.get(iFile).u,
 							openers.get(iFile).voxSizeReferenceFrameLength);
 					// Register Setups (one per channel and one per timepoint)
@@ -211,7 +211,7 @@ public class BioFormatsConvertFilesToSpimData {
 						ds.isSet = false;
 
 						// ----------- Color
-						ARGBType color = BioFormatsMetaDataHelper.getColorFromMetadata(
+						ARGBType color = BioFormatsTools.getColorFromMetadata(
 							omeMeta, iSerie, iCh);
 
 						if (color != null) {
@@ -260,7 +260,7 @@ public class BioFormatsConvertFilesToSpimData {
 				series.forEach(iSerie -> {
 					final int nTimepoints = omeMeta.getPixelsSizeT(iSerie)
 						.getNumberValue().intValue();
-					AffineTransform3D rootTransform = BioFormatsMetaDataHelper
+					AffineTransform3D rootTransform = BioFormatsTools
 						.getSeriesRootTransform(omeMeta, iSerie, openers.get(iFile).u,
 							openers.get(iFile).positionPreTransformMatrixArray, // AffineTransform3D
 																																	// positionPreTransform,
@@ -344,13 +344,13 @@ public class BioFormatsConvertFilesToSpimData {
 	public static AbstractSpimData getSpimData(
 		List<BioFormatsBdvOpener> openers)
 	{
-		return new BioFormatsConvertFilesToSpimData().getSpimDataInstance(openers);
+		return new BioFormatsToSpimData().getSpimDataInstance(openers);
 	}
 
 	public static AbstractSpimData getSpimData(BioFormatsBdvOpener opener) {
 		ArrayList<BioFormatsBdvOpener> singleOpenerList = new ArrayList<>();
 		singleOpenerList.add(opener);
-		return BioFormatsConvertFilesToSpimData.getSpimData(singleOpenerList);
+		return BioFormatsToSpimData.getSpimData(singleOpenerList);
 	}
 
 	public static AbstractSpimData getSpimData(File f) {
@@ -363,7 +363,7 @@ public class BioFormatsConvertFilesToSpimData {
 		for (File f : files) {
 			openers.add(getDefaultOpener(f.getAbsolutePath()));
 		}
-		return BioFormatsConvertFilesToSpimData.getSpimData(openers);
+		return BioFormatsToSpimData.getSpimData(openers);
 	}
 
 	public static BioFormatsBdvOpener getDefaultOpener(String dataLocation) {
