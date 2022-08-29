@@ -21,9 +21,8 @@
  */
 package ch.epfl.biop.bdv.img.omero.io;
 import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.omero.OmeroImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
-import ch.epfl.biop.ij2command.OmeroTools;
-import ch.epfl.biop.omero.omerosource.OmeroBdvOpener;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
