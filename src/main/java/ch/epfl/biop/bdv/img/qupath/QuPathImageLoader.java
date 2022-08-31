@@ -63,7 +63,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         this.sequenceDescription = sequenceDescription;
         this.numFetcherThreads = numFetcherThreads;
         this.numPriorities = numPriorities;
-        sq = new SharedQueue(numFetcherThreads, numPriorities);
+        this.sq = new SharedQueue(numFetcherThreads, numPriorities);
 
         try {
             // deserialize qupath project
@@ -81,6 +81,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                     logger.debug("URI image server");
                     if (image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
                         // get the BioFormats opener
+                        logger.debug("Building BioFormats image loader");
                         QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
                         BioFormatsBdvOpener opener = (BioFormatsBdvOpener) qpOpener.getOpener();
                         opener.setCache(sq);
@@ -112,6 +113,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                     } else {
                         if (image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
                             // get the Omero opener
+                            logger.debug("Building OMERO-RAW image loader");
                             QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
                             OmeroBdvOpener opener = (OmeroBdvOpener) qpOpener.getOpener();
                             opener.setCache(sq);
@@ -151,7 +153,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     }
 
     @Override
-    public QuPathSetupLoader<?,?> getSetupImgLoader(int setupId) {
+    public QuPathSetupLoader getSetupImgLoader(int setupId) {
         if (imgLoaders.containsKey(setupId)) {
             // Already created - return it
             return imgLoaders.get(setupId);
@@ -161,7 +163,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
             int iS = qec.entry.bioformatsIndex;
             int iC = qec.iChannel;
             logger.debug("loading qupath entry number = "+qec.entry+"setupId = "+setupId+" series"+iS+" channel "+iC);
-            QuPathSetupLoader<?,?> imgL = null;
+            QuPathSetupLoader imgL = null;
             try {
                 imgL = new QuPathSetupLoader(
                         opener,

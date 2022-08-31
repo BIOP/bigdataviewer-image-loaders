@@ -20,7 +20,7 @@ import java.io.File;
  */
 
 @Plugin(type = Command.class,
-        menuPath = "Plugins>BigDataViewer-Playground>"+"BDVDataset>Open [QuPath Project]"
+        menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project]"
         )
 public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBridgeDatasetCommand {
 

@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.img.qupath;
 
-
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
@@ -70,8 +69,8 @@ public class QuPathToSpimData {
                    // check for omero opener and ask credentials if necessary
                    if(image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
                        if (!hostToGatewayCtx.containsKey(image.serverBuilder.providerClassName)) {
-
                            // ask credentials
+                           logger.debug("Ask credentials to user");
                            Boolean onlyCredentials = false;
                            String[] credentials = OmeroTools.getOmeroConnectionInputParameters(onlyCredentials);
                            String host = credentials[0];
@@ -131,7 +130,7 @@ public class QuPathToSpimData {
                        spimDataMap.put(enhancedURI, (SpimData) (new BioFormatsToSpimData()).getSpimDataInstance(Collections.singletonList((BioFormatsBdvOpener) qpOpener.getOpener())));
                    } else if (opener instanceof OmeroBdvOpener) {
                        spimDataMap.put(enhancedURI, (SpimData) (new OmeroToSpimData()).getSpimDataInstance(Collections.singletonList((OmeroBdvOpener) qpOpener.getOpener())));
-                   }
+                   }else logger.error("Opener +"+opener.getClass().getName()+" is not recognized");
 
                    rawURI.add(qpOpener.getURI());
                }else{
@@ -142,6 +141,7 @@ public class QuPathToSpimData {
             });
 
             // regroup all the spimdata in one big spimdata
+            logger.debug("Grouping spmidata");
             spimDataMap.keySet().forEach(spimUri->{
                 // get spimdata, opener and identifier
                 SpimData localSpimData = (SpimData) spimDataMap.get(spimUri);
@@ -282,6 +282,7 @@ public class QuPathToSpimData {
             }
 
             // create the new sequence description and set the image loader
+            logger.debug("Create spimdata");
             SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
             sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,2, 4));
 

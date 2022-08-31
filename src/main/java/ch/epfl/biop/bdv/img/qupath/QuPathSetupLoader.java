@@ -14,8 +14,11 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
@@ -28,11 +31,12 @@ import java.util.function.Supplier;
  * @author Rémy Dornier, EPFL, BIOP, 2022
  */
 
-public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & NumericType<V>> extends AbstractViewerSetupImgLoader<T, V> implements MultiResolutionSetupImgLoader< T > {
+public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A> extends AbstractViewerSetupImgLoader<T, V> implements MultiResolutionSetupImgLoader< T > {
 
-    QuPathImageOpener opener;
-    Object imageSetupLoader;
+    private QuPathImageOpener opener;
+    private Object imageSetupLoader;
     final public int iSerie,iChannel;
+    private static Logger logger = LoggerFactory.getLogger(QuPathSetupLoader.class);
 
     public QuPathSetupLoader(QuPathImageOpener qpOpener, int setupId, int serieIndex, int channelIndex, T type, V volatileType, Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception {
         super(type, volatileType);
@@ -69,6 +73,9 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
                     e.printStackTrace();
                 }
             }
+            else{
+                logger.warn("Opener "+qpOpener.getOpener()+" is not valid");
+            }
         }
 
     }
@@ -81,7 +88,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((RandomAccessibleInterval<V>)((OmeroSetupLoader)this.imageSetupLoader).getVolatileImage(timepointId,level,hints));
         }
-        System.out.println("QuPathSetuploader/GetVolatileImage => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -93,7 +100,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getFloatImage(timepointId, level, normalize, hints);
         }
-        System.out.println("QuPathSetuploader/getFloatImage => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -105,7 +112,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getImageSize(timepointId,level);
         }
-        System.out.println("QuPathSetuploader/getImageSize => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -118,7 +125,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return (RandomAccessibleInterval<T>)(((OmeroSetupLoader)this.imageSetupLoader).getImage(timepointId, level, hints));
         }
-        System.out.println("QuPathSetuploader/getImage => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -130,7 +137,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getMipmapResolutions();
         }
-        System.out.println("QuPathSetuploader/getMipmapResolutions => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -142,7 +149,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getMipmapTransforms();
         }
-        System.out.println("QuPathSetuploader/getMipmapTransforms => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -154,7 +161,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).numMipmapLevels();
         }
-        System.out.println("QuPathSetuploader/numMipmapLevels => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return 0;
     }
 
@@ -166,7 +173,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getFloatImage(timepointId,normalize,hints);
         }
-        System.out.println("QuPathSetuploader/getFloatImage => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -178,7 +185,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getImageSize(timepointId);
         }
-        System.out.println("QuPathSetuploader/getImageSize => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 
@@ -191,7 +198,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
             if(this.imageSetupLoader instanceof OmeroSetupLoader)
                 return ((OmeroSetupLoader)this.imageSetupLoader).getVoxelSize(timepointId);
         }
-        System.out.println("QuPathSetuploader/getVoxelSize => the current loader is not recognized : "+this.imageSetupLoader.getClass().getName());
+        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
         return null;
     }
 }

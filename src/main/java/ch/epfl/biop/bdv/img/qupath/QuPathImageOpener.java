@@ -101,6 +101,8 @@ public class QuPathImageOpener {
                     this.opener = bfOpener;
                     this.seriesCount = bfOpener.getNewReader().getSeriesCount();
                     this.omeMetaIdxOmeXml = (IMetadata) bfOpener.getNewReader().getMetadataStore();
+
+                    logger.debug("BioFormats Opener for image "+this.image.imageName + " with "+this.seriesCount + " series");
                 }
                 else {
                     if (this.image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
@@ -108,6 +110,8 @@ public class QuPathImageOpener {
                         this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx).ignoreMetadata();
                         this.seriesCount = 1;
                         this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
+
+                        logger.debug("OMERO-RAW Opener for image "+this.image.imageName + " with "+this.seriesCount + " series");
                     }
                     else {
                         logger.error("Unsupported "+this.image.serverBuilder.providerClassName+" provider Class Name");
@@ -137,6 +141,8 @@ public class QuPathImageOpener {
                 System.out.println("URI Syntax error " + e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            logger.error("Unsupported "+image.serverBuilder.builderType+" server builder");
         }
         return this;
     }
@@ -165,8 +171,12 @@ public class QuPathImageOpener {
                         this.omeMetaIdxOmeXml.setChannelColor(new Color(channels.get(i).color), 0, i);
                     }
                 }
+                else logger.warn("PixelCalibration field does not exist in the image metadata");
             }
+            else logger.warn("Metadata are not available in the image metadata");
         }
+        else logger.warn("The image does not contain any builder");
+
         return this;
     }
 
@@ -230,18 +240,22 @@ public class QuPathImageOpener {
         // flip x, y and z axis
         if (!this.defaultParams.getFlippositionx().equals("AUTO") && this.defaultParams.getFlippositionx().equals("TRUE")) {
             opener = opener.flipPositionX();
+            logger.debug("FlipPositionX");
         }
 
         if (!this.defaultParams.getFlippositiony().equals("AUTO") && this.defaultParams.getFlippositiony().equals("TRUE")) {
             opener = opener.flipPositionY();
+            logger.debug("FlipPositionY");
         }
 
         if (!this.defaultParams.getFlippositionz().equals("AUTO") && this.defaultParams.getFlippositionz().equals("TRUE")) {
             opener = opener.flipPositionZ();
+            logger.debug("FlipPositionZ");
         }
 
         // set unit length and references
         UnitsLength unit = this.defaultParams.getUnit().equals("MILLIMETER")?UnitsLength.MILLIMETER:this.defaultParams.getUnit().equals("MICROMETER")?UnitsLength.MICROMETER:this.defaultParams.getUnit().equals("NANOMETER")?UnitsLength.NANOMETER:null;
+        logger.debug("Convert input unit to "+unit.name());
         opener = opener.unit(unit);
         opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
         opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
@@ -249,12 +263,14 @@ public class QuPathImageOpener {
         // split RGB channels
         if (this.defaultParams.getSplitChannels()) {
             opener = opener.splitRGBChannels();
+            logger.debug("splitRGBChannels");
         }
 
         // set omero connection
         String[] imageString = datalocation.split("%3D");
         String[] omeroId = imageString[1].split("-");
 
+        logger.debug("OmeroID : "+omeroId[1]);
         opener.gateway(gateway).securityContext(ctx).imageID(Long.parseLong(omeroId[1])).host(ctx.getServerInformation().getHost()).create();
 
         return opener;
@@ -280,36 +296,44 @@ public class QuPathImageOpener {
         // Switch channels and Z axis
         if (!this.defaultParams.getSwitchzandc().equals("AUTO")) {
             opener = opener.switchZandC(this.defaultParams.getSwitchzandc().equals("TRUE"));
+            logger.debug("Switch Z and C");
         }
 
         // configure cache block size
         if (!this.defaultParams.getUsebioformatscacheblocksize()) {
             opener = opener.cacheBlockSize(this.defaultParams.getCachesizex(), this.defaultParams.getCachesizey(), this.defaultParams.getCachesizez());
+            logger.debug("cacheBlockSize : "+ this.defaultParams.getCachesizex()+", "+ this.defaultParams.getCachesizey()+", "+ this.defaultParams.getCachesizez());
         }
 
         // configure the coordinates origin convention
         if (!this.defaultParams.getPositoniscenter().equals("AUTO")) {
             if (this.defaultParams.getPositoniscenter().equals("TRUE")) {
                 opener = opener.centerPositionConvention();
+                logger.debug("CENTER position convention");
             } else {
                 opener = opener.cornerPositionConvention();
+                logger.debug("CORNER position convention");
             }
         }
 
         // flip x,y and z axis
         if (!this.defaultParams.getFlippositionx().equals("AUTO") && this.defaultParams.getFlippositionx().equals("TRUE")) {
             opener = opener.flipPositionX();
+            logger.debug("FlipPositionX");
         }
 
         if (!this.defaultParams.getFlippositiony().equals("AUTO") && this.defaultParams.getFlippositiony().equals("TRUE")) {
             opener = opener.flipPositionY();
+            logger.debug("FlipPositionY");
         }
 
         if (!this.defaultParams.getFlippositionz().equals("AUTO") && this.defaultParams.getFlippositionz().equals("TRUE")) {
             opener = opener.flipPositionZ();
+            logger.debug("FlipPositionZ");
         }
 
         // set unit length
+        logger.debug("Convert input unit to "+this.defaultParams.getUnit());
         opener = opener.unit(bfUnit);
         opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
         opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
@@ -317,6 +341,7 @@ public class QuPathImageOpener {
         // split channels
         if (this.defaultParams.getSplitChannels()) {
             opener = opener.splitRGBChannels();
+            logger.debug("splitRGBChannels");
         }
         return opener;
     }
