@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.omero;
 import bdv.ViewerImgLoader;
 import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
-import bdv.util.volatiles.SharedQueue;
+import bdv.cache.SharedQueue;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
 import net.imglib2.Volatile;
