@@ -1,7 +1,7 @@
 
 package ch.epfl.biop.bdv.img.qupath.io;
 
-import ch.epfl.biop.bdv.img.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;

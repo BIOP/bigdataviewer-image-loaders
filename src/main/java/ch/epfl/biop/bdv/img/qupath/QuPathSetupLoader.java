@@ -40,8 +40,8 @@ public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V exten
 	private static final Logger logger = LoggerFactory.getLogger(
 		QuPathSetupLoader.class);
 
-	public QuPathSetupLoader(QuPathImageOpener qpOpener, int setupId,
-		int serieIndex, int channelIndex, T type, V volatileType,
+	public QuPathSetupLoader(QuPathImageOpener qpOpener, int serieIndex,
+		int channelIndex, int setupId, T type, V volatileType,
 		Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception
 	{
 		super(type, volatileType);
