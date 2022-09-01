@@ -381,7 +381,6 @@ public class QuPathImageOpener {
 	 * 
 	 * @param datalocation : uri of the image
 	 * @return
-	 * @throws Exception
 	 */
 	public BioFormatsBdvOpener getInitializedBioFormatsBDVOpener(
 		String datalocation)
