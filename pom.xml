@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -14,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-image-loaders</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>Biop bigdataviewer image loaders</name>
 	<description>Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)</description>
@@ -122,28 +119,33 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/</connection>
-		<developerConnection>scm:git:git@github.com:</developerConnection>
+		<connection>scm:git:https://github.com/BIOP/bigdataviewer-image-loaders</connection>
+		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-image-loaders</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/</url>
+		<url>https://github.com/BIOP/bigdataviewer-image-loaders</url>
 	</scm>
 	
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url></url>
+		<url>https://github.com/BIOP/bigdataviewer-image-loaders/issues</url>
 	</issueManagement>
 
 	<ciManagement>
-		<system>None</system>
+		<system>GitHub Actions</system>
+		<url>https://github.com/BIOP/bigdataviewer-image-loaders/actions</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>ch.epfl.biop.bigdataviewer-image-loaders</package-name>
+		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
-		<license.copyrightOwners>EPFL</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.3.0-SNAPSHOT</bigdataviewer-spimdata-extras.version>
+		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
+		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+
 	</properties>
 
 	<repositories>
@@ -239,6 +241,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
