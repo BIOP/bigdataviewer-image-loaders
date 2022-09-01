@@ -77,9 +77,6 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
-	@Parameter
-	public boolean show = false;
-
 	public UnitsLength unitsLength;
 
 	public void run() {
@@ -117,7 +114,6 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 			watch.stop();
 			logger.debug("Converted to SpimData in " + (int) (watch.getTime() /
 				1000) + " s");
-			if (show) BdvFunctions.show(spimdata);
 
 		}
 		catch (Exception e) {

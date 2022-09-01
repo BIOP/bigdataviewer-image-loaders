@@ -44,7 +44,7 @@ import java.util.Map;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader",
+@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader_v2",
 	type = QuPathImageLoader.class)
 public class XmlIoQuPathImgLoader implements
 	XmlIoBasicImgLoader<QuPathImageLoader>
