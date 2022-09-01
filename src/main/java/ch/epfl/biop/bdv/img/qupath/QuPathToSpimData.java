@@ -153,7 +153,7 @@ public class QuPathToSpimData {
 				if (!rawURI.contains(qpOpener.getURI())) {
 					if (opener instanceof BioFormatsBdvOpener) {
 						spimDataMap.put(enhancedURI, (SpimData) (new BioFormatsToSpimData())
-							.getSpimDataInstance(Collections.singletonList(
+							.getSpimData(Collections.singletonList(
 								(BioFormatsBdvOpener) qpOpener.getOpener())));
 					}
 					else if (opener instanceof OmeroBdvOpener) {

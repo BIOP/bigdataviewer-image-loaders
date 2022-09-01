@@ -141,7 +141,7 @@
 		<package-name>ch.epfl.biop.bigdataviewer-image-loaders</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.3.0-SNAPSHOT</bigdataviewer-spimdata-extras.version>
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
 	</properties>

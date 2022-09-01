@@ -115,7 +115,7 @@ public class BioFormatsToSpimData {
 	final Map<Integer, FileSerieChannel> viewSetupToBFFileSerieChannel =
 		new HashMap<>();
 
-	public AbstractSpimData getSpimDataInstance(
+	protected AbstractSpimData getSpimDataInstance(
 		List<BioFormatsBdvOpener> openers)
 	{
 		openers.forEach(o -> o.ignoreMetadata()); // necessary for spimdata
