@@ -53,7 +53,8 @@ public class OmeroArrayLoaders {
 		final protected int nResolutionLevels;
 		final protected int sx, sy, sz;
 
-		public OmeroArrayLoader(RawPixelsStorePool pixelStorePool, int channel, int nResolutionLevels, int sx, int sy, int sz)
+		public OmeroArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+			int nResolutionLevels, int sx, int sy, int sz)
 		{
 			this.pixelStorePool = pixelStorePool;
 			this.channel = channel;
@@ -65,12 +66,12 @@ public class OmeroArrayLoaders {
 
 	}
 
-	public static class OmeroUnsignedByteArrayLoader extends
-			OmeroArrayLoader implements CacheArrayLoader<VolatileByteArray>
+	public static class OmeroUnsignedByteArrayLoader extends OmeroArrayLoader
+		implements CacheArrayLoader<VolatileByteArray>
 	{
 
 		public OmeroUnsignedByteArrayLoader(RawPixelsStorePool pixelStorePool,
-											int channel, int nResolutionLevels, int sx, int sy, int sz)
+			int channel, int nResolutionLevels, int sx, int sy, int sz)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 		}
@@ -81,7 +82,7 @@ public class OmeroArrayLoaders {
 		{
 			try {
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
+				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
@@ -95,7 +96,8 @@ public class OmeroArrayLoaders {
 				if (dimensions[2] == 1) {
 					// Optimisation (maybe useful ? should avoid an array allocation and
 					// the ByteBuffer overhead
-					byte[] bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w, h);
+					byte[] bytes = rawPixStore.getTile(minZ, channel, timepoint, minX,
+						minY, w, h);
 					pixelStorePool.recycle(rawPixStore);
 					return new VolatileByteArray(bytes, true);
 				}
@@ -103,7 +105,8 @@ public class OmeroArrayLoaders {
 					byte[] bytes = new byte[nElements];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
+						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel,
+							timepoint, minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
 						offset += nElements;
 					}
@@ -122,15 +125,15 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-
-	public static class OmeroUnsignedShortArrayLoader extends
-			OmeroArrayLoader implements CacheArrayLoader<VolatileShortArray>
+	public static class OmeroUnsignedShortArrayLoader extends OmeroArrayLoader
+		implements CacheArrayLoader<VolatileShortArray>
 	{
 
 		final ByteOrder byteOrder;
 
 		public OmeroUnsignedShortArrayLoader(RawPixelsStorePool pixelStorePool,
-											 int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
+			int channel, int nResolutionLevels, int sx, int sy, int sz,
+			boolean littleEndian)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 
@@ -148,11 +151,11 @@ public class OmeroArrayLoaders {
 		{
 			try {
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
+				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0],sx);
+				int maxX = Math.min(minX + dimensions[0], sx);
 				int maxY = Math.min(minY + dimensions[1], sy);
 				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
@@ -161,7 +164,8 @@ public class OmeroArrayLoaders {
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
+						w, h);
 					buffer.put(bytes);
 				}
 				pixelStorePool.recycle(rawPixStore);
@@ -181,14 +185,14 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class OmeroFloatArrayLoader extends OmeroArrayLoader
-		implements CacheArrayLoader<VolatileFloatArray>
+	public static class OmeroFloatArrayLoader extends OmeroArrayLoader implements
+		CacheArrayLoader<VolatileFloatArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public OmeroFloatArrayLoader(RawPixelsStorePool pixelStorePool,
-									 int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
+		public OmeroFloatArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+			int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 			if (littleEndian) {
@@ -206,20 +210,21 @@ public class OmeroArrayLoaders {
 			try {
 
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
+				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0],sx);
-				int maxY = Math.min(minY + dimensions[1],sy);
-				int maxZ = Math.min(minZ + dimensions[2],sz);
+				int maxX = Math.min(minX + dimensions[0], sx);
+				int maxY = Math.min(minY + dimensions[1], sy);
+				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
+						w, h);
 					buffer.put(bytes);
 				}
 				pixelStorePool.recycle(rawPixStore);
@@ -239,12 +244,12 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class OmeroRGBArrayLoader extends OmeroArrayLoader
-		implements CacheArrayLoader<VolatileIntArray>
+	public static class OmeroRGBArrayLoader extends OmeroArrayLoader implements
+		CacheArrayLoader<VolatileIntArray>
 	{
 
-		public OmeroRGBArrayLoader(RawPixelsStorePool pixelStorePool,
-								   int channel, int nResolutionLevels, int sx, int sy, int sz)
+		public OmeroRGBArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+			int nResolutionLevels, int sx, int sy, int sz)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 		}
@@ -257,7 +262,7 @@ public class OmeroArrayLoaders {
 		{
 			try {
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
+				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
@@ -271,14 +276,16 @@ public class OmeroArrayLoaders {
 				byte[] bytes;
 
 				if (d == 1) {
-					bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w, h);
+					bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w,
+						h);
 				}
 				else {
 					int nBytesPerPlane = nElements * 3;
 					bytes = new byte[nBytesPerPlane];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
+						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel,
+							timepoint, minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
 							nBytesPerPlane);
 						offset += nBytesPerPlane;
@@ -305,14 +312,14 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class OmeroIntArrayLoader extends OmeroArrayLoader
-		implements CacheArrayLoader<VolatileIntArray>
+	public static class OmeroIntArrayLoader extends OmeroArrayLoader implements
+		CacheArrayLoader<VolatileIntArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public OmeroIntArrayLoader(RawPixelsStorePool pixelStorePool,
-								   int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
+		public OmeroIntArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+			int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 			if (littleEndian) {
@@ -329,7 +336,7 @@ public class OmeroArrayLoaders {
 		{
 			try {
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
+				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
@@ -342,7 +349,8 @@ public class OmeroArrayLoaders {
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
+						w, h);
 					buffer.put(bytes);
 				}
 				pixelStorePool.recycle(rawPixStore);

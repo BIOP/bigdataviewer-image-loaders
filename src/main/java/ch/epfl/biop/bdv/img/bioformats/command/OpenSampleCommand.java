@@ -105,10 +105,10 @@ public class OpenSampleCommand implements Command {
 
 					File file = DatasetHelper.getDataset(datasetName);
 
-					spimData = BioFormatsToSpimData.getSpimData(
-						BioFormatsBdvOpener.getOpener().location(file).auto()
-							.voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
-							.positionReferenceFrameLength(new Length(1, UNITS.MILLIMETER)));
+					spimData = BioFormatsToSpimData.getSpimData(BioFormatsBdvOpener
+						.getOpener().location(file).auto().voxSizeReferenceFrameLength(
+							new Length(1, UNITS.MILLIMETER)).positionReferenceFrameLength(
+								new Length(1, UNITS.MILLIMETER)));
 
 					return;
 				}

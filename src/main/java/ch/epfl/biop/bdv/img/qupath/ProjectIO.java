@@ -1,3 +1,4 @@
+
 package ch.epfl.biop.bdv.img.qupath;
 /*-
  * #%L
@@ -30,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Arrays;
 
-
 /**
  * Read QuPath projects.
  * <p>
@@ -39,54 +39,59 @@ import java.util.Arrays;
  */
 public class ProjectIO {
 
-    final private static Logger logger = LoggerFactory.getLogger(ProjectIO.class);
+	final private static Logger logger = LoggerFactory.getLogger(ProjectIO.class);
 
-    /**
-     * Default file name for a QuPath project.
-     */
-    public static final String DEFAULT_PROJECT_NAME = "project";
+	/**
+	 * Default file name for a QuPath project.
+	 */
+	public static final String DEFAULT_PROJECT_NAME = "project";
 
-    /**
-     * Default file extension for a QuPath project.
-     */
-    public static final String DEFAULT_PROJECT_EXTENSION = "qpproj";
+	/**
+	 * Default file extension for a QuPath project.
+	 */
+	public static final String DEFAULT_PROJECT_EXTENSION = "qpproj";
 
+	@SuppressWarnings("unchecked")
+	public static JsonObject loadRawProject(final File fileProject)
+		throws IOException
+	{
+		logger.debug("Loading project from {}", fileProject);
+		try (Reader fileReader = new BufferedReader(new FileReader(fileProject))) {
+			Gson gson = new Gson();
+			JsonObject element = gson.fromJson(fileReader, JsonObject.class);
+			// Didn't have the foresight to add a version number from the start...
+			String version = element.has("version") ? element.get("version")
+				.getAsString() : null;
+			if (version == null || Arrays.asList("v0.2.0-m2", "v0.2.0-m1").contains(
+				version))
+			{
+				throw new IllegalArgumentException(
+					"Older-style project is not compatible with this current FIJI QuPath bridge ");
+				// return LegacyProject.readFromFile(fileProject, cls);
+			}
+			return element;
+		}
+	}
 
-    @SuppressWarnings("unchecked")
-    public static  JsonObject loadRawProject(final File fileProject) throws IOException {
-            logger.debug("Loading project from {}", fileProject);
-            try (Reader fileReader = new BufferedReader(new FileReader(fileProject))){
-                Gson gson = new Gson();
-                JsonObject element = gson.fromJson(fileReader, JsonObject.class);
-                // Didn't have the foresight to add a version number from the start...
-                String version = element.has("version") ? element.get("version").getAsString() : null;
-                if (version == null || Arrays.asList("v0.2.0-m2", "v0.2.0-m1").contains(version)) {
-                    throw new IllegalArgumentException("Older-style project is not compatible with this current FIJI QuPath bridge ");
-                    //				return LegacyProject.readFromFile(fileProject, cls);
-                }
-                return element;
-            }
-    }
+	/**
+	 * Get the default extension for a QuPath project file.
+	 *
+	 * @param includePeriod include or not the period
+	 * @return the project extension (with or without the period)
+	 */
+	public static String getProjectExtension(boolean includePeriod) {
+		return includePeriod ? "." + DEFAULT_PROJECT_EXTENSION
+			: DEFAULT_PROJECT_EXTENSION;
+	}
 
-
-    /**
-     * Get the default extension for a QuPath project file.
-     *
-     * @param includePeriod include or not the period
-     * @return the project extension (with or without the period)
-     */
-    public static String getProjectExtension(boolean includePeriod) {
-        return includePeriod ? "." + DEFAULT_PROJECT_EXTENSION : DEFAULT_PROJECT_EXTENSION;
-    }
-
-    /**
-     * Get the default extension for a QuPath project file, without the 'dot'.
-     * @return the default extension for a QuPath project file, without the 'dot'.
-     *
-     * @see ProjectIO#getProjectExtension(boolean)
-     */
-    public static String getProjectExtension() {
-        return DEFAULT_PROJECT_EXTENSION;
-    }
+	/**
+	 * Get the default extension for a QuPath project file, without the 'dot'.
+	 * 
+	 * @return the default extension for a QuPath project file, without the 'dot'.
+	 * @see ProjectIO#getProjectExtension(boolean)
+	 */
+	public static String getProjectExtension() {
+		return DEFAULT_PROJECT_EXTENSION;
+	}
 
 }

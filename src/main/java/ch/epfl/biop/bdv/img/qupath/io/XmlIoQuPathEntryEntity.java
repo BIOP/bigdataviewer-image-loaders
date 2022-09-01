@@ -1,3 +1,4 @@
+
 package ch.epfl.biop.bdv.img.qupath.io;
 
 import ch.epfl.biop.bdv.img.qupath.QuPathEntryEntity;
@@ -7,28 +8,32 @@ import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
 import org.jdom2.Element;
 
-@ViewSetupAttributeIo( name = "qupathentryentity", type = QuPathEntryEntity.class )
-public class XmlIoQuPathEntryEntity extends XmlIoNamedEntity<QuPathEntryEntity>
+@ViewSetupAttributeIo(name = "qupathentryentity",
+	type = QuPathEntryEntity.class)
+public class XmlIoQuPathEntryEntity extends
+	XmlIoNamedEntity<QuPathEntryEntity>
 {
-    public XmlIoQuPathEntryEntity()
-    {
-        super( "qupathentryentity", QuPathEntryEntity.class );
-    }
 
-    @Override
-    public Element toXml(final QuPathEntryEntity qpee )
-    {
-        final Element elem = super.toXml( qpee );
-        elem.addContent(XmlHelpers.textElement( "QuPathProjectLocation", qpee.getQuPathProjectionLocation()));
-        return elem;
-    }
+	public XmlIoQuPathEntryEntity() {
+		super("qupathentryentity", QuPathEntryEntity.class);
+	}
 
-    @Override
-    public QuPathEntryEntity fromXml( final Element elem ) throws SpimDataException
-    {
-        final QuPathEntryEntity qupathEntry = super.fromXml( elem );
+	@Override
+	public Element toXml(final QuPathEntryEntity qpee) {
+		final Element elem = super.toXml(qpee);
+		elem.addContent(XmlHelpers.textElement("QuPathProjectLocation", qpee
+			.getQuPathProjectionLocation()));
+		return elem;
+	}
 
-        qupathEntry.setQuPathProjectionLocation( elem.getChildText( "QuPathProjectLocation" ) );
-        return qupathEntry;
-    }
+	@Override
+	public QuPathEntryEntity fromXml(final Element elem)
+		throws SpimDataException
+	{
+		final QuPathEntryEntity qupathEntry = super.fromXml(elem);
+
+		qupathEntry.setQuPathProjectionLocation(elem.getChildText(
+			"QuPathProjectLocation"));
+		return qupathEntry;
+	}
 }

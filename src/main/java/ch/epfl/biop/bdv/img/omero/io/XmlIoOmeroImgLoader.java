@@ -19,7 +19,9 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package ch.epfl.biop.bdv.img.omero.io;
+
 import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
@@ -40,90 +42,105 @@ import java.util.Map;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
+@ImgLoaderIo(format = "spimreconstruction.biop_omeroimageloader",
+	type = OmeroImageLoader.class)
+public class XmlIoOmeroImgLoader implements
+	XmlIoBasicImgLoader<OmeroImageLoader>
+{
 
-@ImgLoaderIo( format = "spimreconstruction.biop_omeroimageloader", type = OmeroImageLoader.class )
-public class XmlIoOmeroImgLoader implements XmlIoBasicImgLoader<OmeroImageLoader> {
+	public static final String OPENER_CLASS_TAG = "opener_class";
+	public static final String OPENER_TAG = "opener";
+	public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
+	public static final String CACHE_NUM_PRIORITIES = "num_priorities";
+	public static final String DATASET_NUMBER_TAG = "dataset_number";
 
-    public static final String OPENER_CLASS_TAG = "opener_class";
-    public static final String OPENER_TAG = "opener";
-    public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
-    public static final String CACHE_NUM_PRIORITIES = "num_priorities";
-    public static final String DATASET_NUMBER_TAG = "dataset_number";
+	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx =
+		new HashMap<String, OmeroTools.GatewaySecurityContext>();
 
-    Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<String, OmeroTools.GatewaySecurityContext>();
+	@Override
+	public Element toXml(OmeroImageLoader imgLoader, File basePath) {
+		final Element elem = new Element("ImageLoader");
+		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
+			.getAnnotation(ImgLoaderIo.class).format());
+		// For potential extensibility
+		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
+			OmeroBdvOpener.class.getName()));
+		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
+			imgLoader.numFetcherThreads));
+		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
+			imgLoader.numPriorities));
+		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader.openers
+			.size()));
 
-    @Override
-    public Element toXml(OmeroImageLoader imgLoader, File basePath) {
-        final Element elem = new Element( "ImageLoader" );
-        elem.setAttribute( IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass().getAnnotation( ImgLoaderIo.class ).format() );
-        // For potential extensibility
-        elem.addContent(XmlHelpers.textElement( OPENER_CLASS_TAG, OmeroBdvOpener.class.getName()));
-        elem.addContent(XmlHelpers.intElement( CACHE_NUM_FETCHER, imgLoader.numFetcherThreads));
-        elem.addContent(XmlHelpers.intElement( CACHE_NUM_PRIORITIES, imgLoader.numPriorities));
-        elem.addContent(XmlHelpers.intElement( DATASET_NUMBER_TAG, imgLoader.openers.size()));
+		Gson gson = new Gson();
+		for (int i = 0; i < imgLoader.openers.size(); i++) {
+			// Opener serialization
+			elem.addContent(XmlHelpers.textElement(OPENER_TAG + "_" + i, gson.toJson(
+				imgLoader.openers.get(i))));
+		}
+		return elem;
+	}
 
-        Gson gson = new Gson();
-        for (int i=0;i<imgLoader.openers.size();i++) {
-            // Opener serialization
-            elem.addContent(XmlHelpers.textElement(OPENER_TAG+"_"+i, gson.toJson(imgLoader.openers.get(i))));
-        }
-        return elem;
-    }
+	@Override
+	public OmeroImageLoader fromXml(Element elem, File basePath,
+		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	{
+		try {
+			final int number_of_datasets = XmlHelpers.getInt(elem,
+				DATASET_NUMBER_TAG);
+			final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
+			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
 
-    @Override
-    public OmeroImageLoader fromXml(Element elem, File basePath, AbstractSequenceDescription<?, ?, ?> sequenceDescription) {
-        try
-        {
-            final int number_of_datasets = XmlHelpers.getInt( elem, DATASET_NUMBER_TAG );
-            final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-            final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
+			List<OmeroBdvOpener> openers = new ArrayList<>();
 
-            List<OmeroBdvOpener> openers = new ArrayList<>();
+			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
 
-            String openerClassName = XmlHelpers.getText( elem, OPENER_CLASS_TAG );
+			if (!openerClassName.equals(OmeroBdvOpener.class.getName())) {
+				throw new UnsupportedOperationException("Error class " +
+					openerClassName + " not recognized.");
+			}
 
-            if (!openerClassName.equals(OmeroBdvOpener.class.getName())) {
-                throw new UnsupportedOperationException("Error class "+openerClassName+" not recognized.");
-            }
+			// TODO handle login to OMERO
+			int port = 4064;
 
-            //TODO handle login to OMERO
-            int port = 4064;
+			Gson gson = new Gson();
+			for (int i = 0; i < number_of_datasets; i++) {
+				// Opener de-serialization
+				String jsonInString = XmlHelpers.getText(elem, OPENER_TAG + "_" + i);
+				OmeroBdvOpener opener = gson.fromJson(jsonInString,
+					OmeroBdvOpener.class);
 
-            Gson gson = new Gson();
-            for (int i=0;i<number_of_datasets;i++) {
-                // Opener de-serialization
-                String jsonInString = XmlHelpers.getText( elem, OPENER_TAG+"_"+i );
-                OmeroBdvOpener opener = gson.fromJson(jsonInString, OmeroBdvOpener.class);
+				if (!hostToGatewayCtx.containsKey(opener.getHost())) {
 
-                if (!hostToGatewayCtx.containsKey(opener.getHost())) {
+					// Get credentials
+					Boolean onlyCredentials = false;
+					String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
+						onlyCredentials);
+					String username = credentials[0];
+					String password = credentials[1];
+					credentials = new String[] {};
 
-                    //Get credentials
-                    Boolean onlyCredentials = false;
-                    String[] credentials = OmeroTools.getOmeroConnectionInputParameters(onlyCredentials);
-                    String username = credentials[0];
-                    String password = credentials[1];
-                    credentials = new String[]{};
+					// connect to OMERO
+					Gateway gateway = OmeroTools.omeroConnect(opener.getHost(), port,
+						username, password);
+					SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
 
-                    // connect to OMERO
-                    Gateway gateway =  OmeroTools.omeroConnect(opener.getHost(), port, username, password);
-                    SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
+					// add it in the channel hashmap
+					OmeroTools.GatewaySecurityContext gtCtx =
+						new OmeroTools.GatewaySecurityContext(opener.getHost(), port,
+							gateway, ctx);
+					hostToGatewayCtx.put(opener.getHost(), gtCtx);
+				}
+				opener.gateway(hostToGatewayCtx.get(opener.getHost()).gateway)
+					.securityContext(hostToGatewayCtx.get(opener.getHost()).ctx).create();
+				openers.add(opener);
+			}
 
-                    //add it in the channel hashmap
-                    OmeroTools.GatewaySecurityContext gtCtx = new OmeroTools.GatewaySecurityContext(opener.getHost(), port, gateway,ctx);
-                    hostToGatewayCtx.put(opener.getHost(),gtCtx);
-                }
-                opener.gateway(hostToGatewayCtx.get(opener.getHost()).gateway)
-                        .securityContext(hostToGatewayCtx.get(opener.getHost()).ctx)
-                        .create();
-                openers.add(opener);
-            }
-
-
-            return new OmeroImageLoader(openers,sequenceDescription,numFetcherThreads, numPriorities);
-        }
-        catch ( final Exception e )
-        {
-            throw new RuntimeException( e );
-        }
-    }
+			return new OmeroImageLoader(openers, sequenceDescription,
+				numFetcherThreads, numPriorities);
+		}
+		catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

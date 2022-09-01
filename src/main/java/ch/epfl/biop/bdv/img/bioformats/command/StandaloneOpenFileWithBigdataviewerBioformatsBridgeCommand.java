@@ -75,8 +75,7 @@ public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
 
 		List<BioFormatsBdvOpener> openers = new ArrayList<>();
 		openers.add(settings.getOpener(file));
-		final AbstractSpimData spimData = BioFormatsToSpimData
-			.getSpimData(openers);
+		final AbstractSpimData spimData = BioFormatsToSpimData.getSpimData(openers);
 		BdvFunctions.show(spimData);
 	}
 

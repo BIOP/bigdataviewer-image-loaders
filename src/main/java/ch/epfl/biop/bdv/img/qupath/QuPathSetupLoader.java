@@ -1,3 +1,4 @@
+
 package ch.epfl.biop.bdv.img.qupath;
 
 import bdv.AbstractViewerSetupImgLoader;
@@ -23,182 +24,214 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
 
 /**
- * See documentation in {@link QuPathImageLoader}
- *
- * This class builds the setupLoader corresponding to the opener type (Bioformat or Omero) and get all the necessary
- * info from this loader.
+ * See documentation in {@link QuPathImageLoader} This class builds the
+ * setupLoader corresponding to the opener type (Bioformat or Omero) and get all
+ * the necessary info from this loader.
  *
  * @author Rémy Dornier, EPFL, BIOP, 2022
  */
 
-public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A> extends AbstractViewerSetupImgLoader<T, V> implements MultiResolutionSetupImgLoader< T > {
+public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
+	extends AbstractViewerSetupImgLoader<T, V> implements
+	MultiResolutionSetupImgLoader<T>
+{
 
-    private QuPathImageOpener opener;
-    private Object imageSetupLoader;
-    final public int iSerie,iChannel;
-    private static Logger logger = LoggerFactory.getLogger(QuPathSetupLoader.class);
+	private QuPathImageOpener opener;
+	private Object imageSetupLoader;
+	final public int iSerie, iChannel;
+	private static Logger logger = LoggerFactory.getLogger(
+		QuPathSetupLoader.class);
 
-    public QuPathSetupLoader(QuPathImageOpener qpOpener, int setupId, int serieIndex, int channelIndex, T type, V volatileType, Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception {
-        super(type, volatileType);
+	public QuPathSetupLoader(QuPathImageOpener qpOpener, int setupId,
+		int serieIndex, int channelIndex, T type, V volatileType,
+		Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception
+	{
+		super(type, volatileType);
 
-        this.opener = qpOpener;
-        this.iChannel = channelIndex;
-        this.iSerie = serieIndex;
+		this.opener = qpOpener;
+		this.iChannel = channelIndex;
+		this.iSerie = serieIndex;
 
-        // get the setup loader corresponding to BioFormat opener
-        if(qpOpener.getOpener() instanceof BioFormatsBdvOpener){
-            BioFormatsSetupLoader bfSetupLoader = new BioFormatsSetupLoader(
-                    (BioFormatsBdvOpener) this.opener.getOpener(),
-                    serieIndex,
-                    channelIndex,
-                    setupId,
-                    type,
-                    volatileType,
-                    cacheSupplier);
-            this.imageSetupLoader = bfSetupLoader;
+		// get the setup loader corresponding to BioFormat opener
+		if (qpOpener.getOpener() instanceof BioFormatsBdvOpener) {
+			BioFormatsSetupLoader bfSetupLoader = new BioFormatsSetupLoader(
+				(BioFormatsBdvOpener) this.opener.getOpener(), serieIndex, channelIndex,
+				setupId, type, volatileType, cacheSupplier);
+			this.imageSetupLoader = bfSetupLoader;
 
-        }else{
-            // get the setup loader corresponding to Omero opener
-            if(qpOpener.getOpener() instanceof OmeroBdvOpener){
-                try {
-                    OmeroSetupLoader omeSetupLoader = new OmeroSetupLoader(
-                            (OmeroBdvOpener) this.opener.getOpener(),
-                            channelIndex,
-                            setupId,
-                            type,
-                            volatileType,
-                            cacheSupplier);
-                    this.imageSetupLoader = omeSetupLoader;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            else{
-                logger.warn("Opener "+qpOpener.getOpener()+" is not valid");
-            }
-        }
+		}
+		else {
+			// get the setup loader corresponding to Omero opener
+			if (qpOpener.getOpener() instanceof OmeroBdvOpener) {
+				try {
+					OmeroSetupLoader omeSetupLoader = new OmeroSetupLoader(
+						(OmeroBdvOpener) this.opener.getOpener(), channelIndex, setupId,
+						type, volatileType, cacheSupplier);
+					this.imageSetupLoader = omeSetupLoader;
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				logger.warn("Opener " + qpOpener.getOpener() + " is not valid");
+			}
+		}
 
-    }
+	}
 
-    @Override
-    public RandomAccessibleInterval<V> getVolatileImage(int timepointId, int level, ImgLoaderHint... hints) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return (RandomAccessibleInterval<V>)(((BioFormatsSetupLoader)this.imageSetupLoader).getVolatileImage(timepointId,level,hints));
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((RandomAccessibleInterval<V>)((OmeroSetupLoader)this.imageSetupLoader).getVolatileImage(timepointId,level,hints));
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public RandomAccessibleInterval<V> getVolatileImage(int timepointId,
+		int level, ImgLoaderHint... hints)
+	{
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return (RandomAccessibleInterval<V>) (((BioFormatsSetupLoader) this.imageSetupLoader)
+				.getVolatileImage(timepointId, level, hints));
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((RandomAccessibleInterval<V>) ((OmeroSetupLoader) this.imageSetupLoader)
+					.getVolatileImage(timepointId, level, hints));
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId, int level, boolean normalize, ImgLoaderHint... hints) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getFloatImage(timepointId, level, normalize, hints);
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getFloatImage(timepointId, level, normalize, hints);
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId,
+		int level, boolean normalize, ImgLoaderHint... hints)
+	{
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).getFloatImage(
+				timepointId, level, normalize, hints);
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getFloatImage(
+					timepointId, level, normalize, hints);
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public Dimensions getImageSize(int timepointId, int level) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getImageSize(timepointId,level);
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getImageSize(timepointId,level);
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public Dimensions getImageSize(int timepointId, int level) {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).getImageSize(
+				timepointId, level);
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getImageSize(
+					timepointId, level);
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
+	@Override
+	public RandomAccessibleInterval<T> getImage(int timepointId, int level,
+		ImgLoaderHint... hints)
+	{
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return (RandomAccessibleInterval<T>) (((BioFormatsSetupLoader) this.imageSetupLoader)
+				.getImage(timepointId, level, hints));
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return (RandomAccessibleInterval<T>) (((OmeroSetupLoader) this.imageSetupLoader)
+					.getImage(timepointId, level, hints));
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public RandomAccessibleInterval<T> getImage(int timepointId, int level, ImgLoaderHint... hints) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return (RandomAccessibleInterval<T>)(((BioFormatsSetupLoader)this.imageSetupLoader).getImage(timepointId, level, hints));
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return (RandomAccessibleInterval<T>)(((OmeroSetupLoader)this.imageSetupLoader).getImage(timepointId, level, hints));
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public double[][] getMipmapResolutions() {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader)
+				.getMipmapResolutions();
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader)
+					.getMipmapResolutions();
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public double[][] getMipmapResolutions() {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getMipmapResolutions();
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getMipmapResolutions();
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public AffineTransform3D[] getMipmapTransforms() {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader)
+				.getMipmapTransforms();
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getMipmapTransforms();
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public AffineTransform3D[] getMipmapTransforms() {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getMipmapTransforms();
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getMipmapTransforms();
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public int numMipmapLevels() {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).numMipmapLevels();
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).numMipmapLevels();
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return 0;
+	}
 
-    @Override
-    public int numMipmapLevels() {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).numMipmapLevels();
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).numMipmapLevels();
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return 0;
-    }
+	@Override
+	public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId,
+		boolean normalize, ImgLoaderHint... hints)
+	{
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).getFloatImage(
+				timepointId, normalize, hints);
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getFloatImage(
+					timepointId, normalize, hints);
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId, boolean normalize, ImgLoaderHint... hints) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getFloatImage(timepointId,normalize,hints);
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getFloatImage(timepointId,normalize,hints);
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public Dimensions getImageSize(int timepointId) {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).getImageSize(
+				timepointId);
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getImageSize(
+					timepointId);
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 
-    @Override
-    public Dimensions getImageSize(int timepointId) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getImageSize(timepointId);
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getImageSize(timepointId);
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
-
-
-    @Override
-    public VoxelDimensions getVoxelSize(int timepointId) {
-        if(this.imageSetupLoader instanceof BioFormatsSetupLoader)
-            return ((BioFormatsSetupLoader)this.imageSetupLoader).getVoxelSize(timepointId);
-        else{
-            if(this.imageSetupLoader instanceof OmeroSetupLoader)
-                return ((OmeroSetupLoader)this.imageSetupLoader).getVoxelSize(timepointId);
-        }
-        logger.warn("The loader "+this.imageSetupLoader.getClass().getName()+" is not recognized : ");
-        return null;
-    }
+	@Override
+	public VoxelDimensions getVoxelSize(int timepointId) {
+		if (this.imageSetupLoader instanceof BioFormatsSetupLoader)
+			return ((BioFormatsSetupLoader) this.imageSetupLoader).getVoxelSize(
+				timepointId);
+		else {
+			if (this.imageSetupLoader instanceof OmeroSetupLoader)
+				return ((OmeroSetupLoader) this.imageSetupLoader).getVoxelSize(
+					timepointId);
+		}
+		logger.warn("The loader " + this.imageSetupLoader.getClass().getName() +
+			" is not recognized : ");
+		return null;
+	}
 }

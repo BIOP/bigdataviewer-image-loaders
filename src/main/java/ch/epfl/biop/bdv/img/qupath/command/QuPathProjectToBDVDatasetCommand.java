@@ -1,3 +1,4 @@
+
 package ch.epfl.biop.bdv.img.qupath.command;
 
 import bdv.util.BdvFunctions;
@@ -13,84 +14,83 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-
 /**
- * Warning : a qupath project may have its source reordered and or removed :
- * - not all entries will be present in the qupath project
- * Limitations : only images
+ * Warning : a qupath project may have its source reordered and or removed : -
+ * not all entries will be present in the qupath project Limitations : only
+ * images
  */
 
 @Plugin(type = Command.class,
-        menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project]"
-        )
-public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBridgeDatasetCommand {
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project]")
+public class QuPathProjectToBDVDatasetCommand extends
+	BioformatsBigdataviewerBridgeDatasetCommand
+{
 
-    private static Logger logger = LoggerFactory.getLogger(QuPathProjectToBDVDatasetCommand.class);
+	private static Logger logger = LoggerFactory.getLogger(
+		QuPathProjectToBDVDatasetCommand.class);
 
-    @Parameter
-    File quPathProject;
+	@Parameter
+	File quPathProject;
 
-    @Parameter(label = "Dataset name (leave empty to name it like the QuPath project)", persist = false)
-    public String datasetname = ""; // Cheat to allow dataset renaming
+	@Parameter(
+		label = "Dataset name (leave empty to name it like the QuPath project)",
+		persist = false)
+	public String datasetname = ""; // Cheat to allow dataset renaming
 
-    @Parameter
-    public boolean show = false;
+	@Parameter
+	public boolean show = false;
 
-    @Parameter(type = ItemIO.OUTPUT)
-    AbstractSpimData spimData;
+	@Parameter(type = ItemIO.OUTPUT)
+	AbstractSpimData spimData;
 
+	@Override
+	public void run() {
 
-    @Override
-    public void run() {
+		try {
+			spimData = (new QuPathToSpimData()).getSpimDataInstance(quPathProject
+				.toURI(), getGuiParams());
+			if (datasetname.equals("")) {
+				datasetname = quPathProject.getParentFile().getName();// FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath()))
+																															// + ".xml";
+			}
 
-        try {
-                spimData = (new QuPathToSpimData()).getSpimDataInstance(
-                        quPathProject.toURI(),
-                        getGuiParams()
-                );
-                if (datasetname.equals("")) {
-                    datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
-                }
+			if (show) BdvFunctions.show(spimData);
 
-            if (show) BdvFunctions.show(spimData);
+			// BdvFunctions.show(spimData);
 
-           // BdvFunctions.show(spimData);
+			// Directly registers it to prevent memory leak...
+			/*SourceAndConverterServices
+			        .getSourceAndConverterService()
+			        .register(spimData);
+			SourceAndConverterServices
+			        .getSourceAndConverterService()
+			        .setSpimDataName(spimData, datasetname);*/
 
-                // Directly registers it to prevent memory leak...
-            /*SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .register(spimData);
-            SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .setSpimDataName(spimData, datasetname);*/
+			// End of session
+			// Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			// fail
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 
-                // End of session
-               // Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    //fail
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+	}
 
-    }
-
-    /**
-     * Get from the interface all parameters given by the user
-     * @return
-     */
-    public GuiParams getGuiParams(){
-        return (new GuiParams()).setUnit(this.unit)
-                                .setCachesizex(this.cachesizex)
-                                .setCachesizey(this.cachesizey)
-                                .setCachesizez(this.cachesizez)
-                                .setFlippositionx(this.flippositionx)
-                                .setFlippositiony(this.flippositiony)
-                                .setFlippositionz(this.flippositionz)
-                                .setNumberofblockskeptinmemory(this.numberofblockskeptinmemory)
-                                .setPositioniscenter(this.positioniscenter)
-                                .setPositionReferenceFrameLength(this.refframesizeinunitvoxsize)
-                                .setSplitChannels(this.splitrgbchannels)
-                                .setSwitchzandc(this.switchzandc)
-                                .setUsebioformatscacheblocksize(this.usebioformatscacheblocksize)
-                                .setVoxSizeReferenceFrameLength(this.refframesizeinunitvoxsize);
-    }
+	/**
+	 * Get from the interface all parameters given by the user
+	 * 
+	 * @return
+	 */
+	public GuiParams getGuiParams() {
+		return (new GuiParams()).setUnit(this.unit).setCachesizex(this.cachesizex)
+			.setCachesizey(this.cachesizey).setCachesizez(this.cachesizez)
+			.setFlippositionx(this.flippositionx).setFlippositiony(this.flippositiony)
+			.setFlippositionz(this.flippositionz).setNumberofblockskeptinmemory(
+				this.numberofblockskeptinmemory).setPositioniscenter(
+					this.positioniscenter).setPositionReferenceFrameLength(
+						this.refframesizeinunitvoxsize).setSplitChannels(
+							this.splitrgbchannels).setSwitchzandc(this.switchzandc)
+			.setUsebioformatscacheblocksize(this.usebioformatscacheblocksize)
+			.setVoxSizeReferenceFrameLength(this.refframesizeinunitvoxsize);
+	}
 }

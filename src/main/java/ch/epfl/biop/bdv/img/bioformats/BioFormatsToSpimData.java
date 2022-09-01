@@ -33,7 +33,6 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
-
 import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
 import loci.formats.IFormatReader;
@@ -85,8 +84,7 @@ public class BioFormatsToSpimData {
 		boolean isRGB)
 	{
 		BioFormatsTools.BioformatsChannel channel =
-			new BioFormatsTools.BioformatsChannel(omeMeta, iSerie, iChannel,
-				false);
+			new BioFormatsTools.BioformatsChannel(omeMeta, iSerie, iChannel, false);
 		if (!channelToId.containsKey(channel)) {
 			// No : add it in the channel hashmap
 			channelToId.put(channel, channelCounter);
@@ -184,13 +182,13 @@ public class BioFormatsToSpimData {
 					String imageName = getImageName(dataLocation, seriesCount, omeMeta,
 						iSerie);
 					sn.setName(imageName);
-					Dimensions dims = BioFormatsTools.getSeriesDimensions(
-						omeMeta, iSerie); // number of pixels .. no calibration
+					Dimensions dims = BioFormatsTools.getSeriesDimensions(omeMeta,
+						iSerie); // number of pixels .. no calibration
 					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) +
 						" Z:" + dims.dimension(2));
-					VoxelDimensions voxDims = BioFormatsTools
-						.getSeriesVoxelDimensions(omeMeta, iSerie, openers.get(iFile).u,
-							openers.get(iFile).voxSizeReferenceFrameLength);
+					VoxelDimensions voxDims = BioFormatsTools.getSeriesVoxelDimensions(
+						omeMeta, iSerie, openers.get(iFile).u, openers.get(
+							iFile).voxSizeReferenceFrameLength);
 					// Register Setups (one per channel and one per timepoint)
 					channels.forEach(iCh -> {
 						int ch_id = getChannelId(omeMeta, iSerie, iCh, memo.isRGB());
@@ -211,8 +209,8 @@ public class BioFormatsToSpimData {
 						ds.isSet = false;
 
 						// ----------- Color
-						ARGBType color = BioFormatsTools.getColorFromMetadata(
-							omeMeta, iSerie, iCh);
+						ARGBType color = BioFormatsTools.getColorFromMetadata(omeMeta,
+							iSerie, iCh);
 
 						if (color != null) {
 							ds.isSet = true;

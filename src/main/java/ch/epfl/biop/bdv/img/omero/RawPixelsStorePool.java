@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.ResourcePool;
@@ -28,16 +29,18 @@ import java.util.function.Supplier;
 
 public class RawPixelsStorePool extends ResourcePool<RawPixelsStorePrx> {
 
-    Supplier<RawPixelsStorePrx> rpsSupplier;
+	Supplier<RawPixelsStorePrx> rpsSupplier;
 
-    public RawPixelsStorePool(int size, Boolean dynamicCreation, Supplier<RawPixelsStorePrx> rawPixelStoreSupplier) {
-        super(size, dynamicCreation);
-        createPool();
-        this.rpsSupplier = rawPixelStoreSupplier;
-    }
+	public RawPixelsStorePool(int size, Boolean dynamicCreation,
+		Supplier<RawPixelsStorePrx> rawPixelStoreSupplier)
+	{
+		super(size, dynamicCreation);
+		createPool();
+		this.rpsSupplier = rawPixelStoreSupplier;
+	}
 
-    @Override
-    protected RawPixelsStorePrx createObject() {
-        return rpsSupplier.get();
-    }
+	@Override
+	protected RawPixelsStorePrx createObject() {
+		return rpsSupplier.get();
+	}
 }

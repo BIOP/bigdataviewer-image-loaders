@@ -19,16 +19,17 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package ch.epfl.biop.bdv.img.omero;
 
 public class OpenerIdxChannel {
 
-    public final int openerIdx;
-    public final int iChannel;
+	public final int openerIdx;
+	public final int iChannel;
 
-    public OpenerIdxChannel(int openerIdx, int c) {
-        this.openerIdx=openerIdx;
-        iChannel=c;
-    }
+	public OpenerIdxChannel(int openerIdx, int c) {
+		this.openerIdx = openerIdx;
+		iChannel = c;
+	}
 
 }

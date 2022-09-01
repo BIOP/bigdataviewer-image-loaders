@@ -99,8 +99,7 @@ public class BioFormatsTools {
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof BioformatsChannel) {
-				BioformatsChannel bc =
-					(BioformatsChannel) obj;
+				BioformatsChannel bc = (BioformatsChannel) obj;
 				return (isRGB == bc.isRGB) && (chName.equals(bc.chName)) && (pxType
 					.equals(bc.pxType)) && (iChannel == bc.iChannel) &&
 					(emissionWl == (bc.emissionWl));
@@ -552,6 +551,7 @@ public class BioFormatsTools {
 	 * instance 1,2,5:7,10:12,14 returns an ArrayList containing
 	 * [1,2,5,6,7,10,11,12,14] Invalid format are ignored and an error message is
 	 * displayed
+	 * 
 	 * @param expression expression to parse
 	 * @return list of indexes in ArrayList
 	 */

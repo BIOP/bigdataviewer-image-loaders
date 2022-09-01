@@ -95,9 +95,9 @@ public class BioFormatsArrayLoaders {
 				if (dimensions[2] == 1) {
 					// Optimisation (maybe useful ? should avoid an array allocation and
 					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, minZ, timepoint) : reader.getIndex(minZ, channel,
-							timepoint), minX, minY, w, h);
+					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
+						minZ, timepoint) : reader.getIndex(minZ, channel, timepoint), minX,
+						minY, w, h);
 					readerPool.recycle(reader);
 					return new VolatileByteArray(bytes, true);
 				}

@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package ch.epfl.biop.bdv.img.omero;
 
 import omero.gateway.Gateway;
@@ -42,127 +43,141 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-
 public class OmeroTools {
 
-    /**
-     * OMERO connection with credentials and simpleLogger
-     * @param hostname OMERO Host name
-     * @param port     Port (Usually 4064)
-     * @param userName OMERO User
-     * @param password Password for OMERO User
-     * @return OMERO gateway (Gateway for simplifying access to an OMERO server)
-     * @throws Exception
-     */
-    public static Gateway omeroConnect(String hostname, int port, String userName, String password) throws Exception {
-        //Omero Connect with credentials and simpleLogger
-        LoginCredentials cred = new LoginCredentials();
-        cred.getServer().setHost(hostname);
-        cred.getServer().setPort(port);
-        cred.getUser().setUsername(userName);
-        cred.getUser().setPassword(password);
-        SimpleLogger simpleLogger = new SimpleLogger();
-        Gateway gateway = new Gateway(simpleLogger);
-        gateway.connect(cred);
-        return gateway;
-    }
+	/**
+	 * OMERO connection with credentials and simpleLogger
+	 * 
+	 * @param hostname OMERO Host name
+	 * @param port Port (Usually 4064)
+	 * @param userName OMERO User
+	 * @param password Password for OMERO User
+	 * @return OMERO gateway (Gateway for simplifying access to an OMERO server)
+	 * @throws Exception
+	 */
+	public static Gateway omeroConnect(String hostname, int port, String userName,
+		String password) throws Exception
+	{
+		// Omero Connect with credentials and simpleLogger
+		LoginCredentials cred = new LoginCredentials();
+		cred.getServer().setHost(hostname);
+		cred.getServer().setPort(port);
+		cred.getUser().setUsername(userName);
+		cred.getUser().setPassword(password);
+		SimpleLogger simpleLogger = new SimpleLogger();
+		Gateway gateway = new Gateway(simpleLogger);
+		gateway.connect(cred);
+		return gateway;
+	}
 
+	public static Collection<ImageData> getImagesFromDataset(Gateway gateway,
+		long DatasetID) throws Exception
+	{
+		// List all images contained in a Dataset
+		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+		SecurityContext ctx = getSecurityContext(gateway);
+		Collection<Long> datasetIds = new ArrayList<>();
+		datasetIds.add(new Long(DatasetID));
+		return browse.getImagesForDatasets(ctx, datasetIds);
+	}
 
-    public static Collection<ImageData> getImagesFromDataset(Gateway gateway, long DatasetID) throws Exception {
-        //List all images contained in a Dataset
-        BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-        SecurityContext ctx = getSecurityContext(gateway);
-        Collection<Long> datasetIds = new ArrayList<>();
-        datasetIds.add(new Long(DatasetID));
-        return browse.getImagesForDatasets(ctx, datasetIds);
-    }
+	/**
+	 * @param gateway OMERO gateway
+	 * @return Security context hosting information required to access correct
+	 *         connector
+	 * @throws Exception
+	 */
+	public static SecurityContext getSecurityContext(Gateway gateway)
+		throws Exception
+	{
+		ExperimenterData exp = gateway.getLoggedInUser();
+		long groupID = exp.getGroupId();
+		SecurityContext ctx = new SecurityContext(groupID);
+		return ctx;
+	}
 
-    /**
-     * @param gateway OMERO gateway
-     * @return Security context hosting information required to access correct connector
-     * @throws Exception
-     */
-    public static SecurityContext getSecurityContext(Gateway gateway) throws Exception {
-        ExperimenterData exp = gateway.getLoggedInUser();
-        long groupID = exp.getGroupId();
-        SecurityContext ctx = new SecurityContext(groupID);
-        return ctx;
-    }
+	/**
+	 * @param imageID ID of the OMERO image to access
+	 * @param gateway OMERO gateway
+	 * @param ctx OMERO Security context
+	 * @return OMERO raw pixel data
+	 * @throws Exception
+	 */
+	public static PixelsData getPixelsDataFromOmeroID(long imageID,
+		Gateway gateway, SecurityContext ctx) throws Exception
+	{
 
-    /**
-     * @param imageID ID of the OMERO image to access
-     * @param gateway OMERO gateway
-     * @param ctx     OMERO Security context
-     * @return OMERO raw pixel data
-     * @throws Exception
-     */
-    public static PixelsData getPixelsDataFromOmeroID(long imageID, Gateway gateway, SecurityContext ctx) throws Exception {
+		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+		ImageData image = browse.getImage(ctx, imageID);
+		PixelsData pixels = image.getDefaultPixels();
+		return pixels;
 
-        BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-        ImageData image = browse.getImage(ctx, imageID);
-        PixelsData pixels = image.getDefaultPixels();
-        return pixels;
+	}
 
-    }
+	public static String[] getOmeroConnectionInputParameters(
+		boolean onlyCredentials)
+	{
 
-    public static String[] getOmeroConnectionInputParameters(boolean onlyCredentials){
+		// build the gui
+		JTextField host = new JTextField("omero-server.epfl.ch", 20);
+		JSpinner port = new JSpinner();
+		port.setValue(4064);
+		JTextField username = new JTextField(50);
+		JPasswordField jpf = new JPasswordField(24);
 
-        // build the gui
-        JTextField host = new JTextField("omero-server.epfl.ch",20);
-        JSpinner port = new JSpinner();
-        port.setValue(4064);
-        JTextField username = new JTextField(50);
-        JPasswordField jpf = new JPasswordField(24);
+		// build the main window
+		JPanel myPanel = new JPanel();
+		myPanel.setLayout(new BoxLayout(myPanel, BoxLayout.Y_AXIS));
+		if (!onlyCredentials) {
+			myPanel.add(new JLabel("host"));
+			myPanel.add(host);
+			myPanel.add(Box.createVerticalStrut(15)); // a spacer
+			myPanel.add(new JLabel("port"));
+			myPanel.add(port);
+			myPanel.add(Box.createVerticalStrut(15)); // a spacer
+		}
 
-        // build the main window
-        JPanel myPanel = new JPanel();
-        myPanel.setLayout(new BoxLayout(myPanel, BoxLayout.Y_AXIS));
-        if(!onlyCredentials) {
-            myPanel.add(new JLabel("host"));
-            myPanel.add(host);
-            myPanel.add(Box.createVerticalStrut(15)); // a spacer
-            myPanel.add(new JLabel("port"));
-            myPanel.add(port);
-            myPanel.add(Box.createVerticalStrut(15)); // a spacer
-        }
+		myPanel.add(new JLabel("Username"));
+		myPanel.add(username);
+		myPanel.add(Box.createVerticalStrut(15)); // a spacer
+		myPanel.add(new JLabel("Password"));
+		myPanel.add(jpf);
 
-        myPanel.add(new JLabel("Username"));
-        myPanel.add(username);
-        myPanel.add(Box.createVerticalStrut(15)); // a spacer
-        myPanel.add(new JLabel("Password"));
-        myPanel.add(jpf);
+		// get results
+		int result = JOptionPane.showConfirmDialog(null, myPanel,
+			"Please enter OMERO connection input parameters",
+			JOptionPane.OK_CANCEL_OPTION);
+		if (result == JOptionPane.OK_OPTION) {
+			ArrayList<String> omeroParameters = new ArrayList<>();
+			if (!onlyCredentials) {
+				omeroParameters.add(host.getText());
+				omeroParameters.add(port.getValue().toString());
+			}
+			omeroParameters.add(username.getText());
+			char[] chArray = jpf.getPassword();
+			omeroParameters.add(new String(chArray));
+			Arrays.fill(chArray, (char) 0);
 
-        // get results
-        int result = JOptionPane.showConfirmDialog(null, myPanel,
-                "Please enter OMERO connection input parameters", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            ArrayList<String> omeroParameters = new ArrayList<>();
-            if(!onlyCredentials) {
-                omeroParameters.add(host.getText());
-                omeroParameters.add(port.getValue().toString());
-            }
-            omeroParameters.add(username.getText());
-            char[] chArray = jpf.getPassword();
-            omeroParameters.add(new String(chArray));
-            Arrays.fill(chArray, (char) 0);
+			String[] omeroParametersArray = new String[omeroParameters.size()];
+			return omeroParameters.toArray(omeroParametersArray);
+		}
+		return null;
+	}
 
-            String[] omeroParametersArray = new String[omeroParameters.size()];
-            return omeroParameters.toArray(omeroParametersArray);
-        }
-        return  null;
-    }
+	public static class GatewaySecurityContext {
 
-    public static class GatewaySecurityContext {
-        public Gateway gateway;
-        public SecurityContext ctx;
-        public String host;
-        public int port;
+		public Gateway gateway;
+		public SecurityContext ctx;
+		public String host;
+		public int port;
 
-        public GatewaySecurityContext(String host, int port, Gateway gateway,SecurityContext ctx) {
-            this.gateway = gateway;
-            this.ctx = ctx;
-            this.host = host;
-            this.port = port;
-        }
-    }
+		public GatewaySecurityContext(String host, int port, Gateway gateway,
+			SecurityContext ctx)
+		{
+			this.gateway = gateway;
+			this.ctx = ctx;
+			this.host = host;
+			this.port = port;
+		}
+	}
 }
