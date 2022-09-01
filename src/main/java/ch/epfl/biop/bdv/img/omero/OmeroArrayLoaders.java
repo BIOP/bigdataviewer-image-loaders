@@ -34,8 +34,6 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
-import ch.epfl.biop.bdv.img.bioformats.ReaderPool;
-import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileIntArray;
@@ -124,17 +122,18 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-/*
-	public static class BioFormatsUnsignedShortArrayLoader extends
+
+	public static class OmeroUnsignedShortArrayLoader extends
 			OmeroArrayLoader implements CacheArrayLoader<VolatileShortArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsUnsignedShortArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		public OmeroUnsignedShortArrayLoader(RawPixelsStorePool pixelStorePool,
+											 int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
+
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -148,27 +147,24 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = pixelStorePool.acquire();
-				reader.setSeries(series);
-				reader.setResolution(level);
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int maxX = Math.min(minX + dimensions[0],sx);
+				int maxY = Math.min(minY + dimensions[1], sy);
+				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
-						w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
 					buffer.put(bytes);
 				}
-				pixelStorePool.recycle(reader);
+				pixelStorePool.recycle(rawPixStore);
 				short[] shorts = new short[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asShortBuffer().get(shorts);
@@ -185,16 +181,16 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsFloatArrayLoader extends OmeroArrayLoader
+	public static class OmeroFloatArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileFloatArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsFloatArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		public OmeroFloatArrayLoader(RawPixelsStorePool pixelStorePool,
+									 int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -209,27 +205,24 @@ public class OmeroArrayLoaders {
 		{
 			try {
 
-				IFormatReader reader = pixelStorePool.acquire();
-				reader.setSeries(series);
-				reader.setResolution(level);
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int maxX = Math.min(minX + dimensions[0],sx);
+				int maxY = Math.min(minY + dimensions[1],sy);
+				int maxZ = Math.min(minZ + dimensions[2],sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
-						w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
 					buffer.put(bytes);
 				}
-				pixelStorePool.recycle(reader);
+				pixelStorePool.recycle(rawPixStore);
 				float[] floats = new float[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asFloatBuffer().get(floats);
@@ -246,14 +239,14 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsRGBArrayLoader extends OmeroArrayLoader
+	public static class OmeroRGBArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
-		public BioFormatsRGBArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC)
+		public OmeroRGBArrayLoader(RawPixelsStorePool pixelStorePool,
+								   int channel, int nResolutionLevels, int sx, int sy, int sz)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 		}
 
 		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
@@ -263,15 +256,14 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = pixelStorePool.acquire();
-				reader.setSeries(series);
-				reader.setResolution(level);
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int maxX = Math.min(minX + dimensions[0], sx);
+				int maxY = Math.min(minY + dimensions[1], sy);
+				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
@@ -279,24 +271,20 @@ public class OmeroArrayLoaders {
 				byte[] bytes;
 
 				if (d == 1) {
-					bytes = reader.openBytes(switchZandC ? reader.getIndex(channel, minZ,
-						timepoint) : reader.getIndex(minZ, channel, timepoint), minX, minY,
-						w, h);
+					bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w, h);
 				}
 				else {
 					int nBytesPerPlane = nElements * 3;
 					bytes = new byte[nBytesPerPlane];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
+						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
 							nBytesPerPlane);
 						offset += nBytesPerPlane;
 					}
 				}
-				pixelStorePool.recycle(reader);
+				pixelStorePool.recycle(rawPixStore);
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				for (int i = 0; i < nElements; i++) {
@@ -317,16 +305,16 @@ public class OmeroArrayLoaders {
 		}
 	}
 
-	public static class BioFormatsIntArrayLoader extends OmeroArrayLoader
+	public static class OmeroIntArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsIntArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		public OmeroIntArrayLoader(RawPixelsStorePool pixelStorePool,
+								   int channel, int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -340,27 +328,24 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-				IFormatReader reader = pixelStorePool.acquire();
-				reader.setSeries(series);
-				reader.setResolution(level);
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore.setResolutionLevel(nResolutionLevels-1-level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
 				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int maxX = Math.min(minX + dimensions[0], sx);
+				int maxY = Math.min(minY + dimensions[1], sy);
+				int maxZ = Math.min(minZ + dimensions[2], sz);
 				int w = maxX - minX;
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
-						w, h);
+					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY, w, h);
 					buffer.put(bytes);
 				}
-				pixelStorePool.recycle(reader);
+				pixelStorePool.recycle(rawPixStore);
 				int[] ints = new int[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asIntBuffer().get(ints);
@@ -376,5 +361,5 @@ public class OmeroArrayLoaders {
 			return 4;
 		}
 	}
-*/
+
 }

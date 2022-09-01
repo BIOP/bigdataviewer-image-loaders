@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.img.qupath.command;
 
+import bdv.util.BdvFunctions;
 import ch.epfl.biop.bdv.img.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.qupath.QuPathToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -32,6 +33,9 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(label = "Dataset name (leave empty to name it like the QuPath project)", persist = false)
     public String datasetname = ""; // Cheat to allow dataset renaming
 
+    @Parameter
+    public boolean show = false;
+
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
 
@@ -47,6 +51,10 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 if (datasetname.equals("")) {
                     datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
                 }
+
+            if (show) BdvFunctions.show(spimData);
+
+           // BdvFunctions.show(spimData);
 
                 // Directly registers it to prevent memory leak...
             /*SourceAndConverterServices
