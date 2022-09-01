@@ -1,5 +1,5 @@
 
-package ch.epfl.biop.bdv.img.qupath;
+package ch.epfl.biop.bdv.img.qupath.entity;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;

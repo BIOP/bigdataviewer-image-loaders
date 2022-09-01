@@ -170,11 +170,6 @@
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- NB: Exclude problematic xml-apis bundle -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -192,13 +187,10 @@
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- NB: Exclude problematic xml-apis bundle -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
+
+
 
 		<!-- OME dependencies -->
 		<dependency>
@@ -241,6 +233,12 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
 
 		<dependency>
