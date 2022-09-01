@@ -108,10 +108,6 @@ public class OmeroImageLoader implements ViewerImgLoader,
 				}
 			}
 		}
-
-		// NOT CORRECTLY IMPLEMENTED YET
-		// final BlockingFetchQueues<Callable<?>> queue = new
-		// BlockingFetchQueues<>(1,1);
 		cache = new VolatileGlobalCellCache(cc);
 	}
 

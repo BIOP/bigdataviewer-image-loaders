@@ -35,11 +35,9 @@ public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V exten
 	extends AbstractViewerSetupImgLoader<T, V> implements
 	MultiResolutionSetupImgLoader<T>
 {
-
-	private QuPathImageOpener opener;
 	private Object imageSetupLoader;
 	final public int iSerie, iChannel;
-	private static Logger logger = LoggerFactory.getLogger(
+	private static final Logger logger = LoggerFactory.getLogger(
 		QuPathSetupLoader.class);
 
 	public QuPathSetupLoader(QuPathImageOpener qpOpener, int setupId,
@@ -48,14 +46,14 @@ public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V exten
 	{
 		super(type, volatileType);
 
-		this.opener = qpOpener;
+		QuPathImageOpener opener = qpOpener;
 		this.iChannel = channelIndex;
 		this.iSerie = serieIndex;
 
 		// get the setup loader corresponding to BioFormat opener
 		if (qpOpener.getOpener() instanceof BioFormatsBdvOpener) {
 			BioFormatsSetupLoader bfSetupLoader = new BioFormatsSetupLoader(
-				(BioFormatsBdvOpener) this.opener.getOpener(), serieIndex, channelIndex,
+				(BioFormatsBdvOpener) opener.getOpener(), serieIndex, channelIndex,
 				setupId, type, volatileType, cacheSupplier);
 			this.imageSetupLoader = bfSetupLoader;
 
@@ -65,7 +63,7 @@ public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V exten
 			if (qpOpener.getOpener() instanceof OmeroBdvOpener) {
 				try {
 					OmeroSetupLoader omeSetupLoader = new OmeroSetupLoader(
-						(OmeroBdvOpener) this.opener.getOpener(), channelIndex, setupId,
+						(OmeroBdvOpener) opener.getOpener(), channelIndex, setupId,
 						type, volatileType, cacheSupplier);
 					this.imageSetupLoader = omeSetupLoader;
 				}

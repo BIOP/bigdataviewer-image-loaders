@@ -51,7 +51,6 @@ public class ProjectIO {
 	 */
 	public static final String DEFAULT_PROJECT_EXTENSION = "qpproj";
 
-	@SuppressWarnings("unchecked")
 	public static JsonObject loadRawProject(final File fileProject)
 		throws IOException
 	{

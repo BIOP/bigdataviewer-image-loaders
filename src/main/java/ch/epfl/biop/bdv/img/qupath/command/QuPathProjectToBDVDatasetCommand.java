@@ -26,7 +26,7 @@ public class QuPathProjectToBDVDatasetCommand extends
 	BioformatsBigdataviewerBridgeDatasetCommand
 {
 
-	private static Logger logger = LoggerFactory.getLogger(
+	private static final Logger logger = LoggerFactory.getLogger(
 		QuPathProjectToBDVDatasetCommand.class);
 
 	@Parameter

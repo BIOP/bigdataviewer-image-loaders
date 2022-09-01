@@ -87,8 +87,10 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 
 	final HashMap<Integer, BioFormatsSetupLoader> imgLoaders = new HashMap<>();
 
+	@SuppressWarnings("CanBeFinal")
 	protected VolatileGlobalCellCache cache;
 
+	@SuppressWarnings("CanBeFinal")
 	protected SharedQueue sq;
 
 	public final int numFetcherThreads;

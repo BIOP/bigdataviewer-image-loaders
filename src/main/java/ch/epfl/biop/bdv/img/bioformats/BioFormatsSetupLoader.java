@@ -167,12 +167,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 			boolean is3D;
 
-			if (omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1) {
-				is3D = true;
-			}
-			else {
-				is3D = false;
-			}
+			is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
 
 			numberOfTimePoints = reader.getSizeT();
 			cellDimensions = new int[] { opener.useBioFormatsXYBlockSize ? reader

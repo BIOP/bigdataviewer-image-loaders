@@ -230,7 +230,7 @@ public class BioFormatsTools {
 	}
 
 	public static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
-		int iSerie, Unit u,
+		int iSerie, Unit<Length> u,
 		// Bioformats location fix
 		AffineTransform3D positionPreTransform,
 		AffineTransform3D positionPostTransform,
@@ -327,10 +327,9 @@ public class BioFormatsTools {
 	}
 
 	public static VoxelDimensions getSeriesVoxelDimensions(IMetadata omeMeta,
-		int iSerie, Unit u, Length voxSizeReferenceFrameLength)
+		int iSerie, Unit<Length> u, Length voxSizeReferenceFrameLength)
 	{
 		// Always 3 to allow for big stitcher compatibility
-
 		int numDimensions = 3;
 		Length[] voxSize = getSeriesVoxelSizeAsLengths(omeMeta, iSerie);
 		double[] d = new double[3];
@@ -362,7 +361,7 @@ public class BioFormatsTools {
 
 				final Unit<Length> targetUnit = u;
 
-				double[] dims = { d[0], d[1], d[2] };
+				final double[] dims = { d[0], d[1], d[2] };
 
 				@Override
 				public String unit() {
@@ -694,7 +693,7 @@ public class BioFormatsTools {
 			Red = 0.0;
 			Green = 0.0;
 			Blue = 0.0;
-		} ;
+		}
 
 		// Let the intensity fall off near the vision limits
 
@@ -709,7 +708,7 @@ public class BioFormatsTools {
 		}
 		else {
 			factor = 0.0;
-		} ;
+		}
 
 		int[] rgb = new int[3];
 

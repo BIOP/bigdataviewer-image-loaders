@@ -239,7 +239,7 @@ public class OmeroToSpimData {
 	public static AbstractSpimData getSpimData(OmeroBdvOpener opener) {
 		ArrayList<OmeroBdvOpener> singleOpenerList = new ArrayList<>();
 		singleOpenerList.add(opener);
-		return new OmeroToSpimData().getSpimData(singleOpenerList);
+		return OmeroToSpimData.getSpimData(singleOpenerList);
 	}
 
 	public static AbstractSpimData getSpimData(File f) {
@@ -252,7 +252,7 @@ public class OmeroToSpimData {
 		for (File f : files) {
 			openers.add(getDefaultOpener(f.getAbsolutePath()));
 		}
-		return new OmeroToSpimData().getSpimData(openers);
+		return OmeroToSpimData.getSpimData(openers);
 	}
 
 	public static OmeroBdvOpener getDefaultOpener(String dataLocation) {

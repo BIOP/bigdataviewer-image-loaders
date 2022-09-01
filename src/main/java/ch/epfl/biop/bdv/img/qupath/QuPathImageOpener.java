@@ -386,7 +386,7 @@ public class QuPathImageOpener {
 	public BioFormatsBdvOpener getInitializedBioFormatsBDVOpener(
 		String datalocation)
 	{
-		Unit bfUnit = BioFormatsTools.getUnitFromString(this.defaultParams
+		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(this.defaultParams
 			.getUnit());
 		Length positionReferenceFrameLength = new Length(this.defaultParams
 			.getRefframesizeinunitlocation(), bfUnit);

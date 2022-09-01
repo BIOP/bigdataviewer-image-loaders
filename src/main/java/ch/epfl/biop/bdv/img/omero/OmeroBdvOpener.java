@@ -68,7 +68,7 @@ import static omero.gateway.model.PixelsData.UINT8_TYPE;
  */
 public class OmeroBdvOpener {
 
-	protected static Logger logger = LoggerFactory.getLogger(
+	protected static final Logger logger = LoggerFactory.getLogger(
 		OmeroBdvOpener.class);
 
 	// All serializable fields (fields needed to create the omeroSourceOpener)
@@ -490,8 +490,7 @@ public class OmeroBdvOpener {
 		Gateway gateway, SecurityContext ctx) throws Exception
 	{
 		ImageData image = getImageData(imageID, gateway, ctx);
-		PixelsData pixels = image.getDefaultPixels();
-		return pixels;
+		return image.getDefaultPixels();
 
 	}
 
@@ -507,21 +506,6 @@ public class OmeroBdvOpener {
 
 		ChannelBinding cb = renderingDef.getChannelBinding(c);
 
-		/*
-		Length emWv = channelMetadata.get(c).getEmissionWavelength(UnitsLength.NANOMETER);
-		Length exWv = channelMetadata.get(c).getExcitationWavelength(UnitsLength.NANOMETER);
-		
-		//If EmissionWavelength (or ExcitationWavelength) is contained in the image metadata, convert it to RGB colors for the different channels
-		//Otherwise, put red, green and blue
-		if (emWv != null) {
-		    return getRGBFromWavelength((int) emWv.getValue());
-		} else if (exWv != null) {
-		    return getRGBFromWavelength((int) exWv.getValue());
-		} else {
-		    //new ColorChanger(sacs[i], new ARGBType(ARGBType.rgba(255*(1-(i%3)), 255*(1-((i+1)%3)), 255*(1-((i+2)%3)), 255 ))).run();
-		    //If no emission nor excitation colors, display RGB
-		    return new ARGBType(ARGBType.rgba(255 * (Math.ceil(((c + 2) % 3) / 2)), 255 * (Math.ceil(((c + 1) % 3) / 2)), 255 * (Math.ceil(((c + 3) % 3) / 2)), 255));
-		}*/
 		return new ARGBType(ARGBType.rgba(cb.getRed().getValue(), cb.getGreen()
 			.getValue(), cb.getBlue().getValue(), cb.getAlpha().getValue()));
 	}
@@ -585,8 +569,6 @@ public class OmeroBdvOpener {
 
 	public Dimensions getDimensions() {
 		// Always set 3d to allow for Big Stitcher compatibility
-		// int numDimensions = 2 +
-		// (omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue()>1?1:0);
 		int numDimensions = 3;
 
 		int sX = imageSize.get(0)[0];
@@ -637,7 +619,7 @@ public class OmeroBdvOpener {
 			assert numDimensions == 3;
 			voxelDimensions = new VoxelDimensions() {
 
-				double[] dims = { d[0], d[1], d[2] };
+				final double[] dims = { d[0], d[1], d[2] };
 
 				@Override
 				public String unit() {

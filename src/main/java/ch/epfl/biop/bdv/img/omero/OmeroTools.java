@@ -92,8 +92,7 @@ public class OmeroTools {
 	{
 		ExperimenterData exp = gateway.getLoggedInUser();
 		long groupID = exp.getGroupId();
-		SecurityContext ctx = new SecurityContext(groupID);
-		return ctx;
+		return new SecurityContext(groupID);
 	}
 
 	/**
