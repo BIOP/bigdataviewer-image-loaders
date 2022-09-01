@@ -1,8 +1,8 @@
 /*-
  * #%L
- * A nice project implementing an OMERO connection with ImageJ
+ * Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)
  * %%
- * Copyright (C) 2021 EPFL
+ * Copyright (C) 2022 ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
