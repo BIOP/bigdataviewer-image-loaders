@@ -93,14 +93,8 @@ public class QuPathToSpimData {
 			project.images.forEach(image -> {
 				logger.debug("Opening qupath image " + image);
 
-				if(!uriToFileOpener.containsKey(image.serverBuilder.uri)) {
-					// create a QuPathOpener
-					QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams,
+				QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams,
 							project.images.indexOf(image));
-					uriToFileOpener.put(image.serverBuilder.uri,qpOpener);
-				}
-
-				QuPathImageOpener qpOpener = uriToFileOpener.get(image.serverBuilder.uri);
 
 				try {
 					// check for omero opener and ask credentials if necessary
@@ -137,13 +131,18 @@ public class QuPathToSpimData {
 						// initialize omero opener
 						OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(
 							image.serverBuilder.providerClassName);
-						qpOpener.create(gtCtx.host, gtCtx.port, gtCtx.gateway, gtCtx.ctx)
+						qpOpener.create(gtCtx.host, gtCtx.port, gtCtx.gateway, gtCtx.ctx).setReader()
 							.loadMetadata();
 
 					}
 					else {
 						// initialize bioformats opener
-						qpOpener.create("", -1, null, null).loadMetadata();
+						if(!uriToFileOpener.containsKey(image.serverBuilder.uri)) {
+							qpOpener.create("", -1, null, null).setReader().loadMetadata();
+							uriToFileOpener.put(image.serverBuilder.uri,qpOpener);
+						}else{
+							qpOpener.create("", -1, null, null).setReader(uriToFileOpener.get(image.serverBuilder.uri).getReader()).loadMetadata();
+						}
 					}
 				}
 				catch (Exception e) {

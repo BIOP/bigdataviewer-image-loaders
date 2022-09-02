@@ -163,13 +163,8 @@ public class QuPathImageOpener {
 					BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(
 						filePath).ignoreMetadata();
 					this.opener = bfOpener;
-					IFormatReader reader = bfOpener.getNewReader();
-					this.reader = reader;
-					this.seriesCount = reader.getSeriesCount();
-					this.omeMetaIdxOmeXml = (IMetadata) reader.getMetadataStore();
 
-					logger.debug("BioFormats Opener for image " + this.image.imageName +
-						" with " + this.seriesCount + " series");
+					logger.debug("BioFormats Opener for image " + this.image.imageName);
 				}
 				else {
 					if (this.image.serverBuilder.providerClassName.equals(
@@ -178,12 +173,8 @@ public class QuPathImageOpener {
 						filePath = this.image.serverBuilder.uri.toString();
 						this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx)
 							.ignoreMetadata();
-						this.seriesCount = 1;
-						this.reader = null;
-						this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
 
-						logger.debug("OMERO-RAW Opener for image " + this.image.imageName +
-							" with " + this.seriesCount + " series");
+						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					}
 					else {
 						logger.error("Unsupported " +
@@ -272,6 +263,53 @@ public class QuPathImageOpener {
 			else logger.warn("Metadata are not available in the image metadata");
 		}
 		else logger.warn("The image does not contain any builder");
+
+		return this;
+	}
+
+	/**
+	 * Sets the reader for this opener with an existing reader (to not build it twice
+	 * because it takes very long time).
+	 *
+	 * @param reader
+	 * @return this opener
+	 */
+	public QuPathImageOpener setReader(IFormatReader reader){
+		if(this.image.serverBuilder.providerClassName.equals(
+				"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
+			this.reader = reader;
+			this.seriesCount = reader.getSeriesCount();
+			this.omeMetaIdxOmeXml = (IMetadata) reader.getMetadataStore();
+		}else{
+			this.setReader();
+		}
+
+		return this;
+	}
+
+	/**
+	 * Build a reader for this opener
+	 * @return this opener
+	 */
+	public QuPathImageOpener setReader(){
+		if(this.image.serverBuilder.providerClassName.equals(
+				"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
+			IFormatReader Ireader = ((BioFormatsBdvOpener) (this.opener)).getNewReader();
+			this.reader = Ireader;
+			this.seriesCount = Ireader.getSeriesCount();
+			this.omeMetaIdxOmeXml = (IMetadata) Ireader.getMetadataStore();
+		}else{
+			if(this.image.serverBuilder.providerClassName.equals(
+					"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")){
+				this.reader = null;
+				this.seriesCount = 1;
+				this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
+			}else{
+				logger.error("Reader cannot be set ; Unsupported " +
+						this.image.serverBuilder.providerClassName +
+						" provider Class Name");
+			}
+		}
 
 		return this;
 	}
