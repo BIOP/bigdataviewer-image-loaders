@@ -29,6 +29,8 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.module.Module;
 import org.scijava.module.process.AbstractPostprocessorPlugin;
 import org.scijava.module.process.PostprocessorPlugin;
+import org.scijava.object.ObjectService;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,9 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 		SpimDataPostprocessor.class);
 
 
+	@Parameter
+	ObjectService objectService;
+
 	@Override
 	public void process(Module module) {
 
@@ -50,6 +55,7 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 				AbstractSpimData<?> asd = (AbstractSpimData<?>) object;
 				BdvFunctions.show(asd);
 				module.resolveOutput(name);
+				objectService.addObject(asd);
 			}
 			if (object instanceof AbstractSpimData<?>[]) {
 				BdvHandle bdvh = null;
@@ -61,6 +67,7 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 					} else {
 						BdvFunctions.show(asd, BdvOptions.options().addTo(bdvh));
 					}
+					objectService.addObject(asd);
 				}
 			}
 		});
