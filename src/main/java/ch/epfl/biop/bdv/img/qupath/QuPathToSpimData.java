@@ -68,6 +68,8 @@ public class QuPathToSpimData {
 
 	Map<URI, AbstractSpimData> spimDataMap = new HashMap<>();
 	Map<URI, QuPathImageOpener> uriToOpener = new HashMap<>();
+
+	Map<URI, QuPathImageOpener> uriToFileOpener = new HashMap<>();
 	Map<URI, String> uriToImageName = new HashMap<>();
 	List<URI> rawURI = new ArrayList<>();
 	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx =
@@ -91,9 +93,14 @@ public class QuPathToSpimData {
 			project.images.forEach(image -> {
 				logger.debug("Opening qupath image " + image);
 
-				// create a QuPathOpener
-				QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams,
-					project.images.indexOf(image));
+				if(!uriToFileOpener.containsKey(image.serverBuilder.uri)) {
+					// create a QuPathOpener
+					QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams,
+							project.images.indexOf(image));
+					uriToFileOpener.put(image.serverBuilder.uri,qpOpener);
+				}
+
+				QuPathImageOpener qpOpener = uriToFileOpener.get(image.serverBuilder.uri);
 
 				try {
 					// check for omero opener and ask credentials if necessary
