@@ -22,7 +22,6 @@
 
 package ch.epfl.biop.bdv.img.qupath.command;
 
-import bdv.util.BdvFunctions;
 import ch.epfl.biop.bdv.img.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.qupath.QuPathToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * Warning : a qupath project may have its source reordered and or removed : -
+ * Warning : a QuPath project may have its source reordered and or removed : -
  * not all entries will be present in the qupath project Limitations : only
  * images
  */
@@ -58,9 +57,6 @@ public class QuPathProjectToBDVDatasetCommand extends
 		persist = false)
 	public String datasetname = ""; // Cheat to allow dataset renaming
 
-	@Parameter
-	public boolean show = false;
-
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimData;
 
@@ -75,21 +71,6 @@ public class QuPathProjectToBDVDatasetCommand extends
 																															// + ".xml";
 			}
 
-			if (show) BdvFunctions.show(spimData);
-
-			// BdvFunctions.show(spimData);
-
-			// Directly registers it to prevent memory leak...
-			/*SourceAndConverterServices
-			        .getSourceAndConverterService()
-			        .register(spimData);
-			SourceAndConverterServices
-			        .getSourceAndConverterService()
-			        .setSpimDataName(spimData, datasetname);*/
-
-			// End of session
-			// Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			// fail
 		}
 		catch (Exception e) {
 			e.printStackTrace();
