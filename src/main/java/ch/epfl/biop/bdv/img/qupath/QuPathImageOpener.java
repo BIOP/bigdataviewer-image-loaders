@@ -26,6 +26,7 @@ import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
+import loci.formats.IFormatReader;
 import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import ome.units.UNITS;
@@ -59,6 +60,8 @@ public class QuPathImageOpener {
 		QuPathImageOpener.class);
 	transient private Object opener;
 	transient private IMetadata omeMetaIdxOmeXml;
+
+	transient private IFormatReader reader;
 	transient private QuPathImageLoader.QuPathSourceIdentifier identifier;
 	transient private MinimalQuPathProject.PixelCalibrations pixelCalibrations =
 		null;
@@ -88,6 +91,10 @@ public class QuPathImageOpener {
 
 	public IMetadata getOmeMetaIdxOmeXml() {
 		return this.omeMetaIdxOmeXml;
+	}
+
+	public IFormatReader getReader() {
+		return this.reader;
 	}
 
 	public MinimalQuPathProject.ImageEntry getImage() {
@@ -156,9 +163,10 @@ public class QuPathImageOpener {
 					BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(
 						filePath).ignoreMetadata();
 					this.opener = bfOpener;
-					this.seriesCount = bfOpener.getNewReader().getSeriesCount();
-					this.omeMetaIdxOmeXml = (IMetadata) bfOpener.getNewReader()
-						.getMetadataStore();
+					IFormatReader reader = bfOpener.getNewReader();
+					this.reader = reader;
+					this.seriesCount = reader.getSeriesCount();
+					this.omeMetaIdxOmeXml = (IMetadata) reader.getMetadataStore();
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName +
 						" with " + this.seriesCount + " series");
@@ -171,6 +179,7 @@ public class QuPathImageOpener {
 						this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx)
 							.ignoreMetadata();
 						this.seriesCount = 1;
+						this.reader = null;
 						this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName +

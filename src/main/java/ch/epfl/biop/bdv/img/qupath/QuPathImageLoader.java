@@ -118,18 +118,16 @@ public class QuPathImageLoader implements ViewerImgLoader,
 							.getOpener();
 						opener.setCache(sq);
 
-						// create a new reader
-						IFormatReader memo = opener.getNewReader();
+						// get the reader
+						IFormatReader memo = qpOpener.getReader();
 
 						// get metadata
-						IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
-						memo.setMetadataStore(omeMeta);
+						IMetadata omeMeta = qpOpener.getOmeMetaIdxOmeXml();
 
 						// get series
 						int iSerie = identifier.bioformatsIndex;
 						memo.setSeries(iSerie);
-						IntStream channels = IntStream.range(0, qpOpener
-							.getOmeMetaIdxOmeXml().getChannelCount(iSerie));
+						IntStream channels = IntStream.range(0, omeMeta.getChannelCount(iSerie));
 
 						// Register Setups (one per channel and one per timepoint)
 						Type<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(memo,

@@ -174,7 +174,7 @@ public class QuPathToSpimData {
 				// build spimdata depending on the opener class
 				if (!rawURI.contains(qpOpener.getURI())) {
 					if (opener instanceof BioFormatsBdvOpener) {
-						spimDataMap.put(enhancedURI, (SpimData) (new BioFormatsToSpimData())
+						spimDataMap.put(enhancedURI, (SpimData) BioFormatsToSpimData
 							.getSpimData(Collections.singletonList(
 								(BioFormatsBdvOpener) qpOpener.getOpener())));
 					}
