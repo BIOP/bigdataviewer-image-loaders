@@ -387,21 +387,26 @@ public class OmeroBdvOpener {
 			// "+planeinfo.getPositionX());
 			Length lengthPosX;
 			Length lengthPosY;
-			if (!planeinfo.getPositionX().getUnit().equals(
-				UnitsLength.REFERENCEFRAME))
-			{
-				lengthPosX = new LengthI(planeinfo.getPositionX(), this.u);
-				lengthPosY = new LengthI(planeinfo.getPositionY(), this.u);
-			}
-			else {
+			if ((planeinfo == null)||(planeinfo.getPositionX()==null)||planeinfo.getPositionX().getUnit()==null) {
 				logger.warn("The pixel unit is not set for the image " +
-					this.imageName + " ; a default unit " + this.u + " has been set");
-				Length l1 = planeinfo.getPositionX();
-				Length l2 = planeinfo.getPositionY();
-				l1.setUnit(this.u);
-				l2.setUnit(this.u);
-				lengthPosX = new LengthI(l1, this.u);
-				lengthPosY = new LengthI(l2, this.u);
+						this.imageName + " ; a default unit " + this.u + " has been set");
+				lengthPosX = new LengthI(0, UNITS.MICROMETER);
+				lengthPosY = new LengthI(0, UNITS.MICROMETER);
+			} else {
+				if (!planeinfo.getPositionX().getUnit().equals(
+						UnitsLength.REFERENCEFRAME)) {
+					lengthPosX = new LengthI(planeinfo.getPositionX(), this.u);
+					lengthPosY = new LengthI(planeinfo.getPositionY(), this.u);
+				} else {
+					logger.warn("The pixel unit is not set for the image " +
+							this.imageName + " ; a default unit " + this.u + " has been set");
+					Length l1 = planeinfo.getPositionX();
+					Length l2 = planeinfo.getPositionY();
+					l1.setUnit(this.u);
+					l2.setUnit(this.u);
+					lengthPosX = new LengthI(l1, this.u);
+					lengthPosY = new LengthI(l2, this.u);
+				}
 			}
 
 			this.stagePosX = lengthPosX.getValue();
