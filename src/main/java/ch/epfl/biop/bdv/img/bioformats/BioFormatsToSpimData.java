@@ -22,6 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
 import loci.formats.IFormatReader;
@@ -96,6 +98,8 @@ public class BioFormatsToSpimData {
 	int channelCounter = 0;
 
 	final Map<Integer, Channel> channelIdToChannel = new HashMap<>();
+
+	final ArrayList<BioFormatsBdvOpener> openers = new ArrayList<>();
 	final Map<BioFormatsTools.BioformatsChannel, Integer> channelToId =
 		new HashMap<>();
 	final Map<Integer, Integer> fileIdxToNumberOfSeries = new HashMap<>();
@@ -105,9 +109,9 @@ public class BioFormatsToSpimData {
 		new HashMap<>();
 
 	protected AbstractSpimData getSpimDataInstance(
-		List<BioFormatsBdvOpener> openers)
+		List<OpenerSettings> openerSettings)
 	{
-		openers.forEach(o -> o.ignoreMetadata()); // necessary for spimdata
+		//openers.forEach(o -> o.ignoreMetadata()); // necessary for spimdata
 		viewSetupCounter = 0;
 		nTileCounter = 0;
 		maxTimepoints = -1;
@@ -121,20 +125,22 @@ public class BioFormatsToSpimData {
 		List<ViewSetup> viewSetups = new ArrayList<>();
 
 		try {
-			for (int iF = 0; iF < openers.size(); iF++) {
+			for (int iF = 0; iF < openerSettings.size(); iF++) {
 
 				FileIndex fi = new FileIndex(iF);
-				String dataLocation = openers.get(iF).getDataLocation();
+				BioFormatsBdvOpener opener = (BioFormatsBdvOpener) openerSettings.get(iF).create();
+				this.openers.add(opener);
+				String dataLocation = opener.getDataLocation();
 				fi.setName(dataLocation);
 				logger.debug("Data located at " + dataLocation);
 
-				IFormatReader memo = openers.get(iF).getNewReader();
+				//IFormatReader memo = openers.get(iF).getNewReader();
 
 				final int iFile = iF;
 
-				final int seriesCount = memo.getSeriesCount();
+				final int seriesCount = opener.getSerieCount();
 				logger.debug("Number of Series " + seriesCount);
-				final IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
+				final IMetadata omeMeta = opener.getMetadata();//(IMetadata) memo.getMetadataStore();
 
 				fileIdxToNumberOfSeries.put(iF, seriesCount);
 
@@ -142,51 +148,46 @@ public class BioFormatsToSpimData {
 				// and one per channel
 				IntStream series = IntStream.range(0, seriesCount);
 				series.forEach(iSerie -> {
-					memo.setSeries(iSerie);
-					SeriesNumber sn = new SeriesNumber(iSerie, omeMeta.getImageName(
-						iSerie));
-					fileIdxToNumberOfSeriesAndTimepoints.put(iFile, new SeriesTps(
-						seriesCount, omeMeta.getPixelsSizeT(iSerie).getNumberValue()
-							.intValue()));
+					//memo.setSeries(iSerie);
+					SeriesNumber sn = new SeriesNumber(iSerie, omeMeta.getImageName(iSerie));
+					fileIdxToNumberOfSeriesAndTimepoints.put(iFile, new SeriesTps(seriesCount, omeMeta.getPixelsSizeT(iSerie).getNumberValue().intValue()));
+
 					// One serie = one Tile
 					Tile tile = new Tile(nTileCounter);
 					nTileCounter++;
 					// ---------- Serie >
 					// ---------- Serie > Timepoints
-					logger.debug("\t Serie " + iSerie + " Number of timesteps = " +
-						omeMeta.getPixelsSizeT(iSerie).getNumberValue().intValue());
+					logger.debug("\t Serie " + iSerie + " Number of timesteps = " + omeMeta.getPixelsSizeT(iSerie).getNumberValue().intValue());
 					// ---------- Serie > Channels
-					logger.debug("\t Serie " + iSerie + " Number of channels = " + omeMeta
-						.getChannelCount(iSerie));
+					logger.debug("\t Serie " + iSerie + " Number of channels = " + omeMeta.getChannelCount(iSerie));
+
 					// final int iS = iSerie;
 					// Properties of the serie
-					IntStream channels = IntStream.range(0, omeMeta.getChannelCount(
-						iSerie));
+					IntStream channels = IntStream.range(0, omeMeta.getChannelCount(iSerie));
 					if (omeMeta.getPixelsSizeT(iSerie).getNumberValue()
 						.intValue() > maxTimepoints)
 					{
 						maxTimepoints = omeMeta.getPixelsSizeT(iSerie).getNumberValue()
 							.intValue();
 					}
-					String imageName = getImageName(dataLocation, seriesCount, omeMeta,
-						iSerie);
+
+					String imageName = getImageName(dataLocation, seriesCount, omeMeta, iSerie);
 					sn.setName(imageName);
-					Dimensions dims = BioFormatsTools.getSeriesDimensions(omeMeta,
-						iSerie); // number of pixels .. no calibration
-					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) +
-						" Z:" + dims.dimension(2));
-					VoxelDimensions voxDims = BioFormatsTools.getSeriesVoxelDimensions(
+
+					Dimensions dims = BioFormatsTools.getSeriesDimensions(omeMeta, iSerie); // number of pixels .. no calibration
+					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) + " Z:" + dims.dimension(2));
+					VoxelDimensions voxDims = opener.getVoxelDimensions(iSerie);/*BioFormatsTools.getSeriesVoxelDimensions(
 						omeMeta, iSerie, openers.get(iFile).u, openers.get(
-							iFile).voxSizeReferenceFrameLength);
+							iFile).voxSizeReferenceFrameLength);*/
 					// Register Setups (one per channel and one per timepoint)
+
 					channels.forEach(iCh -> {
-						int ch_id = getChannelId(omeMeta, iSerie, iCh, memo.isRGB());
+						int ch_id = getChannelId(omeMeta, iSerie, iCh, opener.getRGB(iSerie));
 						String channelName = getChannelName(omeMeta, iSerie, iCh);
 
 						String setupName = imageName + "-" + channelName;
 						logger.debug(setupName);
-						ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims,
-							voxDims, tile, // Tile is index of Serie
+						ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims, voxDims, tile, // Tile is index of Serie
 							channelIdToChannel.get(ch_id), dummy_ang, dummy_ill);
 						vs.setAttribute(fi);
 						vs.setAttribute(sn);
@@ -216,12 +217,12 @@ public class BioFormatsToSpimData {
 
 					});
 				});
-				memo.close();
+				//memo.close();
 			}
 
 			// ------------------- BUILDING SPIM DATA
 			ArrayList<String> inputFilesArray = new ArrayList<>();
-			for (BioFormatsBdvOpener opener : openers) {
+			for (BioFormatsBdvOpener opener : this.openers) {
 				inputFilesArray.add(opener.getDataLocation());
 			}
 			List<TimePoint> timePoints = new ArrayList<>();
@@ -231,13 +232,13 @@ public class BioFormatsToSpimData {
 			final ArrayList<ViewRegistration> registrations = new ArrayList<>();
 
 			List<ViewId> missingViews = new ArrayList<>();
-			for (int iF = 0; iF < openers.size(); iF++) {
+			for (int iF = 0; iF < this.openers.size(); iF++) {
 				int iFile = iF;
 
-				IFormatReader memo = openers.get(iF).getNewReader();
-
-				logger.debug("Number of Series : " + memo.getSeriesCount());
-				final IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
+				//IFormatReader memo = this.openers.get(iF).getNewReader();
+				BioFormatsBdvOpener opener = this.openers.get(iF);
+				logger.debug("Number of Series : " + opener.getSerieCount());
+				final IMetadata omeMeta = opener.getMetadata();//(IMetadata) memo.getMetadataStore();
 
 				int nSeries = fileIdxToNumberOfSeries.get(iF);
 				// Need to set view registrations : identity ? how does that work with
@@ -247,7 +248,8 @@ public class BioFormatsToSpimData {
 				series.forEach(iSerie -> {
 					final int nTimepoints = omeMeta.getPixelsSizeT(iSerie)
 						.getNumberValue().intValue();
-					AffineTransform3D rootTransform = BioFormatsTools
+					AffineTransform3D rootTransform = /*openers.get(iFile)*/opener.getTransform(iSerie);
+					/*BioFormatsTools
 						.getSeriesRootTransform(omeMeta, iSerie, openers.get(iFile).u,
 							openers.get(iFile).positionPreTransformMatrixArray, // AffineTransform3D
 																																	// positionPreTransform,
@@ -261,7 +263,7 @@ public class BioFormatsToSpimData {
 							openers.get(iFile).voxSizeReferenceFrameLength, // null, //Length
 																															// voxSizeReferenceFrameLength,
 							openers.get(iFile).axesOfImageFlip // axesOfImageFlip
-					);
+					);*/
 					timePoints.forEach(iTp -> {
 						viewSetupToBFFileSerieChannel.keySet().stream().filter(
 							viewSetupId -> (viewSetupToBFFileSerieChannel.get(
@@ -280,7 +282,7 @@ public class BioFormatsToSpimData {
 					});
 
 				});
-				memo.close();
+				//memo.close();
 			}
 
 			SequenceDescription sd = new SequenceDescription(new TimePoints(
@@ -328,33 +330,31 @@ public class BioFormatsToSpimData {
 		}
 	}
 
-	public static AbstractSpimData getSpimData(
-		List<BioFormatsBdvOpener> openers)
-	{
-		return new BioFormatsToSpimData().getSpimDataInstance(openers);
+	public static AbstractSpimData getSpimData(List<OpenerSettings> openersSettings) {
+		return new BioFormatsToSpimData().getSpimDataInstance(openersSettings);
 	}
 
-	public static AbstractSpimData getSpimData(BioFormatsBdvOpener opener) {
-		ArrayList<BioFormatsBdvOpener> singleOpenerList = new ArrayList<>();
-		singleOpenerList.add(opener);
+	public static AbstractSpimData getSpimData(OpenerSettings openerSetting) {
+		ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();
+		singleOpenerList.add(openerSetting);
 		return BioFormatsToSpimData.getSpimData(singleOpenerList);
 	}
 
 	public static AbstractSpimData getSpimData(File f) {
-		BioFormatsBdvOpener opener = getDefaultOpener(f.getAbsolutePath());
+		OpenerSettings opener = getDefaultSettings(f.getAbsolutePath());//(getDefaultOpener(f.getAbsolutePath()));
 		return getSpimData(opener);
 	}
 
 	public static AbstractSpimData getSpimData(File[] files) {
-		ArrayList<BioFormatsBdvOpener> openers = new ArrayList<>();
+		ArrayList<OpenerSettings> openers = new ArrayList<>();
 		for (File f : files) {
-			openers.add(getDefaultOpener(f.getAbsolutePath()));
+			openers.add(getDefaultSettings(f.getAbsolutePath()));//(getDefaultOpener(f.getAbsolutePath()));
 		}
 		return BioFormatsToSpimData.getSpimData(openers);
 	}
 
-	public static BioFormatsBdvOpener getDefaultOpener(String dataLocation) {
-		return BioFormatsBdvOpener.getOpener().location(dataLocation).auto();
+	public static OpenerSettings getDefaultSettings(String dataLocation) {
+		return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS, dataLocation);//.auto();
 	}
 
 }

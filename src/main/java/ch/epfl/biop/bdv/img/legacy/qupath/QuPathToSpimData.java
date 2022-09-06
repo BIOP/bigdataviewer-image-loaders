@@ -21,7 +21,7 @@
  */
 package ch.epfl.biop.bdv.img.legacy.qupath;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;

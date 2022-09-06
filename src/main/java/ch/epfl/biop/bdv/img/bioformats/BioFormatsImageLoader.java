@@ -26,6 +26,7 @@ import bdv.ViewerImgLoader;
 import bdv.cache.CacheControl;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -79,7 +80,6 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 	@SuppressWarnings("CanBeFinal")
 	protected VolatileGlobalCellCache cache;
 
-	@SuppressWarnings("CanBeFinal")
 	protected SharedQueue sq;
 
 	public final int numFetcherThreads;
@@ -95,7 +95,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 		this.numPriorities = numPriorities;
 		sq = new SharedQueue(numFetcherThreads, numPriorities);
 
-		openers.forEach(opener -> opener.setCache(sq));
+		//openers.forEach(opener -> opener.setCache(sq));
 
 		IntStream openersIdxStream = IntStream.range(0, openers.size());
 		if ((sequenceDescription != null)) {
@@ -105,23 +105,23 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 
 					logger.debug("Data location = " + opener.getDataLocation());
 
-					IFormatReader memo = opener.getNewReader();
+					//IFormatReader memo = opener.getNewReader();
 
 					tTypeGetter.put(iF, new HashMap<>());
 					vTypeGetter.put(iF, new HashMap<>());
 
-					logger.debug("Number of Series : " + memo.getSeriesCount());
-					IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
-					memo.setMetadataStore(omeMeta);
+					logger.debug("Number of Series : " + opener.getSerieCount());//memo.getSeriesCount());
+					IMetadata omeMeta = opener.getMetadata();//(IMetadata) memo.getMetadataStore();
+					//memo.setMetadataStore(omeMeta);
 					// -------------------------- SETUPS For each Series : one per
 					// timepoint and one per channel
 
-					IntStream series = IntStream.range(0, memo.getSeriesCount());
+					IntStream series = IntStream.range(0, opener.getSerieCount());//memo.getSeriesCount());
 
 					final int iFile = iF;
 
 					series.forEach(iSerie -> {
-						memo.setSeries(iSerie);
+						//memo.setSeries(iSerie);
 						// One serie = one Tile
 						// ---------- Serie >
 						// ---------- Serie > Timepoints
@@ -139,12 +139,12 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 							viewSetupToBFFileSerieChannel.put(viewSetupCounter, fsc);
 							viewSetupCounter++;
 						});
-						Type t = getBioformatsBdvSourceType(memo, iSerie);
+						Type t = getBioformatsBdvSourceType(omeMeta, iSerie, opener.getRGB(iSerie));
 						tTypeGetter.get(iF).put(iSerie, (NumericType) t);
 						Volatile v = getVolatileOf((NumericType) t);
 						vTypeGetter.get(iF).put(iSerie, v);
 					});
-					memo.close();
+					//memo.close();
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -192,7 +192,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 	public void close() {
 		synchronized (this) {
 			openers.forEach(opener -> {
-				opener.getReaderPool().shutDown(reader -> {
+				opener.getPixelReader().shutDown(reader -> {
 					try {
 						reader.close();
 					}
@@ -206,12 +206,12 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 		}
 	}
 
-	public static Type getBioformatsBdvSourceType(IFormatReader reader,
-		int image_index) throws UnsupportedOperationException
+	public static Type getBioformatsBdvSourceType(IMetadata omeMeta,
+		int image_index, boolean isRGB) throws UnsupportedOperationException
 	{
-		final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
-		reader.setSeries(image_index);
-		if (reader.isRGB()) {
+		//final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
+		//reader.setSeries(image_index);
+		if (isRGB) {
 			if (omeMeta.getPixelsType(image_index) == PixelType.UINT8) {
 				return new ARGBType();
 			}

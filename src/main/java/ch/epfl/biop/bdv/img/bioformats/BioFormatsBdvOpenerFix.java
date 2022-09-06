@@ -22,9 +22,11 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+
 public class BioFormatsBdvOpenerFix {
 
-	static public BioFormatsBdvOpener fixNikonND2(BioFormatsBdvOpener opener) {
+	/*static public BioFormatsBdvOpener fixNikonND2(BioFormatsBdvOpener opener) {
 		return opener.centerPositionConvention().flipPositionX().flipPositionY();
 	}
 
@@ -32,7 +34,7 @@ public class BioFormatsBdvOpenerFix {
 		BioFormatsBdvOpener bioFormatsBdvOpener)
 	{
 		return bioFormatsBdvOpener.centerPositionConvention();
-	}
+	}*/
 
 	/*
 	public static BioFormatsBdvOpener fixCzi(BioFormatsBdvOpener bioFormatsBdvOpener) {

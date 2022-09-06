@@ -1,7 +1,7 @@
 
 package ch.epfl.biop;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.legacy.qupath.QuPathToSpimData;

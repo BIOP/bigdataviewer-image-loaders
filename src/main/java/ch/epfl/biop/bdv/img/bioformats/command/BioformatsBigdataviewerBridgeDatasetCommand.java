@@ -22,7 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -95,7 +96,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 		label = "Reference frame size in unit (voxel size)")
 	public double refframesizeinunitvoxsize = 1;
 
-	public BioFormatsBdvOpener getOpener(String datalocation) {
+	public OpenerSettings getSettings(String datalocation) {
 
 		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(unit);
 
@@ -104,63 +105,64 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 		Length voxSizeReferenceFrameLength = new Length(refframesizeinunitvoxsize,
 			bfUnit);
 
-		BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
-			datalocation).unit(unit).auto().ignoreMetadata();
+		OpenerSettings settings = new OpenerSettings().location(datalocation).unit(unit).bioFormatsBuilder();
+		/*BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
+			datalocation).unit(unit).auto().ignoreMetadata();*/
 
 		if (!switchzandc.equals("AUTO")) {
-			opener = opener.switchZandC(switchzandc.equals("TRUE"));
+			settings = settings.switchZandC(switchzandc.equals("TRUE"));//opener = opener.switchZandC(switchzandc.equals("TRUE"));
 		}
 
 		if (!usebioformatscacheblocksize) {
-			opener = opener.cacheBlockSize(cachesizex, cachesizey, cachesizez);
+			settings = settings.cacheBlockSize(cachesizex, cachesizey, cachesizez);;//opener = opener.cacheBlockSize(cachesizex, cachesizey, cachesizez);
 		}
 
 		if (numberofblockskeptinmemory > 0) {
-			opener = opener.cacheBounded(numberofblockskeptinmemory);
+			//settings = settings.cacheBounded(numberofblockskeptinmemory);// opener = opener.cacheBounded(numberofblockskeptinmemory);
 		}
 
 		// Not sure it is useful here because the metadata location is handled
 		// somewhere else
 		if (!positioniscenter.equals("AUTO")) {
 			if (positioniscenter.equals("TRUE")) {
-				opener = opener.centerPositionConvention();
+				settings = settings.centerPositionConvention();//opener = opener.centerPositionConvention();
 			}
 			else {
-				opener = opener.cornerPositionConvention();
+				settings = settings.cornerPositionConvention();//opener = opener.cornerPositionConvention();
 			}
 		}
 
 		if (!flippositionx.equals("AUTO")) {
 			if (flippositionx.equals("TRUE")) {
-				opener = opener.flipPositionX();
+				settings = settings.flipPositionX();//opener = opener.flipPositionX();
 			}
 		}
 
 		if (!flippositiony.equals("AUTO")) {
 			if (flippositiony.equals("TRUE")) {
-				opener = opener.flipPositionY();
+				settings = settings.flipPositionY();//settings = settings.flipPositionY();
 			}
 		}
 
 		if (!flippositionz.equals("AUTO")) {
 			if (flippositionz.equals("TRUE")) {
-				opener = opener.flipPositionZ();
+				settings = settings.flipPositionZ();//settings = settings.flipPositionZ();
 			}
 		}
 
-		opener = opener.unit(unit);
+		//opener = opener.unit(unit);
 
-		opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
+		settings = settings.positionReferenceFrameLength(positionReferenceFrameLength);//opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
 
-		opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
+		settings = settings.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
 
-		if (splitrgbchannels) opener = opener.splitRGBChannels();
+		if (splitrgbchannels) settings = settings.splitRGBChannels();
 
-		return opener;
+		return settings;
 	}
 
-	public BioFormatsBdvOpener getOpener(File f) {
-		return getOpener(f.getAbsolutePath());
+	public OpenerSettings getSettings(File f) {
+		return getSettings(f.getAbsolutePath());
 	}
 
 	@Override

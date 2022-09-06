@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
@@ -37,12 +38,12 @@ public class BioFormatsArrayLoaders {
 
 	abstract static class BioformatsArrayLoader {
 
-		final protected ReaderPool readerPool;
+		final protected ResourcePool<IFormatReader> readerPool;
 		final protected int series;
 		final protected int channel;
 		final protected boolean switchZandC;
 
-		public BioformatsArrayLoader(ReaderPool readerPool, int series, int channel,
+		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int series, int channel,
 			boolean switchZandC)
 		{
 			this.readerPool = readerPool;
@@ -57,7 +58,7 @@ public class BioFormatsArrayLoaders {
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
 	{
 
-		public BioFormatsUnsignedByteArrayLoader(ReaderPool readerPool, int series,
+		public BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool, int series,
 			int channel, boolean switchZandC)
 		{
 			super(readerPool, series, channel, switchZandC);
@@ -121,7 +122,7 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsUnsignedShortArrayLoader(ReaderPool readerPool, int series,
+		public BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool, int series,
 			int channel, boolean switchZandC, boolean littleEndian)
 		{
 			super(readerPool, series, channel, switchZandC);
@@ -181,8 +182,8 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsFloatArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		public BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool, int series,
+										  int channel, boolean switchZandC, boolean littleEndian)
 		{
 			super(readerPool, series, channel, switchZandC);
 			if (littleEndian) {
@@ -239,7 +240,7 @@ public class BioFormatsArrayLoaders {
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
-		public BioFormatsRGBArrayLoader(ReaderPool readerPool, int series,
+		public BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool, int series,
 			int channel, boolean switchZandC)
 		{
 			super(readerPool, series, channel, switchZandC);
@@ -312,7 +313,7 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsIntArrayLoader(ReaderPool readerPool, int series,
+		public BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool, int series,
 			int channel, boolean switchZandC, boolean littleEndian)
 		{
 			super(readerPool, series, channel, switchZandC);

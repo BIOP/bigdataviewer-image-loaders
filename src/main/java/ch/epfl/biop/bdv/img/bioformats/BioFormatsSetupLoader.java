@@ -25,6 +25,8 @@ package ch.epfl.biop.bdv.img.bioformats;
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
@@ -69,7 +71,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 	final BioFormatsBdvOpener opener;
 
-	final private ReaderPool readerPool;
+	final private ResourcePool<IFormatReader> readerPool;
 
 	final int iSerie, iChannel;
 
@@ -104,7 +106,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		this.setup = setup;
 		this.cacheSupplier = cacheSupplier;
 		this.opener = opener;
-		this.readerPool = opener.getReaderPool();
+		this.readerPool = opener.getPixelReader();
 		iSerie = sourceIndex;
 		iChannel = channelIndex;
 
@@ -138,42 +140,42 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			};
 		}
 
-		this.targetUnit = opener.u;
-		this.switchZandC = opener.swZC;
+		this.targetUnit = BioFormatsTools.getUnitFromString(opener.getUnit());
+		this.switchZandC = opener.getSwitchZAndT();
 
 		boolean isLittleEndian;
 
-		IFormatReader reader = null;
+		//IFormatReader reader = null;
 		try {
-			reader = readerPool.acquire();
-			reader.setSeries(iSerie);
-			numMipmapLevels = reader.getResolutionCount();
-			reader.setResolution(0);
-			isLittleEndian = reader.isLittleEndian();
+			//reader = readerPool.acquire();
+			//reader.setSeries(iSerie);
+			numMipmapLevels = opener.getNumMipmapLevels(iSerie);//reader.getResolutionCount();
+			//reader.setResolution(0);
+			isLittleEndian = opener.getEndianness(iSerie);//reader.isLittleEndian();
 
 			// MetaData
-			final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
+			final IMetadata omeMeta = opener.getMetadata();//(IMetadata) reader.getMetadataStore();
 
-			boolean is3D;
+			//boolean is3D;
 
-			is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
+			//is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
 
-			numberOfTimePoints = reader.getSizeT();
-			cellDimensions = new int[] { opener.useBioFormatsXYBlockSize ? reader
+			numberOfTimePoints = opener.getNTimePoints(iSerie);//reader.getSizeT();
+			cellDimensions = opener.getCellDimensions(iSerie);/*new int[] { opener.useBioFormatsXYBlockSize ? reader
 				.getOptimalTileWidth() : (int) opener.cacheBlockSize.dimension(0),
 				opener.useBioFormatsXYBlockSize ? reader.getOptimalTileHeight()
 					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1
-						: (int) opener.cacheBlockSize.dimension(2) };
+						: (int) opener.cacheBlockSize.dimension(2) };*/
 
-			voxelsDimensions = BioFormatsTools.getSeriesVoxelDimensions(omeMeta,
-				iSerie, opener.u, opener.voxSizeReferenceFrameLength);
+			voxelsDimensions = opener.getVoxelDimensions(iSerie);/*BioFormatsTools.getSeriesVoxelDimensions(omeMeta,
+				iSerie, opener.u, opener.voxSizeReferenceFrameLength);*/
 
-			dimensions = new Dimensions[numMipmapLevels];
+			dimensions = opener.getDimensions(iSerie);/*new Dimensions[numMipmapLevels];
 			for (int level = 0; level < numMipmapLevels; level++) {
 				reader.setResolution(level);
-				dimensions[level] = getDimensions(reader.getSizeX(), reader.getSizeY(),
+				dimensions[level] = opener.getDimension(reader.getSizeX(), reader.getSizeY(),
 					(!is3D) ? 1 : reader.getSizeZ());
-			}
+			}*/
 
 			// Needs to compute mipmap resolutions... pfou
 			mmResolutions = new double[numMipmapLevels][3];
@@ -181,7 +183,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			mmResolutions[0][1] = 1;
 			mmResolutions[0][2] = 1;
 
-			if (reader.getFormat().equals("CellSens VSI")) { // Fix vsi issue see
+			if (/*reader.getFormat()*/opener.getReaderFormat(iSerie).equals("CellSens VSI")) { // Fix vsi issue see
 																												// https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
 				for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
 					double downscalingFactor = Math.pow(2, iLevel);
@@ -208,7 +210,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 		}
 		finally {
-			readerPool.recycle(reader);
+			//readerPool.recycle(reader);
 		}
 		if (t instanceof UnsignedByteType) {
 			loader =
@@ -242,22 +244,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 	}
 
-	static Dimensions getDimensions(long sizeX, long sizeY, long sizeZ) {
-		return new Dimensions() {
-
-			@Override
-			public long dimension(int d) {
-				if (d == 0) return sizeX;
-				if (d == 1) return sizeY;
-				return sizeZ;
-			}
-
-			@Override
-			public int numDimensions() {
-				return 3;
-			}
-		};
-	}
 
 	@Override
 	public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId,
@@ -344,7 +330,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		return voxelsDimensions;
 	}
 
-	public ReaderPool getReaderPool() {
+	public ResourcePool<IFormatReader> getReaderPool() {
 		return readerPool;
 	}
 

@@ -23,6 +23,8 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import bdv.cache.SharedQueue;
+import ch.epfl.biop.bdv.img.Opener;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -658,5 +660,4 @@ public class OmeroBdvOpener {
 		this.cc = cc;
 		return this;
 	}
-
 }

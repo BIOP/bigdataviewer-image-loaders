@@ -23,7 +23,8 @@
 package ch.epfl.biop.bdv.img.bioformats.command;
 
 import bdv.util.BdvFunctions;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
@@ -62,9 +63,9 @@ public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
 		settings.splitrgbchannels = splitrgbchannels;
 		settings.unit = unit;
 
-		List<BioFormatsBdvOpener> openers = new ArrayList<>();
-		openers.add(settings.getOpener(file));
-		final AbstractSpimData spimData = BioFormatsToSpimData.getSpimData(openers);
+		List<OpenerSettings> openerSettings = new ArrayList<>();
+		openerSettings.add(settings.getSettings(file));
+		final AbstractSpimData spimData = BioFormatsToSpimData.getSpimData(openerSettings);
 		BdvFunctions.show(spimData);
 	}
 

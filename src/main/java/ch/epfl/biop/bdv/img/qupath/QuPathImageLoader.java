@@ -26,7 +26,7 @@ import bdv.ViewerImgLoader;
 import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.cache.SharedQueue;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
 import com.google.gson.Gson;
@@ -116,7 +116,7 @@ public class QuPathImageLoader implements ViewerImgLoader,
 						QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
 						BioFormatsBdvOpener opener = (BioFormatsBdvOpener) qpOpener
 							.getOpener();
-						opener.setCache(sq);
+						//opener.setCache(sq);
 
 						// get the reader
 						IFormatReader memo = qpOpener.getReader();
@@ -130,8 +130,8 @@ public class QuPathImageLoader implements ViewerImgLoader,
 						IntStream channels = IntStream.range(0, omeMeta.getChannelCount(iSerie));
 
 						// Register Setups (one per channel and one per timepoint)
-						Type<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(memo,
-							iSerie);
+						Type<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(omeMeta,
+							iSerie, memo.isRGB());
 						Volatile<?> v = BioFormatsImageLoader.getVolatileOf(
 							(NumericType<?>) t);
 						channels.forEach(iCh -> {

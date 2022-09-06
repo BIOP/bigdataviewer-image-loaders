@@ -24,8 +24,7 @@ package ch.epfl.biop.bdv.img.qupath;
 
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
-import bdv.viewer.Source;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;

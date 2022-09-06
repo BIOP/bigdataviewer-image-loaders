@@ -22,7 +22,7 @@
 
 package ch.epfl.biop.bdv.img.bioformats.io;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;

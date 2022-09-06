@@ -22,7 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -64,21 +65,21 @@ public class OpenSampleCommand implements Command {
 
 			Length millimeter = new Length(1, UNITS.MILLIMETER);
 
-			BioFormatsBdvOpener opener20 = BioFormatsBdvOpener.getOpener().location(
-				f20).auto().centerPositionConvention().millimeter()
+			OpenerSettings opener20 = new OpenerSettings().location(
+				f20).centerPositionConvention().millimeter()
 				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron);
+					micron).bioFormatsBuilder();
 
-			BioFormatsBdvOpener opener60 = BioFormatsBdvOpener.getOpener().location(
-				f60).auto().centerPositionConvention().millimeter()
+			OpenerSettings opener60 = new OpenerSettings().location(
+				f60).centerPositionConvention().millimeter()
 				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron);
+					micron).bioFormatsBuilder();
 
-			ArrayList<BioFormatsBdvOpener> openers = new ArrayList<>();
-			openers.add(opener20);
-			openers.add(opener60);
+			ArrayList<OpenerSettings> settings = new ArrayList<>();
+			settings.add(opener20);
+			settings.add(opener60);
 
-			spimData = BioFormatsToSpimData.getSpimData(openers);
+			spimData = BioFormatsToSpimData.getSpimData(settings);
 
 			return;
 		}
@@ -94,10 +95,9 @@ public class OpenSampleCommand implements Command {
 
 					File file = DatasetHelper.getDataset(datasetName);
 
-					spimData = BioFormatsToSpimData.getSpimData(BioFormatsBdvOpener
-						.getOpener().location(file).auto().voxSizeReferenceFrameLength(
+					spimData = BioFormatsToSpimData.getSpimData(new OpenerSettings().location(file).voxSizeReferenceFrameLength(
 							new Length(1, UNITS.MILLIMETER)).positionReferenceFrameLength(
-								new Length(1, UNITS.MILLIMETER)));
+								new Length(1, UNITS.MILLIMETER)).bioFormatsBuilder());
 
 					return;
 				}
