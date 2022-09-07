@@ -1,9 +1,11 @@
 package ch.epfl.biop.bdv.img;
 
+import loci.formats.IFormatReader;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import omero.model.enums.UnitsLength;
 
 import java.io.File;
@@ -13,6 +15,9 @@ public class OpenerSettings {
     protected double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
     protected double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
     protected int poolSize = 10;
+
+    protected int numFetcherThreads = 2;
+    protected int numPriorities = 4;
     protected boolean useDefaultXYBlockSize = true; // Block size : use the one
     // defined by BioFormats or
     protected FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
@@ -21,7 +26,7 @@ public class OpenerSettings {
     // Channels options
     protected boolean swZC = false; // Switch Z and Channels
    //PUT IT PUBLIC to be able to access the type outside
-    public static enum OpenerType {
+    public enum OpenerType {
         BIOFORMATS,
         OMERO,
         IMAGEJ,
@@ -39,8 +44,34 @@ public class OpenerSettings {
 
     // Channels options
     protected boolean splitRGBChannels = false;
+    protected int iSerie = 0;
 
 
+
+    // cache and readers
+    public OpenerSettings poolSize(int pSize){
+        this.poolSize = pSize;
+        return this;
+    }
+    public OpenerSettings numFetcherThread(int nThread){
+        this.numFetcherThreads = nThread;
+        return this;
+    }
+    public OpenerSettings numPriorities(int nPriorities){
+        this.numPriorities = nPriorities;
+        return this;
+    }
+
+    public OpenerSettings useDefaultCacheBlockSize(boolean flag) {
+        useDefaultXYBlockSize = flag;
+        return this;
+    }
+
+    public OpenerSettings cacheBlockSize(int sx, int sy, int sz) {
+        useDefaultXYBlockSize = false;
+        cacheBlockSize = new FinalInterval(sx, sy, sz);
+        return this;
+    }
 
 
 
@@ -114,6 +145,8 @@ public class OpenerSettings {
         return this;
     }
 
+
+    // reference frames
     public OpenerSettings positionReferenceFrameLength(Length l)
     {
         this.positionReferenceFrameLength = l;
@@ -126,6 +159,8 @@ public class OpenerSettings {
         return this;
     }
 
+
+    // data location
     public OpenerSettings location(String location) {
         this.dataLocation = location;
         return this;
@@ -141,26 +176,19 @@ public class OpenerSettings {
         return this;
     }
 
+
+    // channels
     public OpenerSettings splitRGBChannels() {
         splitRGBChannels = true;
         return this;
     }
 
-    public OpenerSettings useDefaultCacheBlockSize(boolean flag) {
-        useDefaultXYBlockSize = flag;
-        return this;
-    }
 
     public OpenerSettings switchZandC(boolean flag) {
         this.swZC = flag;
         return this;
     }
 
-    public OpenerSettings cacheBlockSize(int sx, int sy, int sz) {
-        useDefaultXYBlockSize = false;
-        cacheBlockSize = new FinalInterval(sx, sy, sz);
-        return this;
-    }
 
     // define unit
     // TODO see if there is no issue using toString() on unit type directly
@@ -175,29 +203,33 @@ public class OpenerSettings {
     }
 
     public OpenerSettings unit(UNITS u) {
-        this.unit = u.toString();
+        this.unit = u.getName();
+        return this;
+    }
+
+    public OpenerSettings unit(Unit<Length> u) {
+        this.unit = u.getSymbol();
         return this;
     }
 
     public OpenerSettings millimeter() {
-        this.unit = UNITS.MILLIMETER.toString();
+        this.unit = UnitsLength.MILLIMETER.toString();
         return this;
     }
 
     public OpenerSettings micrometer() {
-        this.unit = UNITS.MICROMETER.toString();
+        this.unit = UnitsLength.MICROMETER.toString();
         return this;
     }
 
     public OpenerSettings nanometer() {
-        this.unit = UNITS.NANOMETER.toString();
+        this.unit = UnitsLength.NANOMETER.toString();
         return this;
     }
 
-    public OpenerSettings poolSize(int pSize){
-        this.poolSize = pSize;
-        return this;
-    }
+    /*public OpenerSettings openedReaders(Map<String, IFormatReader> openedReaders) {
+
+    }*/
 
 
     // define which kind of builder to deal with
@@ -220,6 +252,7 @@ public class OpenerSettings {
         this.currentBuilder = OpenerType.OPENSLIDE;
         return this;
     }
+
 
     public OpenerSettings fixNikonND2(){
         return this.flipPositionX().flipPositionY();

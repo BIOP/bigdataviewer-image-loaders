@@ -22,8 +22,7 @@
 
 package ch.epfl.biop.bdv.img.omero.command;
 
-import bdv.util.BdvFunctions;
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroToSpimData;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -103,7 +102,7 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 				// create a new opener and modify it
 				OmeroBdvOpener opener = new OmeroBdvOpener().imageID(ID).host(host)
 					.gateway(gateway).securityContext(ctx).unit(unitsLength)
-					.ignoreMetadata().create();
+					/*.ignoreMetadata()*/.create();
 
 				openers.add(opener);
 			}

@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileIntArray;
@@ -37,12 +38,12 @@ public class OmeroArrayLoaders {
 
 	abstract static class OmeroArrayLoader {
 
-		final protected RawPixelsStorePool pixelStorePool;
+		final protected ResourcePool<RawPixelsStorePrx> pixelStorePool;
 		final protected int channel;
 		final protected int nResolutionLevels;
 		final protected int sx, sy, sz;
 
-		public OmeroArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+		public OmeroArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool, int channel,
 			int nResolutionLevels, int sx, int sy, int sz)
 		{
 			this.pixelStorePool = pixelStorePool;
@@ -59,7 +60,7 @@ public class OmeroArrayLoaders {
 		implements CacheArrayLoader<VolatileByteArray>
 	{
 
-		public OmeroUnsignedByteArrayLoader(RawPixelsStorePool pixelStorePool,
+		public OmeroUnsignedByteArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool,
 			int channel, int nResolutionLevels, int sx, int sy, int sz)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
@@ -120,7 +121,7 @@ public class OmeroArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public OmeroUnsignedShortArrayLoader(RawPixelsStorePool pixelStorePool,
+		public OmeroUnsignedShortArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool,
 			int channel, int nResolutionLevels, int sx, int sy, int sz,
 			boolean littleEndian)
 		{
@@ -180,8 +181,8 @@ public class OmeroArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public OmeroFloatArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
-			int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
+		public OmeroFloatArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool, int channel,
+									 int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 			if (littleEndian) {
@@ -237,7 +238,7 @@ public class OmeroArrayLoaders {
 		CacheArrayLoader<VolatileIntArray>
 	{
 
-		public OmeroRGBArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+		public OmeroRGBArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool, int channel,
 			int nResolutionLevels, int sx, int sy, int sz)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
@@ -307,7 +308,7 @@ public class OmeroArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public OmeroIntArrayLoader(RawPixelsStorePool pixelStorePool, int channel,
+		public OmeroIntArrayLoader(ResourcePool<RawPixelsStorePrx> pixelStorePool, int channel,
 			int nResolutionLevels, int sx, int sy, int sz, boolean littleEndian)
 		{
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);

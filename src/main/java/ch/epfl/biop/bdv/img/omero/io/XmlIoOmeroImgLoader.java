@@ -22,7 +22,7 @@
 
 package ch.epfl.biop.bdv.img.omero.io;
 
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import com.google.gson.Gson;

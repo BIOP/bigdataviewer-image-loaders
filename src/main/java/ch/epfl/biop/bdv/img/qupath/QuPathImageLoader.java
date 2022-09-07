@@ -28,7 +28,7 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.cache.SharedQueue;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import loci.formats.IFormatReader;

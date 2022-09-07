@@ -26,7 +26,7 @@ import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;

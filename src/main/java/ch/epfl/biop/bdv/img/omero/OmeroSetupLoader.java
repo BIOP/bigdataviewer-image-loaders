@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img.omero;
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
@@ -70,8 +71,6 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 	final int iChannel;
 
 	final Supplier<VolatileGlobalCellCache> cacheSupplier;
-
-	final int numberOfTimePoints;
 
 	final Dimensions[] dimensions;
 
@@ -125,82 +124,74 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 			};
 		}
 
-		RawPixelsStorePrx reader = null;
-		boolean isLittleEndian;
+		// https://forum.image.sc/t/omero-py-how-to-get-tiles-at-different-zoom-level-pyramidal-image/45643/11
+		// OMERO always produce big-endian pixels
+		boolean isLittleEndian = false;
 
-		try {
-			// https://forum.image.sc/t/omero-py-how-to-get-tiles-at-different-zoom-level-pyramidal-image/45643/11
-			// OMERO always produce big-endian pixels
-			isLittleEndian = false;
 
-			reader = opener.pool.acquire();
-			numMipmapLevels = opener.getNLevels();
+		numMipmapLevels = opener.getNumMipmapLevels();
+		voxelsDimensions = opener.getVoxelDimensions();
+		dimensions = opener.getDimensions();
 
-			numberOfTimePoints = opener.sizeT;
+		//new Dimensions[numMipmapLevels];
+		/*for (int level = 0; level < numMipmapLevels; level++) {
+			dimensions[level] = getDimensions(opener.getSizeX(level), opener
+				.getSizeY(level), opener.getSizeZ(level));
+		}*/
 
-			voxelsDimensions = opener.getVoxelDimensions();
+		// Needs to compute mipmap resolutions... pfou
+		mmResolutions = new double[numMipmapLevels][3];
+		mmResolutions[0][0] = 1;
+		mmResolutions[0][1] = 1;
+		mmResolutions[0][2] = 1;
 
-			dimensions = new Dimensions[numMipmapLevels];
-			for (int level = 0; level < numMipmapLevels; level++) {
-				dimensions[level] = getDimensions(opener.getSizeX(level), opener
-					.getSizeY(level), opener.getSizeZ(level));
-			}
-
-			// Needs to compute mipmap resolutions... pfou
-			mmResolutions = new double[numMipmapLevels][3];
-			mmResolutions[0][0] = 1;
-			mmResolutions[0][1] = 1;
-			mmResolutions[0][2] = 1;
-
-			int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
-				(int) dimensions[0].dimension(1), (int) dimensions[0].dimension(2) };
-			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
-				int[] srcLidims = new int[] { (int) dimensions[iLevel].dimension(0),
-					(int) dimensions[iLevel].dimension(1), (int) dimensions[iLevel]
-						.dimension(2) };
-				mmResolutions[iLevel][0] = (double) srcL0dims[0] /
-					(double) srcLidims[0];
-				mmResolutions[iLevel][1] = (double) srcL0dims[1] /
-					(double) srcLidims[1];
-				mmResolutions[iLevel][2] = (double) srcL0dims[2] /
-					(double) srcLidims[2];
-			}
-
+		int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
+			(int) dimensions[0].dimension(1), (int) dimensions[0].dimension(2) };
+		for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
+			int[] srcLidims = new int[] { (int) dimensions[iLevel].dimension(0),
+				(int) dimensions[iLevel].dimension(1), (int) dimensions[iLevel]
+					.dimension(2) };
+			mmResolutions[iLevel][0] = (double) srcL0dims[0] /
+				(double) srcLidims[0];
+			mmResolutions[iLevel][1] = (double) srcL0dims[1] /
+				(double) srcLidims[1];
+			mmResolutions[iLevel][2] = (double) srcL0dims[2] /
+				(double) srcLidims[2];
 		}
-		finally {
-			opener.pool.recycle(reader);
-		}
+
+
+
 
 		if (t instanceof UnsignedByteType) {
 			loader =
 				(CacheArrayLoader<A>) new OmeroArrayLoaders.OmeroUnsignedByteArrayLoader(
-					opener.pool, iChannel, opener.getNLevels(), (int) dimensions[0]
+						opener.getPixelReader(), iChannel, opener.getNumMipmapLevels(), (int) dimensions[0]
 						.dimension(0), (int) dimensions[0].dimension(1), (int) dimensions[0]
 							.dimension(2));
 		}
 		else if (t instanceof UnsignedShortType) {
 			loader =
 				(CacheArrayLoader<A>) new OmeroArrayLoaders.OmeroUnsignedShortArrayLoader(
-					opener.pool, iChannel, opener.getNLevels(), (int) dimensions[0]
+						opener.getPixelReader(), iChannel, opener.getNumMipmapLevels(), (int) dimensions[0]
 						.dimension(0), (int) dimensions[0].dimension(1), (int) dimensions[0]
 							.dimension(2), isLittleEndian);
 		}
 		else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new OmeroArrayLoaders.OmeroFloatArrayLoader(
-					opener.pool, iChannel, opener.getNLevels(), (int) dimensions[0]
+					opener.getPixelReader(), iChannel, opener.getNumMipmapLevels(), (int) dimensions[0]
 						.dimension(0), (int) dimensions[0].dimension(1), (int) dimensions[0]
 							.dimension(2), isLittleEndian);
 		}
 		else if (t instanceof IntType) {
 			loader = (CacheArrayLoader<A>) new OmeroArrayLoaders.OmeroIntArrayLoader(
-				opener.pool, iChannel, opener.getNLevels(), (int) dimensions[0]
+					opener.getPixelReader(), iChannel, opener.getNumMipmapLevels(), (int) dimensions[0]
 					.dimension(0), (int) dimensions[0].dimension(1), (int) dimensions[0]
 						.dimension(2), isLittleEndian);
 		}
 		else if (t instanceof ARGBType) {
 			loader = (CacheArrayLoader<A>) new OmeroArrayLoaders.OmeroRGBArrayLoader(
-				opener.pool, iChannel, opener.getNLevels(), (int) dimensions[0]
+					opener.getPixelReader(), iChannel, opener.getNumMipmapLevels(), (int) dimensions[0]
 					.dimension(0), (int) dimensions[0].dimension(1), (int) dimensions[0]
 						.dimension(2));
 		}
@@ -210,7 +201,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		}
 	}
 
-	static Dimensions getDimensions(long sizeX, long sizeY, long sizeZ) {
+	/*static Dimensions getDimensions(long sizeX, long sizeY, long sizeZ) {
 		return new Dimensions() {
 
 			@Override
@@ -230,7 +221,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 				return "size x " + sizeX + ", size y " + sizeY + ", size z " + sizeZ;
 			}
 		};
-	}
+	}*/
 
 	// getters
 	public Gateway getGateway() {
@@ -250,9 +241,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		int level, ImgLoaderHint... hints)
 	{
 		final long[] dims = dimensions[level].dimensionsAsLongArray();
-		final int[] cellDimensions = new int[] { opener.getTileSizeX(
-			numMipmapLevels - 1 - level), opener.getTileSizeY(numMipmapLevels - 1 -
-				level), 1 };
+		final int[] cellDimensions = opener.getCellDimensions();
 		final CellGrid grid = new CellGrid(dims, cellDimensions);
 
 		final int priority = this.numMipmapLevels - level;
@@ -280,9 +269,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		ImgLoaderHint... hints)
 	{
 		final long[] dims = dimensions[level].dimensionsAsLongArray();
-		final int[] cellDimensions = new int[] { opener.getTileSizeX(
-			numMipmapLevels - 1 - level), opener.getTileSizeY(numMipmapLevels - 1 -
-				level), 1 };
+		final int[] cellDimensions = opener.getCellDimensions();
 		final CellGrid grid = new CellGrid(dims, cellDimensions);
 
 		final int priority = this.numMipmapLevels - level;

@@ -149,9 +149,9 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		try {
 			//reader = readerPool.acquire();
 			//reader.setSeries(iSerie);
-			numMipmapLevels = opener.getNumMipmapLevels(iSerie);//reader.getResolutionCount();
+			numMipmapLevels = opener.getNumMipmapLevels();//reader.getResolutionCount();
 			//reader.setResolution(0);
-			isLittleEndian = opener.getEndianness(iSerie);//reader.isLittleEndian();
+			isLittleEndian = opener.getEndianness();//reader.isLittleEndian();
 
 			// MetaData
 			final IMetadata omeMeta = opener.getMetadata();//(IMetadata) reader.getMetadataStore();
@@ -160,17 +160,17 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 			//is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
 
-			numberOfTimePoints = opener.getNTimePoints(iSerie);//reader.getSizeT();
-			cellDimensions = opener.getCellDimensions(iSerie);/*new int[] { opener.useBioFormatsXYBlockSize ? reader
+			numberOfTimePoints = opener.getNTimePoints();//reader.getSizeT();
+			cellDimensions = opener.getCellDimensions();/*new int[] { opener.useBioFormatsXYBlockSize ? reader
 				.getOptimalTileWidth() : (int) opener.cacheBlockSize.dimension(0),
 				opener.useBioFormatsXYBlockSize ? reader.getOptimalTileHeight()
 					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1
 						: (int) opener.cacheBlockSize.dimension(2) };*/
 
-			voxelsDimensions = opener.getVoxelDimensions(iSerie);/*BioFormatsTools.getSeriesVoxelDimensions(omeMeta,
+			voxelsDimensions = opener.getVoxelDimensions();/*BioFormatsTools.getSeriesVoxelDimensions(omeMeta,
 				iSerie, opener.u, opener.voxSizeReferenceFrameLength);*/
 
-			dimensions = opener.getDimensions(iSerie);/*new Dimensions[numMipmapLevels];
+			dimensions = opener.getDimensions();/*new Dimensions[numMipmapLevels];
 			for (int level = 0; level < numMipmapLevels; level++) {
 				reader.setResolution(level);
 				dimensions[level] = opener.getDimension(reader.getSizeX(), reader.getSizeY(),
@@ -183,7 +183,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			mmResolutions[0][1] = 1;
 			mmResolutions[0][2] = 1;
 
-			if (/*reader.getFormat()*/opener.getReaderFormat(iSerie).equals("CellSens VSI")) { // Fix vsi issue see
+			if (/*reader.getFormat()*/opener.getReaderFormat().equals("CellSens VSI")) { // Fix vsi issue see
 																												// https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
 				for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
 					double downscalingFactor = Math.pow(2, iLevel);

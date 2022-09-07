@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.qupath;
 
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
 import loci.formats.IFormatReader;
 import loci.formats.MetadataTools;
@@ -161,7 +161,7 @@ public class QuPathImageOpener {
 					filePath = Paths.get(uri).toString();
 
 					BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(
-						filePath).ignoreMetadata();
+						filePath);//.ignoreMetadata();
 					this.opener = bfOpener;
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);

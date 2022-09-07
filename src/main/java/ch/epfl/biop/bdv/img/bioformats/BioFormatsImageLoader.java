@@ -139,7 +139,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 							viewSetupToBFFileSerieChannel.put(viewSetupCounter, fsc);
 							viewSetupCounter++;
 						});
-						Type t = getBioformatsBdvSourceType(omeMeta, iSerie, opener.getRGB(iSerie));
+						Type t = getBioformatsBdvSourceType(omeMeta, iSerie, opener.getRGB());
 						tTypeGetter.get(iF).put(iSerie, (NumericType) t);
 						Volatile v = getVolatileOf((NumericType) t);
 						vTypeGetter.get(iF).put(iSerie, v);

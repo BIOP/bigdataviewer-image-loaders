@@ -26,7 +26,7 @@ import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.omero.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroToSpimData;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import ch.epfl.biop.bdv.img.qupath.command.GuiParams;

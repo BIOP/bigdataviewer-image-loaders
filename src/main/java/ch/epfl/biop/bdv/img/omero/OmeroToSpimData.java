@@ -22,6 +22,9 @@
 
 package ch.epfl.biop.bdv.img.omero;
 
+import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -68,6 +71,8 @@ public class OmeroToSpimData {
 	int maxTimepoints = -1;
 	int channelCounter = 0;
 	Map<ChannelDataComparator, Integer> channelToId = new HashMap<>();
+
+	final ArrayList<OmeroBdvOpener> openers = new ArrayList<>();
 	// Map<Integer,Channel> channelIdToChannel = new HashMap<>();
 	// Map<BioFormatsMetaDataHelper.BioformatsChannel,Integer> channelToId = new
 	// HashMap<>();
@@ -76,8 +81,8 @@ public class OmeroToSpimData {
 	// HashMap<>();
 	Map<Integer, OpenerIdxChannel> viewSetupToOpenerIdxChannel = new HashMap<>();
 
-	public AbstractSpimData getSpimDataInstance(List<OmeroBdvOpener> openers) {
-		openers.forEach(OmeroBdvOpener::ignoreMetadata); // necessary for spimdata
+	protected AbstractSpimData getSpimDataInstance(List<OpenerSettings> openersSettings) {
+		//openers.forEach(OmeroBdvOpener::ignoreMetadata); // necessary for spimdata
 		viewSetupCounter = 0;
 		openerIdxCounter = 0;
 		maxTimepoints = -1;
@@ -94,17 +99,18 @@ public class OmeroToSpimData {
 		List<ViewSetup> viewSetups = new ArrayList<>();
 
 		try {
-			for (int openerIdx = 0; openerIdx < openers.size(); openerIdx++) {
-				OmeroBdvOpener opener = openers.get(openerIdx);
-				OmeroUri ou = new OmeroUri(openerIdx, opener.dataLocation);
+			for (int openerIdx = 0; openerIdx < openersSettings.size(); openerIdx++) {
+				OmeroBdvOpener opener = new OmeroBdvOpener().create(openersSettings.get(openerIdx)); // create gateway before
+				openers.add(opener);
+				OmeroUri ou = new OmeroUri(openerIdx, opener.getDataLocation());
 				// openerIdxCounter++;
-				if (opener.getSizeT() > maxTimepoints) {
-					maxTimepoints = opener.getSizeT();
+				if (opener.getNTimePoints() > maxTimepoints) {
+					maxTimepoints = opener.getNTimePoints();
 				}
 
 				String imageName = opener.getImageName();
 
-				Dimensions dims = opener.getDimensions();
+				Dimensions dims = opener.getDimension();
 				// logger.debug("X:"+dims.dimension(0)+" Y:"+dims.dimension(1)+"
 				// Z:"+dims.dimension(2));
 				VoxelDimensions voxDims = opener.getVoxelDimensions();
@@ -171,21 +177,8 @@ public class OmeroToSpimData {
 				// the one given by the image loader ?
 				// IntStream series = IntStream.range(0, nSeries);
 
-				final int nTimepoints = openers.get(openerIdx).getSizeT();
-				/*AffineTransform3D rootTransform = BioFormatsMetaDataHelper.getSeriesRootTransform(
-				        openers.get(openerIdx).u,
-				        openers.get(openerIdx).positionPreTransformMatrixArray, //AffineTransform3D positionPreTransform,
-				        openers.get(openerIdx).positionPostTransformMatrixArray, //AffineTransform3D positionPostTransform,
-				        openers.get(openerIdx).positionReferenceFrameLength,
-				        openers.get(openerIdx).positionIsImageCenter, //boolean positionIsImageCenter,
-				        openers.get(openerIdx).voxSizePreTransformMatrixArray, //voxSizePreTransform,
-				        openers.get(openerIdx).voxSizePostTransformMatrixArray, //AffineTransform3D voxSizePostTransform,
-				        openers.get(openerIdx).voxSizeReferenceFrameLength, //null, //Length voxSizeReferenceFrameLength,
-				        openers.get(openerIdx).axesOfImageFlip // axesOfImageFlip
-				);*/
-
-				AffineTransform3D rootTransform = openers.get(openerIdx)
-					.getSourceTransform(0);
+				final int nTimepoints = openers.get(openerIdx).getNTimePoints();
+				AffineTransform3D rootTransform = openers.get(openerIdx).getTransform();
 
 				final int oIdx = openerIdx;
 				timePoints.forEach(iTp -> {
@@ -232,31 +225,31 @@ public class OmeroToSpimData {
 		return channelToId.get(channelDataComparator);
 	}
 
-	public static AbstractSpimData getSpimData(List<OmeroBdvOpener> openers) {
-		return new OmeroToSpimData().getSpimDataInstance(openers);
+	public static AbstractSpimData getSpimData(List<OpenerSettings> openersSettings) {
+		return new OmeroToSpimData().getSpimDataInstance(openersSettings);
 	}
 
-	public static AbstractSpimData getSpimData(OmeroBdvOpener opener) {
-		ArrayList<OmeroBdvOpener> singleOpenerList = new ArrayList<>();
-		singleOpenerList.add(opener);
+	public static AbstractSpimData getSpimData(OpenerSettings openerSettings) {
+		ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();
+		singleOpenerList.add(openerSettings);
 		return OmeroToSpimData.getSpimData(singleOpenerList);
 	}
 
 	public static AbstractSpimData getSpimData(File f) {
-		OmeroBdvOpener opener = getDefaultOpener(f.getAbsolutePath());
+		OpenerSettings opener = getDefaultSettings(f.getAbsolutePath());
 		return getSpimData(opener);
 	}
 
 	public static AbstractSpimData getSpimData(File[] files) {
-		ArrayList<OmeroBdvOpener> openers = new ArrayList<>();
+		ArrayList<OpenerSettings> openers = new ArrayList<>();
 		for (File f : files) {
-			openers.add(getDefaultOpener(f.getAbsolutePath()));
+			openers.add(getDefaultSettings(f.getAbsolutePath()));
 		}
 		return OmeroToSpimData.getSpimData(openers);
 	}
 
-	public static OmeroBdvOpener getDefaultOpener(String dataLocation) {
-		return OmeroBdvOpener.getOpener().location(dataLocation);
+	public static OpenerSettings getDefaultSettings(String dataLocation) {
+		return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO,dataLocation);
 	}
 
 	public static class ChannelDataComparator {

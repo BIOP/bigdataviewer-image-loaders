@@ -53,16 +53,18 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	public OpenerSettings settings;
 	public boolean[] axesOfImageFlip = new boolean[] { false, false, false };
 	transient ReaderPool pool = new ReaderPool(10, true, this::getNewReader);
-	private int[] nTimePoints;
+	private int nTimePoints;
 	private IMetadata omeMeta;
-	private boolean[] isLittleEndian;
-	private boolean[] isRGB;
-	private int[][] cellDimensions;
-	private Dimensions[][] dimensions;
-	private String[] format;
-	private int[] nMipMapLevels;
-	private VoxelDimensions[] voxelDimensions;
+	private boolean isLittleEndian;
+	private boolean isRGB;
+	private int[] cellDimensions;
+	private Dimensions[] dimensions;
+	private String format;
+	private int nMipMapLevels;
+	private VoxelDimensions voxelDimensions;
 	private int serieCount;
+
+	private int iSerie;
 
 
 	// For copying the object
@@ -72,45 +74,46 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 	public BioFormatsBdvOpener(OpenerSettings settings) {
 		this.settings = settings;
+		this.iSerie = settings.iSerie;
 		this.pool = new ReaderPool(this.settings.poolSize, true, this::getNewReader);
 
 		try (IFormatReader reader = getNewReader()) {
 			this.serieCount = reader.getSeriesCount();
-
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
-			this.nMipMapLevels = new int[this.serieCount];
+			/*this.nMipMapLevels = new int[this.serieCount];
 			this.nTimePoints = new int[this.serieCount];
 			this.voxelDimensions = new VoxelDimensions[this.serieCount];
 			this.isLittleEndian = new boolean[this.serieCount];
 			this.cellDimensions = new int[this.serieCount][3];
 			this.dimensions = new Dimensions[this.serieCount][];
 			this.format = new String[this.serieCount];
+			this.isRGB = new boolean[this.serieCount];*/
+			this.iSerie = reader.getSeries();
+			System.out.println("Try to catch the serie "+this.iSerie+" from the reader but I dont know if it is possible");
+			reader.setSeries(this.iSerie);
+			this.nMipMapLevels = reader.getResolutionCount();
+			this.nTimePoints = reader.getSizeT();
+			this.voxelDimensions = BioFormatsTools.getSeriesVoxelDimensions(this.omeMeta,
+					this.iSerie, BioFormatsTools.getUnitFromString(this.settings.unit), this.settings.voxSizeReferenceFrameLength);
+			this.isLittleEndian = reader.isLittleEndian();
+			this.isRGB = reader.isRGB();
+			this.format = reader.getFormat();
 
-			for(int iSerie = 0;iSerie < this.serieCount; iSerie++){
-				reader.setSeries(iSerie);
-				this.nMipMapLevels[iSerie] = reader.getResolutionCount();
-				this.nTimePoints[iSerie] = reader.getSizeT();
-				this.voxelDimensions[iSerie] = BioFormatsTools.getSeriesVoxelDimensions(this.omeMeta,
-						iSerie, BioFormatsTools.getUnitFromString(this.settings.unit), this.settings.voxSizeReferenceFrameLength);
-				this.isLittleEndian[iSerie] = reader.isLittleEndian();
-				this.isRGB[iSerie] = reader.isRGB();
-				this.format[iSerie] = reader.getFormat();
+			boolean is3D = this.omeMeta.getPixelsSizeZ(this.iSerie).getNumberValue().intValue() > 1;
 
-				boolean is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
+			this.cellDimensions = new int[] { this.settings.useDefaultXYBlockSize ? reader
+					.getOptimalTileWidth() : (int) this.settings.cacheBlockSize.dimension(0),
+					this.settings.useDefaultXYBlockSize ? reader.getOptimalTileHeight()
+							: (int) this.settings.cacheBlockSize.dimension(1), (!is3D) ? 1
+					: (int) this.settings.cacheBlockSize.dimension(2) };
 
-				this.cellDimensions[iSerie] = new int[] { this.settings.useDefaultXYBlockSize ? reader
-						.getOptimalTileWidth() : (int) this.settings.cacheBlockSize.dimension(0),
-						this.settings.useDefaultXYBlockSize ? reader.getOptimalTileHeight()
-								: (int) this.settings.cacheBlockSize.dimension(1), (!is3D) ? 1
-						: (int) this.settings.cacheBlockSize.dimension(2) };
-
-				this.dimensions[iSerie] = new Dimensions[this.nMipMapLevels[iSerie]];
-				for (int level = 0; level < this.nMipMapLevels[iSerie]; level++) {
-					reader.setResolution(level);
-					dimensions[iSerie][level] = getDimensions(reader.getSizeX(), reader.getSizeY(),
-							(!is3D) ? 1 : reader.getSizeZ());
-				}
+			this.dimensions = new Dimensions[this.nMipMapLevels];
+			for (int level = 0; level < this.nMipMapLevels; level++) {
+				reader.setResolution(level);
+				this.dimensions[level] = getDimension(reader.getSizeX(), reader.getSizeY(),
+						(!is3D) ? 1 : reader.getSizeZ());
 			}
+
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -446,7 +449,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		);
 	}*/
 
-	static Dimensions getDimensions(long sizeX, long sizeY, long sizeZ) {
+	static Dimensions getDimension(long sizeX, long sizeY, long sizeZ) {
 		return new Dimensions() {
 
 			@Override
@@ -466,29 +469,19 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 
 	@Override
-	public int getNumMipmapLevels(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.nMipMapLevels[iSerie];
-		return 1;
+	public int getNumMipmapLevels() {
+		return this.nMipMapLevels;
 	}
 
 	@Override
-	public int getNTimePoints(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.nTimePoints[iSerie];
-		return 1;
+	public int getNTimePoints() {
+		return this.nTimePoints;
 	}
 
 	@Override
-	public AffineTransform3D getTransform(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else return BioFormatsTools
-				.getSeriesRootTransform(this.omeMeta, iSerie, BioFormatsTools.getUnitFromString(this.settings.unit),
+	public AffineTransform3D getTransform() {
+		return BioFormatsTools
+				.getSeriesRootTransform(this.omeMeta, this.iSerie, BioFormatsTools.getUnitFromString(this.settings.unit),
 						this.settings.positionPreTransformMatrixArray, // AffineTransform3D
 						// positionPreTransform,
 						this.settings.positionPostTransformMatrixArray, // AffineTransform3D
@@ -502,78 +495,71 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 						// voxSizeReferenceFrameLength,
 						this.axesOfImageFlip // axesOfImageFlip
 				);
-		return null;
 	}
 
 	@Override
 	public ResourcePool<IFormatReader> getPixelReader() {
-		return pool;
+		return this.pool;
 	}
 
 	@Override
-	public VoxelDimensions getVoxelDimensions(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.voxelDimensions[iSerie];
-		return null;
+	public VoxelDimensions getVoxelDimensions() {
+		return this.voxelDimensions;
 	}
 
 
 	public boolean getSwitchZAndT() {
 		return this.settings.swZC;
 	}
+	public int getNumFetcherThread() {
+		return this.settings.numFetcherThreads;
+	}
+	public int getNumPriorities() {
+		return this.settings.numPriorities;
+	}
+
 	public String getUnit() {
 		return this.settings.unit;
 	}
 
-	public int[] getCellDimensions(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.cellDimensions[iSerie];
-		return null;
+	@Override
+	public int[] getCellDimensions() {
+		return this.cellDimensions;
 	}
 
-	public Dimensions[] getDimensions(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.dimensions[iSerie];
-		return null;
+	@Override
+	public Dimensions[] getDimensions() {
+		return this.dimensions;
 	}
 
-	public String getReaderFormat(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.format[iSerie];
-		return "";
+
+	public String getReaderFormat() {
+		return this.format;
 	}
 
-	public Boolean getEndianness(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.isLittleEndian[iSerie];
-		return null;
+
+	public Boolean getEndianness() {
+		return this.isLittleEndian;
 	}
 
-	public Boolean getRGB(int iSerie) {
-		if(iSerie < 0 || iSerie >= this.serieCount)
-			logger.error("The series you want to access is out of range");
-		else
-			return this.isRGB[iSerie];
-		return null;
+
+	public Boolean getRGB() {
+		return this.isRGB;
 	}
 
+	@Override
 	public IMetadata getMetadata() {
 			return this.omeMeta;
 	}
-
+	@Override
 	public int getSerieCount(){
 		return this.serieCount;
 	}
+
+	public int getSerie(){
+		return this.iSerie;
+	}
+
 
 
 

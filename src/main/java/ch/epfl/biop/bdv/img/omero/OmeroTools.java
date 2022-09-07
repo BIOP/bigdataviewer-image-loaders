@@ -22,6 +22,9 @@
 
 package ch.epfl.biop.bdv.img.omero;
 
+import ome.units.UNITS;
+import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import omero.gateway.Gateway;
 import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
@@ -30,6 +33,7 @@ import omero.gateway.model.ExperimenterData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.PixelsData;
 import omero.log.SimpleLogger;
+import omero.model.enums.UnitsLength;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -39,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -111,6 +116,38 @@ public class OmeroTools {
 		PixelsData pixels = image.getDefaultPixels();
 		return pixels;
 
+	}
+
+
+	/**
+	 * Look into Fields of BioFormats UNITS class that matches the input string
+	 * Return the corresponding Unit Field Case insensitive
+	 *
+	 * @param unit_string
+	 * @return corresponding BF Unit object
+	 */
+	public static UnitsLength getUnitsLengthFromString(String unit_string) {
+		Field[] bfUnits = UnitsLength.class.getFields();
+		for (Field f : bfUnits) {
+			if (f.getType().equals(UnitsLength.class)) {
+				if (f.getName() != null) {
+					try {
+						if (f.getName().toUpperCase().equals(unit_string.trim()
+								.toUpperCase()))
+						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
+							// {
+							// Field found
+							return (UnitsLength) f.get(null); // Field is assumed to be static
+						}
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		// Field not found
+		return null;
 	}
 
 	public static String[] getOmeroConnectionInputParameters(

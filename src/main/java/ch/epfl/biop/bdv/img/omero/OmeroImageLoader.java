@@ -26,6 +26,7 @@ import bdv.ViewerImgLoader;
 import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.cache.SharedQueue;
+import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
 import net.imglib2.Volatile;
@@ -88,7 +89,7 @@ public class OmeroImageLoader implements ViewerImgLoader,
 		this.numPriorities = numPriorities;
 		cc = new SharedQueue(numFetcherThreads, numPriorities);
 
-		openers.forEach(opener -> opener.setCache(cc));
+		//openers.forEach(opener -> opener.setCache(cc));
 
 		int viewSetupCounter = 0;
 		if ((sequenceDescription != null)) {
