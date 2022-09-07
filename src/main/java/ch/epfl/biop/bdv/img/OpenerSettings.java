@@ -1,11 +1,14 @@
 package ch.epfl.biop.bdv.img;
 
 import loci.formats.IFormatReader;
+import net.imagej.ops.Ops;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import omero.gateway.Gateway;
+import omero.gateway.SecurityContext;
 import omero.model.enums.UnitsLength;
 
 import java.io.File;
@@ -46,7 +49,14 @@ public class OpenerSettings {
     protected boolean splitRGBChannels = false;
     protected int iSerie = 0;
 
+    transient protected Gateway gateway;
+    transient protected SecurityContext ctx;
+    transient protected String host;
+    protected long imageID;
 
+    public Gateway getGateway(){return this.gateway;}
+    public SecurityContext getContext(){return this.ctx;}
+    public String getHost(){return this.host;}
 
     // cache and readers
     public OpenerSettings poolSize(int pSize){
@@ -227,9 +237,7 @@ public class OpenerSettings {
         return this;
     }
 
-    /*public OpenerSettings openedReaders(Map<String, IFormatReader> openedReaders) {
 
-    }*/
 
 
     // define which kind of builder to deal with
@@ -254,15 +262,36 @@ public class OpenerSettings {
     }
 
 
+        /*public OpenerSettings openedReaders(Map<String, IFormatReader> openedReaders) {
+
+    }*/
+
+    public OpenerSettings setGateway(Gateway gateway){
+        this.gateway = gateway;
+        return this;
+    }
+
+    public OpenerSettings setContext(SecurityContext ctx){
+        this.ctx = ctx;
+        this.host = ctx.getServerInformation().getHost();
+        return this;
+    }
+
+    public OpenerSettings setImageID(long id){
+        this.imageID = id;
+        return this;
+    }
+
+
     public OpenerSettings fixNikonND2(){
         return this.flipPositionX().flipPositionY();
     }
 
-    public Opener create(){
+    public Opener create() throws Exception {
 
         switch (this.currentBuilder) {
             case OMERO:
-                //return new OmeroBdvOpener(this);
+                return new OmeroBdvOpener().create(this);
             case IMAGEJ: break;
             case OPENSLIDE: break;
             case BIOFORMATS:

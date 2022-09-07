@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.bioformats.io;
 
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
@@ -56,7 +57,7 @@ public class XmlIoBioFormatsImgLoader implements
 			.getAnnotation(ImgLoaderIo.class).format());
 		// For potential extensibility
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
-			BioFormatsBdvOpener.class.getName()));
+			OpenerSettings.class.getName()));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
 			imgLoader.numFetcherThreads));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
@@ -68,7 +69,7 @@ public class XmlIoBioFormatsImgLoader implements
 		for (int i = 0; i < imgLoader.openers.size(); i++) {
 			// Opener serialization
 			elem.addContent(XmlHelpers.textElement(OPENER_TAG + "_" + i, gson.toJson(
-				imgLoader.openers.get(i))));
+				imgLoader.openers.get(i).getSettings())));
 		}
 		return elem;
 	}
@@ -90,11 +91,11 @@ public class XmlIoBioFormatsImgLoader implements
 			if (openerClassName.equals(
 				"ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener"))
 			{
-				openerClassName = BioFormatsBdvOpener.class.getName(); // Fix for old
+				openerClassName = OpenerSettings.class.getName(); // Fix for old
 																																// versions
 			}
 
-			if (!openerClassName.equals(BioFormatsBdvOpener.class.getName())) {
+			if (!openerClassName.equals(OpenerSettings.class.getName())) {
 				throw new UnsupportedOperationException("Error class " +
 					openerClassName + " not recognized.");
 			}
@@ -103,9 +104,9 @@ public class XmlIoBioFormatsImgLoader implements
 			for (int i = 0; i < number_of_datasets; i++) {
 				// Opener de-serialization
 				String jsonInString = XmlHelpers.getText(elem, OPENER_TAG + "_" + i);
-				BioFormatsBdvOpener opener = gson.fromJson(jsonInString,
-					BioFormatsBdvOpener.class);
-				openers.add(opener);
+				OpenerSettings settings = gson.fromJson(jsonInString,
+						OpenerSettings.class);
+				openers.add((BioFormatsBdvOpener) settings.bioFormatsBuilder().create());
 			}
 
 			return new BioFormatsImageLoader(openers, sequenceDescription,

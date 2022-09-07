@@ -66,6 +66,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 	private int iSerie;
 
+	public OpenerSettings getSettings(){return this.settings;}
 
 	// For copying the object
 	/*public BioFormatsBdvOpener copy() {
@@ -523,7 +524,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
-	public int[] getCellDimensions() {
+	public int[] getCellDimensions(int level) {
 		return this.cellDimensions;
 	}
 

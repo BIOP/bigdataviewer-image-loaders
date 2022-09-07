@@ -161,7 +161,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			//is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
 
 			numberOfTimePoints = opener.getNTimePoints();//reader.getSizeT();
-			cellDimensions = opener.getCellDimensions();/*new int[] { opener.useBioFormatsXYBlockSize ? reader
+			cellDimensions = opener.getCellDimensions(iSerie);/*new int[] { opener.useBioFormatsXYBlockSize ? reader
 				.getOptimalTileWidth() : (int) opener.cacheBlockSize.dimension(0),
 				opener.useBioFormatsXYBlockSize ? reader.getOptimalTileHeight()
 					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1

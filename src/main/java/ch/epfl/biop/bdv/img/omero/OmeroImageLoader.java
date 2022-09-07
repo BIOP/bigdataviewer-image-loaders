@@ -27,6 +27,7 @@ import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.cache.SharedQueue;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
 import net.imglib2.Volatile;
@@ -36,10 +37,7 @@ import omero.gateway.Gateway;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -96,6 +94,7 @@ public class OmeroImageLoader implements ViewerImgLoader,
 			// openersIdxStream.forEach(openerIdx -> {
 			for (int openerIdx = 0; openerIdx < openers.size(); openerIdx++) {
 				OmeroBdvOpener opener = openers.get(openerIdx);
+				this.openers.add(opener);
 				// Register Setups (one per channel and one per timepoint)
 				for (int channelIdx = 0; channelIdx < opener.getSizeC(); channelIdx++) {
 					OpenerIdxChannel openerIdxChannel = new OpenerIdxChannel(openerIdx,

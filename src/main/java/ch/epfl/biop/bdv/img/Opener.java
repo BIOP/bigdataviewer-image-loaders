@@ -17,7 +17,7 @@ public interface Opener<T>{
 
     VoxelDimensions getVoxelDimensions();
 
-    int[] getCellDimensions();
+    int[] getCellDimensions(int level);
     int getSerieCount();
     IMetadata getMetadata();
 

@@ -241,7 +241,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		int level, ImgLoaderHint... hints)
 	{
 		final long[] dims = dimensions[level].dimensionsAsLongArray();
-		final int[] cellDimensions = opener.getCellDimensions();
+		final int[] cellDimensions = opener.getCellDimensions(level);
 		final CellGrid grid = new CellGrid(dims, cellDimensions);
 
 		final int priority = this.numMipmapLevels - level;
@@ -269,7 +269,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		ImgLoaderHint... hints)
 	{
 		final long[] dims = dimensions[level].dimensionsAsLongArray();
-		final int[] cellDimensions = opener.getCellDimensions();
+		final int[] cellDimensions = opener.getCellDimensions(level);
 		final CellGrid grid = new CellGrid(dims, cellDimensions);
 
 		final int priority = this.numMipmapLevels - level;

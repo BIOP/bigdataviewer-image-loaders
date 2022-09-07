@@ -100,7 +100,7 @@ public class OmeroToSpimData {
 
 		try {
 			for (int openerIdx = 0; openerIdx < openersSettings.size(); openerIdx++) {
-				OmeroBdvOpener opener = new OmeroBdvOpener().create(openersSettings.get(openerIdx)); // create gateway before
+				OmeroBdvOpener opener = (OmeroBdvOpener) openersSettings.get(openerIdx).create();
 				openers.add(opener);
 				OmeroUri ou = new OmeroUri(openerIdx, opener.getDataLocation());
 				// openerIdxCounter++;
@@ -138,7 +138,6 @@ public class OmeroToSpimData {
 					// ----------- Color
 					ARGBType color = opener.getChannelColor(channelIdx);
 					if (color != null) {
-						ds.isSet = true;
 						ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
 							color.get()), ARGBType.blue(color.get()), ARGBType.alpha(color
 								.get()) };

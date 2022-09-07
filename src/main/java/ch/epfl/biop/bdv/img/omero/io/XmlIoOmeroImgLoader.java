@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.omero.io;
 
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import com.google.gson.Gson;
@@ -64,7 +65,7 @@ public class XmlIoOmeroImgLoader implements
 			.getAnnotation(ImgLoaderIo.class).format());
 		// For potential extensibility
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
-			OmeroBdvOpener.class.getName()));
+			OpenerSettings.class.getName()));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
 			imgLoader.numFetcherThreads));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
@@ -74,9 +75,9 @@ public class XmlIoOmeroImgLoader implements
 
 		Gson gson = new Gson();
 		for (int i = 0; i < imgLoader.openers.size(); i++) {
-			// Opener serialization
+			// OpenerSettings serialization
 			elem.addContent(XmlHelpers.textElement(OPENER_TAG + "_" + i, gson.toJson(
-				imgLoader.openers.get(i))));
+				imgLoader.openers.get(i).getSettings())));
 		}
 		return elem;
 	}
@@ -95,45 +96,47 @@ public class XmlIoOmeroImgLoader implements
 
 			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
 
-			if (!openerClassName.equals(OmeroBdvOpener.class.getName())) {
+			if (!openerClassName.equals(OpenerSettings.class.getName())) {
 				throw new UnsupportedOperationException("Error class " +
 					openerClassName + " not recognized.");
 			}
 
-			// TODO handle login to OMERO
-			int port = 4064;
+
 
 			Gson gson = new Gson();
 			for (int i = 0; i < number_of_datasets; i++) {
 				// Opener de-serialization
 				String jsonInString = XmlHelpers.getText(elem, OPENER_TAG + "_" + i);
-				OmeroBdvOpener opener = gson.fromJson(jsonInString,
-					OmeroBdvOpener.class);
+				OpenerSettings settings = gson.fromJson(jsonInString,
+						OpenerSettings.class);
 
-				if (!hostToGatewayCtx.containsKey(opener.getHost())) {
-
+				if (!hostToGatewayCtx.containsKey(settings.getHost())) {
+					// TODO handle login to OMERO
 					// Get credentials
 					Boolean onlyCredentials = false;
 					String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
 						onlyCredentials);
-					String username = credentials[0];
-					String password = credentials[1];
+					int port = Integer.parseInt(credentials[0]);
+					String host = credentials[1];
+					String username = credentials[2];
+					String password = credentials[3];
 					credentials = new String[] {};
 
 					// connect to OMERO
-					Gateway gateway = OmeroTools.omeroConnect(opener.getHost(), port,
+					Gateway gateway = OmeroTools.omeroConnect(host, port,
 						username, password);
 					SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
 
 					// add it in the channel hashmap
 					OmeroTools.GatewaySecurityContext gtCtx =
-						new OmeroTools.GatewaySecurityContext(opener.getHost(), port,
+						new OmeroTools.GatewaySecurityContext(host, port,
 							gateway, ctx);
-					hostToGatewayCtx.put(opener.getHost(), gtCtx);
+					hostToGatewayCtx.put(host, gtCtx);
+					settings.setGateway(hostToGatewayCtx.get(host).gateway)
+							.setContext(hostToGatewayCtx.get(host).ctx);
 				}
-				opener.gateway(hostToGatewayCtx.get(opener.getHost()).gateway)
-					.securityContext(hostToGatewayCtx.get(opener.getHost()).ctx).create();
-				openers.add(opener);
+
+				openers.add((OmeroBdvOpener) settings.omeroBuilder().create());
 			}
 
 			return new OmeroImageLoader(openers, sequenceDescription,

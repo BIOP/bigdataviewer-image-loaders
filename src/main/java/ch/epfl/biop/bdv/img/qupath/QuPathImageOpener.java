@@ -171,8 +171,7 @@ public class QuPathImageOpener {
 						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
 					{
 						filePath = this.image.serverBuilder.uri.toString();
-						this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx)
-							.ignoreMetadata();
+						this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					}

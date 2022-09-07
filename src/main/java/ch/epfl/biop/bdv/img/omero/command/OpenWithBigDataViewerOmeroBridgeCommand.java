@@ -23,12 +23,14 @@
 package ch.epfl.biop.bdv.img.omero.command;
 
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroToSpimData;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
+import omero.gateway.ServerInformation;
 import omero.model.enums.UnitsLength;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.ItemIO;
@@ -89,37 +91,39 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 			if (unit.equals("NANOMETER")) {
 				unitsLength = UnitsLength.NANOMETER;
 			}
-			List<OmeroBdvOpener> openers = new ArrayList<>();
+			List<OpenerSettings> openersSettings = new ArrayList<>();
 			String[] omeroIDstrings = omeroIDs.split(",");
+
 			Gateway gateway = OmeroTools.omeroConnect(host, port, username, password);
 			System.out.println("Session active : " + gateway.isConnected());
+
 			SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
+			ctx.setServerInformation(new ServerInformation(host));
 
 			for (String s : omeroIDstrings) {
-				int ID = Integer.valueOf(s.trim());
-				logger.debug("Getting opener for omero ID " + ID);
+				int ID = Integer.parseInt(s.trim());
+				logger.debug("Getting settings for omero ID " + ID);
 
-				// create a new opener and modify it
-				OmeroBdvOpener opener = new OmeroBdvOpener().imageID(ID).host(host)
-					.gateway(gateway).securityContext(ctx).unit(unitsLength)
-					/*.ignoreMetadata()*/.create();
+				// create a new settings and modify it
+				OpenerSettings settings = new OpenerSettings()
+						.setImageID(ID)
+						.unit(unit)
+						.setGateway(gateway)
+						.setContext(ctx)
+						.omeroBuilder();
 
-				openers.add(opener);
+				openersSettings.add(settings);
 			}
 			StopWatch watch = new StopWatch();
 			logger.debug("All openers obtained, converting to spimdata object ");
 			watch.start();
-			spimdata = OmeroToSpimData.getSpimData(openers);
+			spimdata = OmeroToSpimData.getSpimData(openersSettings);
 			watch.stop();
 			logger.debug("Converted to SpimData in " + (int) (watch.getTime() /
 				1000) + " s");
 
-		}
-		catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
-		}
-		catch (Throwable throwable) {
-			throwable.printStackTrace();
 		}
 	}
 

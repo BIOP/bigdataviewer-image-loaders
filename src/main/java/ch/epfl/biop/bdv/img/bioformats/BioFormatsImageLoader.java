@@ -116,11 +116,11 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 					// -------------------------- SETUPS For each Series : one per
 					// timepoint and one per channel
 
-					IntStream series = IntStream.range(0, opener.getSerieCount());//memo.getSeriesCount());
+					//IntStream series = IntStream.range(0, opener.getSerieCount());//memo.getSeriesCount());
 
 					final int iFile = iF;
-
-					series.forEach(iSerie -> {
+					int iSerie = opener.getSerie();
+					//series.forEach(iSerie -> {
 						//memo.setSeries(iSerie);
 						// One serie = one Tile
 						// ---------- Serie >
@@ -143,7 +143,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 						tTypeGetter.get(iF).put(iSerie, (NumericType) t);
 						Volatile v = getVolatileOf((NumericType) t);
 						vTypeGetter.get(iF).put(iSerie, v);
-					});
+				//	});
 					//memo.close();
 				}
 				catch (Exception e) {

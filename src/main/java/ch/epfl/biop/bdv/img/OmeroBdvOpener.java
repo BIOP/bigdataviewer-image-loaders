@@ -78,8 +78,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	//public String dataLocation = null; // URL or File
 	//public boolean useOmeroXYBlockSize = true; // Block size : use the one defined
 																							// by Omero
-	long omeroImageID;
-	public String host;
+	//long omeroImageID;
+	//public String host;
 	// Channels options
 	//boolean splitRGBChannels = false;
 
@@ -104,8 +104,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 
 	// All non-serializable fields
 
-	transient Gateway gateway;
-	transient SecurityContext securityContext;
+	//transient Gateway gateway;
+	//transient SecurityContext securityContext;
 	transient RawPixelsStorePool pool = new RawPixelsStorePool(10, true,
 		this::getNewStore);
 	transient int nTimePoints;
@@ -146,17 +146,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		return this.tileSize.get(level)[1];
 	}
 
-	/*public int getSizeT() {
-		return this.sizeT;
-	}*/
-
 	public int getSizeC() {
 		return this.sizeC;
 	}
-
-	/*public int getNLevels() {
-		return this.nLevels;
-	}*/
 
 	public long getPixelsID() {
 		return this.pixelsID;
@@ -185,19 +177,17 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public String getDataLocation() {return this.settings.dataLocation;}
 
 	public String getHost() {
-		return host;
+		return this.settings.host;
 	}
 
-	public Gateway getGateway() {
-		return gateway;
-	}
+	public Gateway getGateway() {return this.settings.getGateway();}
 
 	public Long getOmeroId() {
-		return omeroImageID;
+		return this.settings.imageID;
 	}
 
 	public SecurityContext getSecurityContext() {
-		return securityContext;
+		return this.settings.ctx;
 	}
 
 	public List<ChannelData> getChannelMetadata() {
@@ -215,6 +205,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public int getNumPriorities() {
 		return this.settings.numPriorities;
 	}
+
+	public OpenerSettings getSettings(){return this.settings;}
 
 	/*public OmeroBdvOpener positionReferenceFrameLength(
 		ome.units.quantity.Length l)
@@ -241,7 +233,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}*/
 
 	// define image ID
-	public OmeroBdvOpener imageID(long imageID) {
+	/*public OmeroBdvOpener imageID(long imageID) {
 		this.omeroImageID = imageID;
 		return this;
 	}
@@ -249,7 +241,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public OmeroBdvOpener host(String host) {
 		this.host = host;
 		return this;
-	}
+	}*/
 
 	public OmeroBdvOpener displayInSpace(boolean displayInSpace) {
 		this.displayInSpace = displayInSpace;
@@ -283,7 +275,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}*/
 
 	// define gateway
-	public OmeroBdvOpener gateway(Gateway gateway) {
+	/*public OmeroBdvOpener gateway(Gateway gateway) {
 		this.gateway = gateway;
 		return this;
 	}
@@ -292,7 +284,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public OmeroBdvOpener securityContext(SecurityContext ctx) {
 		this.securityContext = ctx;
 		return this;
-	}
+	}*/
 
 	// define num fetcher threads
 	/*public OmeroBdvOpener numFetcherThreads(int numFetcherThreads) {
@@ -317,20 +309,20 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	 */
 	public OmeroBdvOpener create(OpenerSettings settings) throws Exception {
 		this.settings = settings;
-		this.pool = new RawPixelsStorePool(this.settings.poolSize, true, this::getNewStore);
+		this.pool = new RawPixelsStorePool(settings.poolSize, true, this::getNewStore);
 
-		PixelsData pixels = OmeroTools.getPixelsDataFromOmeroID(omeroImageID, gateway, securityContext);
+		PixelsData pixels = OmeroTools.getPixelsDataFromOmeroID(settings.imageID, settings.gateway, settings.ctx);
 		this.pixelsID = pixels.getId();
 
-		RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(securityContext);
+		RawPixelsStorePrx rawPixStore = settings.gateway.getPixelsStore(settings.ctx);
 		rawPixStore.setPixelsId(this.pixelsID, false);
 		this.nMipmapLevels = rawPixStore.getResolutionLevels();
 		this.imageSize = new HashMap<>();
 		this.tileSize = new HashMap<>();
 
-		this.imageName = getImageData(omeroImageID, gateway, securityContext).getName();
-		this.channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, omeroImageID);
-		this.renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
+		this.imageName = getImageData(settings.imageID, settings.gateway, settings.ctx).getName();
+		this.channelMetadata = settings.gateway.getFacility(MetadataFacility.class).getChannelData(settings.ctx, settings.imageID);
+		this.renderingDef = settings.gateway.getRenderingSettingsService(settings.ctx).getRenderingSettings(pixelsID);
 
 		// Optimize time if there is only one resolution level because
 		// getResolutionDescriptions() is time-consuming // TODO : WHAT ??
@@ -366,8 +358,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 
 		// --X and Y stage positions--
 		System.out.println("Begin SQL request for OMERO image with ID : " +
-			this.omeroImageID);
-		List<IObject> objectinfos = gateway.getQueryService(securityContext)
+				settings.imageID);
+		List<IObject> objectinfos = settings.gateway.getQueryService(settings.ctx)
 			.findAllByQuery("select info from PlaneInfo as info " +
 				"join fetch info.deltaT as dt " +
 				"join fetch info.exposureTime as et " + "where info.pixels.id=" + pixels
@@ -384,18 +376,18 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			if (!planeinfo.getPositionX().getUnit().equals(
 				UnitsLength.REFERENCEFRAME))
 			{
-				lengthPosX = new LengthI(planeinfo.getPositionX(), this.settings.unit);
-				lengthPosY = new LengthI(planeinfo.getPositionY(), this.settings.unit);
+				lengthPosX = new LengthI(planeinfo.getPositionX(), settings.unit);
+				lengthPosY = new LengthI(planeinfo.getPositionY(), settings.unit);
 			}
 			else {
 				logger.warn("The pixel unit is not set for the image " +
-					this.imageName + " ; a default unit " + this.settings.unit + " has been set");
+					this.imageName + " ; a default unit " + settings.unit + " has been set");
 				Length l1 = planeinfo.getPositionX();
 				Length l2 = planeinfo.getPositionY();
-				l1.setUnit(OmeroTools.getUnitsLengthFromString(this.settings.unit));
-				l2.setUnit(OmeroTools.getUnitsLengthFromString(this.settings.unit));
-				lengthPosX = new LengthI(l1, this.settings.unit);
-				lengthPosY = new LengthI(l2, this.settings.unit);
+				l1.setUnit(OmeroTools.getUnitsLengthFromString(settings.unit));
+				l2.setUnit(OmeroTools.getUnitsLengthFromString(settings.unit));
+				lengthPosX = new LengthI(l1, settings.unit);
+				lengthPosY = new LengthI(l2, settings.unit);
 			}
 
 			this.stagePosX = lengthPosX.getValue();
@@ -409,19 +401,19 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		// psizes are expressed in the unit given in the builder
 		this.psizeX = 1;
 		this.psizeY = 1;
-		if (pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(this.settings.unit)) == null || pixels.getPixelSizeY(
-				OmeroTools.getUnitsLengthFromString(this.settings.unit)) == null)
+		if (pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(settings.unit)) == null || pixels.getPixelSizeY(
+				OmeroTools.getUnitsLengthFromString(settings.unit)) == null)
 		{
 			logger.warn("The physical pixel size is not set for image " +
-				this.imageName + " ; a default value of 1 " + this.settings.unit + " has been set");
+				this.imageName + " ; a default value of 1 " + settings.unit + " has been set");
 		}
 		else {
-			this.psizeX = pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(this.settings.unit)).getValue();
-			this.psizeY = pixels.getPixelSizeY(OmeroTools.getUnitsLengthFromString(this.settings.unit)).getValue();
+			this.psizeX = pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(settings.unit)).getValue();
+			this.psizeY = pixels.getPixelSizeY(OmeroTools.getUnitsLengthFromString(settings.unit)).getValue();
 		}
 		// to handle 2D images
 		this.psizeZ = 1;
-		Length length = pixels.getPixelSizeZ(OmeroTools.getUnitsLengthFromString(this.settings.unit));
+		Length length = pixels.getPixelSizeZ(OmeroTools.getUnitsLengthFromString(settings.unit));
 		if (length != null) {
 			this.psizeZ = length.getValue();
 		}
@@ -509,7 +501,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	 */
 	public RawPixelsStorePrx getNewStore() {
 		try {
-			RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(securityContext);
+			RawPixelsStorePrx rawPixStore = this.settings.gateway.getPixelsStore(this.settings.ctx);
 			rawPixStore.setPixelsId(getPixelsID(), false);
 			return rawPixStore;
 		}
@@ -521,8 +513,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 
 
 	public NumericType getNumericType(int channel) throws Exception {
-		PixelsData pixels = getPixelsDataFromOmeroID(omeroImageID, gateway,
-			securityContext);
+		PixelsData pixels = getPixelsDataFromOmeroID(this.settings.imageID, this.settings.gateway,
+			this.settings.ctx);
 		// TODO : get pixel type as a field in omerosourceopener
 		switch (pixels.getPixelType()) {
 			case FLOAT_TYPE:
@@ -540,7 +532,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}
 
 	public String getImageName() {
-		return (this.imageName + "--OMERO ID:" + this.omeroImageID);
+		return (this.imageName + "--OMERO ID:" + this.settings.imageID);
 	}
 
 	/*public static OmeroBdvOpener getOpener() {
@@ -567,9 +559,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		AffineTransform3D transform = new AffineTransform3D();
 		transform.identity();
 		transform.scale(getPixelSizeX() * (double) imageSize.get(0)[0] /
-				(double) imageSize.get(level)[0], getPixelSizeY() * (double) imageSize
-				.get(0)[1] / (double) imageSize.get(level)[1], getPixelSizeZ() *
-				(double) imageSize.get(0)[2] / (double) imageSize.get(level)[2]);
+				(double) imageSize.get(0)[0], getPixelSizeY() * (double) imageSize
+				.get(0)[1] / (double) imageSize.get(0)[1], getPixelSizeZ() *
+				(double) imageSize.get(0)[2] / (double) imageSize.get(0)[2]);
 		transform.translate(new double[] { getStagePosX(), getStagePosY(), 0 });
 
 		return transform;
@@ -624,7 +616,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}
 
 	@Override
-	public int[] getCellDimensions() {
+	public int[] getCellDimensions(int level) {
 		return new int[] { this.getTileSizeX(
 				this.nMipmapLevels - 1 - level), this.getTileSizeY(this.nMipmapLevels - 1 -
 				level), 1 };
