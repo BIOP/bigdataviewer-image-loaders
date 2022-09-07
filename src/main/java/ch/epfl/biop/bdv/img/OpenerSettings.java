@@ -1,7 +1,6 @@
 package ch.epfl.biop.bdv.img;
 
-import loci.formats.IFormatReader;
-import net.imagej.ops.Ops;
+
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
@@ -14,61 +13,73 @@ import omero.model.enums.UnitsLength;
 import java.io.File;
 import java.net.URI;
 
+/**
+ * Equivalent to a Builder class, serializable, which can create an {@link Opener}
+ * An opener can open and stream data for a 5D image (XYZCT)
+ *
+ * This builder class should be easily serializable
+ *
+ * Opener can open data from
+ * - BioFormats
+ * - Omero
+ * - More to come...
+ *
+ * Depending on the kind of opener, transient fields are required (Gateway and Context) for Omero
+ *
+ * */
 public class OpenerSettings {
+
+    //------ Modifications on the location of the dataset ( pixel size, origin, flip)
     protected double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
     protected double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    protected int poolSize = 10;
+    protected boolean positionIsImageCenter = true; // Top left corner otherwise
 
-    protected int numFetcherThreads = 2;
-    protected int numPriorities = 4;
+    //---- Target unit
+    protected Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
+    protected Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
+
+    protected String unit = UnitsLength.MICROMETER.toString();
+
+    //-------- How to open the dataset (block size, number of threads per image)
+    protected int poolSize = 10;
     protected boolean useDefaultXYBlockSize = true; // Block size : use the one
-    // defined by BioFormats or
     protected FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
             0 }, new long[] { 512, 512, 1 }); // needs a default size for z
 
     // Channels options
     protected boolean swZC = false; // Switch Z and Channels
    //PUT IT PUBLIC to be able to access the type outside
+    protected boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI
+
+    // ---- Opener core options
+
+    protected OpenerType currentBuilder;
+    protected String dataLocation = "";
+
+    // ---- BioFormats specific
+    protected int iSerie = 0;
+
+    // ---- OMERO specific
+    transient protected Gateway gateway;
+    transient protected SecurityContext ctx;
+    transient protected String host;
+    protected long imageID;
+
     public enum OpenerType {
         BIOFORMATS,
         OMERO,
         IMAGEJ,
         OPENSLIDE
     };
-    protected OpenerType currentBuilder;
-    protected String dataLocation = "";
-    protected Length positionReferenceFrameLength = new Length(1,UNITS.MICROMETER);
-    protected Length voxSizeReferenceFrameLength = new Length(1,UNITS.MICROMETER);
-    protected boolean positionIsImageCenter = true; // Top left corner otherwise
-    protected double[] voxSizePreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    protected double[] voxSizePostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
 
-    protected String unit = UNITS.MICROMETER.toString();
-
-    // Channels options
-    protected boolean splitRGBChannels = false;
-    protected int iSerie = 0;
-
-    transient protected Gateway gateway;
-    transient protected SecurityContext ctx;
-    transient protected String host;
-    protected long imageID;
-
+    // GETTERS
     public Gateway getGateway(){return this.gateway;}
     public SecurityContext getContext(){return this.ctx;}
     public String getHost(){return this.host;}
 
-    // cache and readers
+    // ---- cache and readers
     public OpenerSettings poolSize(int pSize){
         this.poolSize = pSize;
-        return this;
-    }
-    public OpenerSettings numFetcherThread(int nThread){
-        this.numFetcherThreads = nThread;
-        return this;
-    }
-    public OpenerSettings numPriorities(int nPriorities){
-        this.numPriorities = nPriorities;
         return this;
     }
 
@@ -82,8 +93,6 @@ public class OpenerSettings {
         cacheBlockSize = new FinalInterval(sx, sy, sz);
         return this;
     }
-
-
 
     // All space transformation methods
     public OpenerSettings flipPositionXYZ() {
@@ -134,7 +143,6 @@ public class OpenerSettings {
         return this;
     }
 
-
     public OpenerSettings setPositionPreTransform(AffineTransform3D at3d) {
         positionPreTransformMatrixArray = at3d.getRowPackedCopy();
         return this;
@@ -155,17 +163,16 @@ public class OpenerSettings {
         return this;
     }
 
-
     // reference frames
     public OpenerSettings positionReferenceFrameLength(Length l)
     {
-        this.positionReferenceFrameLength = l;
+        this.defaultSpaceUnit = l;
         return this;
     }
 
     public OpenerSettings voxSizeReferenceFrameLength(Length l)
     {
-        this.voxSizeReferenceFrameLength = l;
+        this.defaultVoxelUnit = l;
         return this;
     }
 
@@ -237,9 +244,6 @@ public class OpenerSettings {
         return this;
     }
 
-
-
-
     // define which kind of builder to deal with
     public OpenerSettings omeroBuilder(){
         this.currentBuilder = OpenerType.OMERO;
@@ -261,11 +265,6 @@ public class OpenerSettings {
         return this;
     }
 
-
-        /*public OpenerSettings openedReaders(Map<String, IFormatReader> openedReaders) {
-
-    }*/
-
     public OpenerSettings setGateway(Gateway gateway){
         this.gateway = gateway;
         return this;
@@ -282,11 +281,6 @@ public class OpenerSettings {
         return this;
     }
 
-
-    public OpenerSettings fixNikonND2(){
-        return this.flipPositionX().flipPositionY();
-    }
-
     public Opener create() throws Exception {
 
         switch (this.currentBuilder) {
@@ -295,7 +289,23 @@ public class OpenerSettings {
             case IMAGEJ: break;
             case OPENSLIDE: break;
             case BIOFORMATS:
-                return new BioFormatsBdvOpener(this);
+                return new BioFormatsBdvOpener(
+                        dataLocation,
+                        iSerie,
+                        // Location of the image
+                        positionPreTransformMatrixArray,
+                        positionPostTransformMatrixArray,
+                        positionIsImageCenter,
+                        defaultSpaceUnit,
+                        defaultVoxelUnit,
+                        unit,
+                        // How to stream it
+                        poolSize,
+                        useDefaultXYBlockSize,
+                        cacheBlockSize,
+                        // Channel options
+                        swZC,
+                        splitRGBChannels);
         }
         return null;
     }

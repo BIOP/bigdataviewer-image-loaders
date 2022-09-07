@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.img;
 
-import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -18,8 +17,6 @@ public interface Opener<T>{
     VoxelDimensions getVoxelDimensions();
 
     int[] getCellDimensions(int level);
-    int getSerieCount();
-    IMetadata getMetadata();
 
     Dimensions[] getDimensions();
 
