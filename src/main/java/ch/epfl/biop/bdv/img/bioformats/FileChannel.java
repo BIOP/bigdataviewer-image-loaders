@@ -22,15 +22,13 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
-public class FileSerieChannel {
+public class FileChannel {
 
 	public final int iFile;
-	public final int iSerie;
 	public final int iChannel;
 
-	public FileSerieChannel(int iF, int iS, int iC) {
+	public FileChannel(int iF, int iC) {
 		iFile = iF;
-		iSerie = iS;
 		iChannel = iC;
 	}
 }

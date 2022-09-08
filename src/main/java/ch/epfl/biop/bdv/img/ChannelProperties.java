@@ -1,20 +1,13 @@
-package ch.epfl.biop.bdv.img.bioformats;
+package ch.epfl.biop.bdv.img;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedIntType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.FloatType;
 import ome.model.units.BigResult;
 import ome.units.UNITS;
-import ome.xml.model.enums.PixelType;
 import loci.formats.meta.IMetadata;
 
 import omero.gateway.model.ChannelData;
-import omero.gateway.model.PixelsData;
 import omero.model.ChannelBinding;
 import omero.model.RenderingDef;
 import omero.model.enums.UnitsLength;
@@ -23,9 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 
-import static omero.gateway.model.PixelsData.*;
-import static omero.gateway.model.PixelsData.UINT32_TYPE;
-
 
 public class ChannelProperties {
 
@@ -33,10 +23,10 @@ public class ChannelProperties {
             ChannelProperties.class);
     public ARGBType color;
     String name;
-    int nChannels;
+    int nChannels = 1;
     Type<? extends  NumericType> pixelType;
     Boolean isRGB;
-    int iChannel = -1;
+    int iChannel;
     int emissionWavelength = -1;
     int excitationWavelength = -1;
 
@@ -44,10 +34,18 @@ public class ChannelProperties {
     final static int[] loopG = { 0, 1, 0, 1, 1, 0, 1 };
     final static int[] loopB = { 0, 0, 1, 1, 0, 1, 1 };
 
+
+    public ARGBType getColor() {
+        return color;
+    }
+
+    public String getChannelName() {
+        return name;
+    }
+
     public ChannelProperties(int iChannel){
         this.iChannel = iChannel;
     }
-
 
     public ChannelProperties setEmissionWavelength(int iSerie, IMetadata metadata){
         if (metadata.getChannelEmissionWavelength(iSerie, iChannel) != null) {
@@ -135,7 +133,10 @@ public class ChannelProperties {
 
 
     public ChannelProperties setChannelName(int iSerie, IMetadata metadata){
-        if (metadata.getChannelName(iSerie, this.iChannel) != null) {
+
+        String channelName = metadata.getChannelName(iSerie, this.iChannel);
+
+        if (channelName != null && !channelName.equals("")) {
             this.name = metadata.getChannelName(iSerie, this.iChannel);
         }
         else {
@@ -254,7 +255,7 @@ public class ChannelProperties {
     @Override
     public int hashCode() {
         return this.name.hashCode() * this.pixelType.hashCode() * emissionWavelength * excitationWavelength *
-                (iChannel + 1);
+                (iChannel + 1) * this.color.hashCode() * this.nChannels;
     }
 
     @Override
@@ -264,7 +265,8 @@ public class ChannelProperties {
             return (isRGB == bc.isRGB) && (name.equals(bc.name)) && (pixelType
                     .equals(bc.pixelType)) && (iChannel == bc.iChannel) &&
                     (emissionWavelength == (bc.emissionWavelength)) &&
-                    (excitationWavelength == (bc.excitationWavelength));
+                    (excitationWavelength == (bc.excitationWavelength)) &&
+                    (nChannels == (bc.nChannels));
         }
         else {
             return false;

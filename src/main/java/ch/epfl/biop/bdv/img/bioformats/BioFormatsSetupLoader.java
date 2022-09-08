@@ -71,7 +71,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 	final private ResourcePool<IFormatReader> readerPool;
 
-	final int iSerie, iChannel;
+	final int /*iSerie,*/ iChannel;
 
 	final Supplier<VolatileGlobalCellCache> cacheSupplier;
 
@@ -95,7 +95,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 	final int setup;
 
 	@SuppressWarnings("unchecked")
-	public BioFormatsSetupLoader(BioFormatsBdvOpener opener, int sourceIndex,
+	public BioFormatsSetupLoader(BioFormatsBdvOpener opener, //int sourceIndex,
 		int channelIndex, int setup, T t, V v,
 		Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception
 	{
@@ -104,7 +104,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		this.cacheSupplier = cacheSupplier;
 		this.opener = opener;
 		this.readerPool = opener.getPixelReader();
-		iSerie = sourceIndex;
+		//iSerie = sourceIndex;
 		iChannel = channelIndex;
 
 		if (t instanceof FloatType) {
@@ -157,7 +157,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			//is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
 
 			numberOfTimePoints = opener.getNTimePoints();//reader.getSizeT();
-			cellDimensions = opener.getCellDimensions(iSerie);/*new int[] { opener.useBioFormatsXYBlockSize ? reader
+			cellDimensions = opener.getCellDimensions(0);/*new int[] { opener.useBioFormatsXYBlockSize ? reader
 				.getOptimalTileWidth() : (int) opener.cacheBlockSize.dimension(0),
 				opener.useBioFormatsXYBlockSize ? reader.getOptimalTileHeight()
 					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1
@@ -211,27 +211,27 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		if (t instanceof UnsignedByteType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
-					readerPool, iSerie, iChannel, switchZandC);
+					readerPool,/* iSerie,*/ iChannel, switchZandC);
 		}
 		else if (t instanceof UnsignedShortType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
+					readerPool, /*iSerie, */iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
-					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
+					readerPool,/* iSerie, */iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof IntType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
+					readerPool, /*iSerie,*/ iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof ARGBType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
-					readerPool, iSerie, iChannel, switchZandC);
+					readerPool, /*iSerie,*/ iChannel, switchZandC);
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()

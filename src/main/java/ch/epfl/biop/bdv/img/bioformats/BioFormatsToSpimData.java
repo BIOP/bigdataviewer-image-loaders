@@ -22,12 +22,11 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.ChannelProperties;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -47,7 +46,6 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spimdata.util.Displaysettings;
@@ -72,25 +70,20 @@ public class BioFormatsToSpimData {
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsToSpimData.class);
 
-	private int getChannelId(IMetadata omeMeta, int iSerie, int iChannel,
-		boolean isRGB)
+	private int getChannelId(int iChannel, ChannelProperties channelProperties)
 	{
-		BioFormatsTools.BioformatsChannel channel =
-			new BioFormatsTools.BioformatsChannel(omeMeta, iSerie, iChannel, false);
-		if (!channelToId.containsKey(channel)) {
+		if (!channelToId.containsKey(channelProperties)) {
 			// No : add it in the channel hashmap
-			channelToId.put(channel, channelCounter);
-			logger.debug("New Channel for series " + iSerie + ", channel " +
-				iChannel + ", set as number " + channelCounter);
+			channelToId.put(channelProperties, channelCounter);
+			logger.debug("New Channel " + iChannel + ", set as number " + channelCounter);
 			channelIdToChannel.put(channelCounter, new Channel(channelCounter));
 			channelCounter++;
 		}
 		else {
-			logger.debug("Channel for series " + iSerie + ", channel " + iChannel +
-				", already known.");
+			logger.debug("Channel " + iChannel + ", already known.");
 		}
 
-		return channelIdToChannel.get(channelToId.get(channel)).getId();
+		return channelIdToChannel.get(channelToId.get(channelProperties)).getId();
 	}
 
 	int viewSetupCounter = 0;
@@ -99,15 +92,12 @@ public class BioFormatsToSpimData {
 	int channelCounter = 0;
 
 	final Map<Integer, Channel> channelIdToChannel = new HashMap<>();
-
 	final ArrayList<Opener<?>> openers = new ArrayList<>();
-	final Map<BioFormatsTools.BioformatsChannel, Integer> channelToId =
-		new HashMap<>();
+	final Map<ChannelProperties, Integer> channelToId = new HashMap<>();
 	//final Map<Integer, Integer> fileIdxToNumberOfSeries = new HashMap<>();
 	//final Map<Integer, SeriesTps> fileIdxToNumberOfSeriesAndTimepoints =
 	//	new HashMap<>();
-	final Map<Integer, FileSerieChannel> viewSetupToBFFileSerieChannel =
-		new HashMap<>();
+	final Map<Integer, FileChannel> viewSetupToBFFileSerieChannel = new HashMap<>();
 
 	protected AbstractSpimData getSpimDataInstance(List<OpenerSettings> openerSettings) {
 		//openers.forEach(o -> o.ignoreMetadata()); // necessary for spimdata
@@ -125,18 +115,23 @@ public class BioFormatsToSpimData {
 
 		try {
 			for (int iF = 0; iF < openerSettings.size(); iF++) {
+				final int iFile = iF;
 
-				FileIndex fi = new FileIndex(iF); // first entity
+				// get the opener
 				Opener<?> opener = openerSettings.get(iF).create();
 				this.openers.add(opener);
 
+				// get image location
 				String dataLocation = openerSettings.get(iF).getDataLocation(); // other entity
-				fi.setName(dataLocation);
 				logger.debug("Data located at " + dataLocation);
+
+				FileIndex fi = new FileIndex(iF); // first entity
+				fi.setName(dataLocation);
+
 
 				//IFormatReader memo = openers.get(iF).getNewReader();
 
-				final int iFile = iF;
+
 
 				//final int seriesCount = opener.getSerieCount();
 				//logger.debug("Number of Series " + seriesCount);
@@ -149,7 +144,7 @@ public class BioFormatsToSpimData {
 				//int iSerie = opener.getSerie();
 			//	series.forEach(iSerie -> {
 					//memo.setSeries(iSerie);
-					SeriesNumber sn = new SeriesNumber(iSerie, opener.getImageName()); // other entity
+					//SeriesNumber sn = new SeriesNumber(iSerie, opener.getImageName()); // other entity
 					//fileIdxToNumberOfSeriesAndTimepoints.put(iFile, new SeriesTps(seriesCount, omeMeta.getPixelsSizeT(iSerie).getNumberValue().intValue()));
 
 					// One serie = one Tile
@@ -173,27 +168,25 @@ public class BioFormatsToSpimData {
 					//String imageName = getImageName(dataLocation, seriesCount, omeMeta, iSerie);
 					//sn.setName(imageName);
 
+					// get image dimensions (x, y and z)
 					Dimensions dims = opener.getDimensions()[0];
 					//BioFormatsTools.getSeriesDimensions(omeMeta, iSerie); // number of pixels .. no calibration
 					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) + " Z:" + dims.dimension(2));
+
+					// get voxel dimension (voxel size in x,y and z in ?? unit)
 					VoxelDimensions voxDims = opener.getVoxelDimensions();
 
 					// Register Setups (one per channel and one per timepoint)
-
 					channels.forEach(iCh -> {
-						//int ch_id = getChannelId(omeMeta, iSerie, iCh, opener.getRGB());
-						//String channelName = getChannelName(omeMeta, iSerie, iCh);
-						Channel ch = opener.getChannel(iCh);
-						String setupName = opener.getImageName() + "-" + ch.getName();//channelName;
+						// get channel properties
+						ChannelProperties ch = opener.getChannel(iCh);
+						int ch_id = getChannelId(iCh, ch);
 
-						logger.debug(setupName);
+						// build the viewsetup
+						String setupName = opener.getImageName() + "-" + ch.getChannelName();
+						logger.debug("setup name : "+setupName);
 						ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims, voxDims, tile, // Tile is index of Serie
-							ch, dummy_ang, dummy_ill);
-
-						opener.getEntities().forEach(entity -> vs.setAttribute(entity));
-
-						//vs.setAttribute(fi);
-						//vs.setAttribute(sn);
+							channelIdToChannel.get(ch_id), dummy_ang, dummy_ill);
 
 						// Attempt to set color
 						Displaysettings ds = new Displaysettings(viewSetupCounter);
@@ -202,20 +195,22 @@ public class BioFormatsToSpimData {
 						ds.isSet = false;
 
 						// ----------- Color
-						ARGBType color = ch.getColor();/*BioFormatsTools.getColorFromMetadata(omeMeta,
-							iSerie, iCh);*/
-
+						ARGBType color = ch.getColor();
 						if (color != null) {
 							ds.isSet = true;
 							ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
 								color.get()), ARGBType.blue(color.get()), ARGBType.alpha(color
 									.get()) };
 						}
+
+						// set viewsetup attributes
+						opener.getEntities(iCh).forEach(vs::setAttribute);
+						vs.setAttribute(fi);
 						vs.setAttribute(ds);
 
+						// add viewsetup to the list
 						viewSetups.add(vs);
-						viewSetupToBFFileSerieChannel.put(viewSetupCounter,
-							new FileSerieChannel(iFile, iSerie, iCh));
+						viewSetupToBFFileSerieChannel.put(viewSetupCounter, new FileChannel(iFile, iCh));
 						viewSetupCounter++;
 
 					});
@@ -278,21 +273,18 @@ public class BioFormatsToSpimData {
 							openers.get(iFile).axesOfImageFlip // axesOfImageFlip
 					);*/
 					timePoints.forEach(iTp -> {
-
 						viewSetupToBFFileSerieChannel.keySet().stream()
 								.filter(viewSetupId -> (viewSetupToBFFileSerieChannel.get(viewSetupId).iFile == iFile))
 								//.filter(viewSetupId -> (viewSetupToBFFileSerieChannel.get(viewSetupId).iSerie == opener.getSerie()))
 								.forEach(viewSetupId -> {
-											if (iTp.getId() < nTimepoints) {
-
-												registrations.add(new ViewRegistration(iTp.getId(),
-													viewSetupId, rootTransform)); // do not need to keep the root transform per setupID
-												// because the transform is set for one opener (XYZCT) and one opener = one serie
-											}
-											else {
-												missingViews.add(new ViewId(iTp.getId(), viewSetupId));
-											}
-										});
+									if (iTp.getId() < nTimepoints) {
+										registrations.add(new ViewRegistration(iTp.getId(), viewSetupId, rootTransform)); // do not need to keep the root transform per setupID
+										// because the transform is set for one opener (XYZCT) and one opener = one serie
+									}
+									else {
+										missingViews.add(new ViewId(iTp.getId(), viewSetupId));
+									}
+								});
 					});
 
 				//});
@@ -312,12 +304,12 @@ public class BioFormatsToSpimData {
 		return null;
 	}
 
-	private String getChannelName(IMetadata omeMeta, int iSerie, int iCh) {
+	/*private String getChannelName(IMetadata omeMeta, int iSerie, int iCh) {
 		String channelName = omeMeta.getChannelName(iSerie, iCh);
 		channelName = (channelName == null || channelName.equals("")) ? "ch" + iCh
 			: channelName;
 		return channelName;
-	}
+	}*/
 
 
 

@@ -23,7 +23,10 @@
 package ch.epfl.biop.bdv.img;
 
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.ChannelProperties;
+import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
+import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
+import ch.epfl.biop.bdv.img.bioformats.entity.UriEntity;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -52,6 +55,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -108,7 +113,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			FinalInterval cacheBlockSize,
 			boolean swZC,
 			boolean splitRGBChannels
-	) {
+	) throws URISyntaxException {
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
@@ -161,9 +166,8 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.imageName = getImageName(this.omeMeta,iSerie,dataLocation);
 		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
 		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
-
-
 	}
+
 
 	private List<ChannelProperties> getChannelProperties(IMetadata omeMeta, int iSerie, int nChannels){
 		List<ChannelProperties> channelPropertiesList = new ArrayList<>();
@@ -294,13 +298,23 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
-	public List<ChannelProperties> getChannel(int iChannel) {
-		return this.channelPropertiesList;
+	public ChannelProperties getChannel(int iChannel) {
+		if(iChannel >= this.nChannels) {
+			logger.error("You are trying to get1 the channel " + iChannel + " in an image with only " + this.nChannels);
+			return null;
+		}
+		return this.channelPropertiesList.get(iChannel);
 	}
 
 	@Override
-	public List<Entity> getEntities() {
-		return null;
+	public List<Entity> getEntities(int iChannel) {
+		ArrayList<Entity> entityList = new ArrayList<>();
+
+		entityList.add(new SeriesNumber(iSerie, this.imageName));
+		entityList.add(new UriEntity(0, dataLocation));
+		entityList.add(new ChannelName(0, channelPropertiesList.get(iChannel).getChannelName()));
+
+		return entityList;
 	}
 
 	@Override
