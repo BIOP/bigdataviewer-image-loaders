@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-image-loaders</artifactId>
-	<version>0.3.0-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT</version>
 
 	<name>Biop bigdataviewer image loaders</name>
 	<description>Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)</description>
