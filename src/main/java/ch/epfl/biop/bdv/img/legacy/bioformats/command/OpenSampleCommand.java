@@ -37,7 +37,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-@SuppressWarnings({ "Unused", "CanBeFinal" })
+@SuppressWarnings({ "unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open sample dataset",
 	label = "Open sample datasets",
@@ -83,7 +83,7 @@ public class OpenSampleCommand implements Command {
 			return;
 		}
 		for (Field f : fields) {
-			if (f.getName().toUpperCase().equals(datasetName.toUpperCase())) {
+			if (f.getName().equalsIgnoreCase(datasetName)) {
 				try {
 					// Dataset found
 					datasetName = (String) f.get(null);

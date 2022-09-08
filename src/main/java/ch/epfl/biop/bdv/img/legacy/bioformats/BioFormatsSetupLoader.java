@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+
 @Deprecated
 public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
 	extends AbstractViewerSetupImgLoader<T, V> implements

@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
- * Converting BioFormats structure into an Xml Dataset, compatible for
+ * Converting BioFormats structure into a Xml Dataset, compatible for
  * BigDataViewer and FIJI BIG Plugins Limitation Series are considered as Tiles,
  * no Illumination or Angle is considered
  *
@@ -107,7 +107,7 @@ public class BioFormatsToSpimData {
 	protected AbstractSpimData getSpimDataInstance(
 		List<BioFormatsBdvOpener> openers)
 	{
-		openers.forEach(o -> o.ignoreMetadata()); // necessary for spimdata
+		openers.forEach(BioFormatsBdvOpener::ignoreMetadata); // necessary for spimdata
 		viewSetupCounter = 0;
 		nTileCounter = 0;
 		maxTimepoints = -1;
@@ -172,7 +172,7 @@ public class BioFormatsToSpimData {
 						iSerie);
 					sn.setName(imageName);
 					Dimensions dims = BioFormatsTools.getSeriesDimensions(omeMeta,
-						iSerie); // number of pixels .. no calibration
+						iSerie); // number of pixels no calibration
 					logger.debug("X:" + dims.dimension(0) + " Y:" + dims.dimension(1) +
 						" Z:" + dims.dimension(2));
 					VoxelDimensions voxDims = BioFormatsTools.getSeriesVoxelDimensions(
@@ -201,12 +201,11 @@ public class BioFormatsToSpimData {
 						ARGBType color = BioFormatsTools.getColorFromMetadata(omeMeta,
 							iSerie, iCh);
 
-						if (color != null) {
-							ds.isSet = true;
-							ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
-								color.get()), ARGBType.blue(color.get()), ARGBType.alpha(color
-									.get()) };
-						}
+						ds.isSet = true;
+						ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
+							color.get()), ARGBType.blue(color.get()), ARGBType.alpha(color
+								.get()) };
+
 						vs.setAttribute(ds);
 
 						viewSetups.add(vs);
@@ -220,10 +219,6 @@ public class BioFormatsToSpimData {
 			}
 
 			// ------------------- BUILDING SPIM DATA
-			ArrayList<String> inputFilesArray = new ArrayList<>();
-			for (BioFormatsBdvOpener opener : openers) {
-				inputFilesArray.add(opener.getDataLocation());
-			}
 			List<TimePoint> timePoints = new ArrayList<>();
 			IntStream.range(0, maxTimepoints).forEach(tp -> timePoints.add(
 				new TimePoint(tp)));

@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-/**
+/*
  * Copyright 2013 DB TSAI
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,7 +108,7 @@ public abstract class ResourcePool<Resource> {
 		isClosed = true;
 		ArrayList<Resource> resources = new ArrayList<>(size);
 		pool.drainTo(resources);
-		resources.forEach(closer::accept);
+		resources.forEach(closer);
 	}
 
 }

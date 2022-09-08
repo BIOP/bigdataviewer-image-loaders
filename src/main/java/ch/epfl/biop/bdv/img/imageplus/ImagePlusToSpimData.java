@@ -50,14 +50,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ImagePlusToSpimData
-{
+public class ImagePlusToSpimData {
 
 	static final private Logger logger = LoggerFactory.getLogger(
 		ImagePlusToSpimData.class);
 
 	// Function stolen and modified from bigdataviewer_fiji
-	public static AbstractSpimData<?> getSpimData(ImagePlus imp) throws UnsupportedOperationException {
+	public static AbstractSpimData<?> getSpimData(ImagePlus imp)
+		throws UnsupportedOperationException
+	{
 		// check the image type
 		switch (imp.getType()) {
 			case ImagePlus.GRAY8:
@@ -67,7 +68,7 @@ public class ImagePlusToSpimData
 				break;
 			default:
 				String message = "Error in image " + imp.getShortTitle() +
-						": Only 8, 16, 32-bit images and RGB images are supported currently!";
+					": Only 8, 16, 32-bit images and RGB images are supported currently!";
 				logger.error(message);
 				throw new UnsupportedOperationException(message);
 		}
@@ -90,16 +91,16 @@ public class ImagePlusToSpimData
 		{
 			switch (imp.getType()) {
 				case ImagePlus.GRAY8:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedByteInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedByteInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.GRAY16:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedShortInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedShortInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.GRAY32:
-					imgLoader = ImagePlusImageLoader.createFloatInstance(
-						imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createFloatInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.COLOR_RGB:
 				default:
@@ -168,10 +169,8 @@ public class ImagePlusToSpimData
 
 		final File basePath = new File(".");
 
-		final AbstractSpimData<?> spimData = new SpimDataMinimal(basePath, seq,
+		return new SpimDataMinimal(basePath, seq,
 			new ViewRegistrations(registrations));
-
-		return spimData;
 	}
 
 }

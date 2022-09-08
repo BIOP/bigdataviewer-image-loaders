@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
+
 @Deprecated
 public class BioFormatsImageLoader implements ViewerImgLoader,
 	MultiResolutionImgLoader, Closeable

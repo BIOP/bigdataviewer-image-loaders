@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Deprecated
-@SuppressWarnings({ "Unused", "CanBeFinal" })
+@SuppressWarnings({ "unused", "CanBeFinal" })
 public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 
 	static public Map<String, Object> getDefaultParameters() {
@@ -120,7 +120,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 			opener = opener.cacheBounded(numberofblockskeptinmemory);
 		}
 
-		// Not sure it is useful here because the metadata location is handled
+		// Not sure if it is useful here because the metadata location is handled
 		// somewhere else
 		if (!positioniscenter.equals("AUTO")) {
 			if (positioniscenter.equals("TRUE")) {

@@ -77,41 +77,44 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 	implements ViewerImgLoader, TypedBasicImgLoader<T>
 {
 
-	public static ImagePlusImageLoader<FloatType, VolatileFloatType, VolatileFloatArray>
+	public static
+		ImagePlusImageLoader<FloatType, VolatileFloatType, VolatileFloatArray>
 		createFloatInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileFloatArray((float[]) array, true), new FloatType(),
-			new VolatileFloatType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileFloatArray(
+			(float[]) array, true), new FloatType(), new VolatileFloatType(),
+			offsetTime);
 	}
 
-	public static ImagePlusImageLoader<UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray>
+	public static
+		ImagePlusImageLoader<UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray>
 		createUnsignedShortInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileShortArray((short[]) array, true),
-			new UnsignedShortType(), new VolatileUnsignedShortType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileShortArray(
+			(short[]) array, true), new UnsignedShortType(),
+			new VolatileUnsignedShortType(), offsetTime);
 	}
 
-	public static ImagePlusImageLoader<UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray>
+	public static
+		ImagePlusImageLoader<UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray>
 		createUnsignedByteInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileByteArray((byte[]) array, true),
-			new UnsignedByteType(), new VolatileUnsignedByteType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileByteArray(
+			(byte[]) array, true), new UnsignedByteType(),
+			new VolatileUnsignedByteType(), offsetTime);
 	}
 
-	public static ImagePlusImageLoader<ARGBType, VolatileARGBType, VolatileIntArray>
+	public static
+		ImagePlusImageLoader<ARGBType, VolatileARGBType, VolatileIntArray>
 		createARGBInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileIntArray((int[]) array, true), new ARGBType(),
-			new VolatileARGBType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileIntArray(
+			(int[]) array, true), new ARGBType(), new VolatileARGBType(), offsetTime);
 	}
 
-	private static double[][] mipmapResolutions = new double[][] { { 1, 1, 1 } };
+	private static final double[][] mipmapResolutions = new double[][] { { 1, 1, 1 } };
 
-	private static AffineTransform3D[] mipmapTransforms =
+	private static final AffineTransform3D[] mipmapTransforms =
 		new AffineTransform3D[] { new AffineTransform3D() };
 
 	private final CacheArrayLoader<A> loader;
@@ -152,8 +155,8 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 	}
 
 	protected ImagePlusImageLoader(final ImagePlus imp,
-								   final Function<Object, A> wrapPixels, final T type, final V volatileType,
-								   final int timeOffset)
+		final Function<Object, A> wrapPixels, final T type, final V volatileType,
+		final int timeOffset)
 	{
 		this.loader = new VirtualStackArrayLoader<>(imp, wrapPixels, getByteCount(
 			type.getNativeTypeFactory().getPrimitiveType()));
@@ -171,7 +174,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 	}
 
 	protected ImagePlusImageLoader(final ImagePlus imp,
-								   final Function<Object, A> wrapPixels, final T type, final V volatileType)
+		final Function<Object, A> wrapPixels, final T type, final V volatileType)
 	{
 		this(imp, wrapPixels, type, volatileType, 0);
 	}

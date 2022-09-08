@@ -31,6 +31,7 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
 @Deprecated
 // Copied from N5 Array Loader
 public class BioFormatsArrayLoaders {
@@ -82,7 +83,7 @@ public class BioFormatsArrayLoaders {
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				if (dimensions[2] == 1) {
-					// Optimisation (maybe useful ? should avoid an array allocation and
+					// Optimisation (maybe useful ?) should avoid an array allocation and
 					// the ByteBuffer overhead
 					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
 						minZ, timepoint) : reader.getIndex(minZ, channel, timepoint), minX,

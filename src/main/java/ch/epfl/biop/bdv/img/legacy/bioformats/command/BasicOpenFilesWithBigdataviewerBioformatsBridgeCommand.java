@@ -36,12 +36,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 @Deprecated
-@SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [BioFormats Bdv Bridge (Basic) (Legacy)]",
 	description = "Support bioformats multiresolution API. Attempts to set colors based " +
 		"on bioformats metadata. Do not attempt auto contrast.")
+@SuppressWarnings({ "CanBeFinal", "unused"})
 public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 	Command
 {

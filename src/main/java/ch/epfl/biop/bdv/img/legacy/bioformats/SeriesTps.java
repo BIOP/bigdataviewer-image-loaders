@@ -21,6 +21,7 @@
  */
 
 package ch.epfl.biop.bdv.img.legacy.bioformats;
+
 @Deprecated
 public class SeriesTps {
 

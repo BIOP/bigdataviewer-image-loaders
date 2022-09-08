@@ -27,6 +27,7 @@ import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
 import org.jdom2.Element;
+
 @Deprecated
 @ViewSetupAttributeIo(name = "fileindex", type = FileIndex.class)
 public class XmlIoFileIndex extends XmlIoNamedEntity<FileIndex> {

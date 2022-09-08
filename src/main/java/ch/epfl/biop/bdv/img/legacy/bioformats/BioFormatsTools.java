@@ -41,6 +41,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 @Deprecated
 public class BioFormatsTools {
 
@@ -52,7 +53,7 @@ public class BioFormatsTools {
 		final int iSerie;
 		final int iChannel;
 		int emissionWl = 1;
-		public String chName = "";
+		public String chName;
 		String pxType = "";
 		final boolean isRGB;
 
@@ -175,7 +176,7 @@ public class BioFormatsTools {
 	}
 
 	public static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
-		int iSerie, Unit u,
+		int iSerie, Unit<Length> u,
 		// Bioformats location fix
 		double[] positionPreTransformMA, double[] positionPostTransformMA,
 		Length positionReferenceFrameLength, boolean positionIsImageCenter,
@@ -279,8 +280,8 @@ public class BioFormatsTools {
 			2.0), -(dims.dimension(2) / 2.0));
 
 		AffineTransform3D translateBwd = new AffineTransform3D();
-		translateBwd.translate(+(dims.dimension(0) / 2.0), +(dims.dimension(1) /
-			2.0), +(dims.dimension(2) / 2.0));
+		translateBwd.translate((dims.dimension(0) / 2.0), (dims.dimension(1) /
+			2.0), (dims.dimension(2) / 2.0));
 
 		AffineTransform3D flip = new AffineTransform3D();
 		flip.scale(axesFlip[0] ? -1 : 1, axesFlip[1] ? -1 : 1, axesFlip[2] ? -1
@@ -318,7 +319,7 @@ public class BioFormatsTools {
 	public static VoxelDimensions getSeriesVoxelDimensions(IMetadata omeMeta,
 		int iSerie, Unit<Length> u, Length voxSizeReferenceFrameLength)
 	{
-		// Always 3 to allow for big stitcher compatibility
+		// 3 to allow for BigStitcher compatibility
 		int numDimensions = 3;
 		Length[] voxSize = getSeriesVoxelSizeAsLengths(omeMeta, iSerie);
 		double[] d = new double[3];
@@ -345,7 +346,6 @@ public class BioFormatsTools {
 		VoxelDimensions voxelDimensions;
 
 		{
-			assert numDimensions == 3;
 			voxelDimensions = new VoxelDimensions() {
 
 				final Unit<Length> targetUnit = u;
@@ -456,7 +456,7 @@ public class BioFormatsTools {
 			new ArrayList<>();
 
 		for (String str : splitIndexes) {
-			str.trim();
+			str = str.trim();
 			String seriesIdentifier = str;
 			String channelIdentifier = "*";
 			if (str.contains(".")) {
@@ -549,7 +549,7 @@ public class BioFormatsTools {
 		String[] splitIndexes = expression.split(",");
 		ArrayList<Integer> arrayOfIndexes = new ArrayList<>();
 		for (String str : splitIndexes) {
-			str.trim();
+			str = str.trim();
 			if (str.contains(":")) {
 				// Array of source, like 2:5 = 2,3,4,5
 				String[] boundIndex = str.split(":");
@@ -609,7 +609,7 @@ public class BioFormatsTools {
 		int iCh)
 	{
 		ome.xml.model.primitives.Color c = omeMeta.getChannelColor(iSerie, iCh);
-		ARGBType color = null;
+		ARGBType color;
 		if (c != null) {
 			logger.debug("c = [" + c.getRed() + "," + c.getGreen() + "," + c
 				.getBlue() + "]");
@@ -638,7 +638,7 @@ public class BioFormatsTools {
 	/**
 	 * Taken from Earl F. Glynn's web page:
 	 * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra
-	 * Lab Report</a> Return a RGB array encoding a color from an input wavelength
+	 * Lab Report</a> Return an RGB array encoding a color from an input wavelength
 	 * in nm
 	 */
 
@@ -722,7 +722,7 @@ public class BioFormatsTools {
 	 * Look into Fields of BioFormats UNITS class that matches the input string
 	 * Return the corresponding Unit Field Case insensitive
 	 * 
-	 * @param unit_string
+	 * @param unit_string the unit in a strin representation
 	 * @return corresponding BF Unit object
 	 */
 	public static Unit<Length> getUnitFromString(String unit_string) {
@@ -731,13 +731,11 @@ public class BioFormatsTools {
 			if (f.getType().equals(Unit.class)) {
 				if (f.getName() != null) {
 					try {
-						if (f.getName().toUpperCase().equals(unit_string.trim()
-							.toUpperCase()) || ((Unit) (f.get(null))).getSymbol()
-								.toUpperCase().equals(unit_string.trim().toUpperCase()))
+						if (f.getName().equalsIgnoreCase(unit_string.trim()) || ((Unit) (f.get(null))).getSymbol().equalsIgnoreCase(unit_string.trim()))
 						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
 							// {
 							// Field found
-							return (Unit) f.get(null); // Field is assumed to be static
+							return (Unit<Length>) f.get(null); // Field is assumed to be static
 						}
 					}
 					catch (Exception e) {

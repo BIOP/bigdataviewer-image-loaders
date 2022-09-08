@@ -230,8 +230,7 @@ public class ImagePlusHelper {
 			Matcher matcher = pattern.matcher(imp.getInfoProperty());
 			if (matcher.find()) {
 				// Looks good, we have something that looks like an affine transform
-				int timeOrigin = Integer.parseInt(matcher.group(2));
-				return timeOrigin;
+				return Integer.parseInt(matcher.group(2));
 			}
 		}
 		return 0;

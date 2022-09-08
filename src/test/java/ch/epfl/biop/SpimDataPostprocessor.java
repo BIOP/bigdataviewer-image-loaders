@@ -42,7 +42,6 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 	protected static final Logger logger = LoggerFactory.getLogger(
 		SpimDataPostprocessor.class);
 
-
 	@Parameter
 	ObjectService objectService;
 
@@ -64,7 +63,8 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 				for (AbstractSpimData<?> asd : asds) {
 					if (bdvh == null) {
 						bdvh = BdvFunctions.show(asd).get(0).getBdvHandle();
-					} else {
+					}
+					else {
 						BdvFunctions.show(asd, BdvOptions.options().addTo(bdvh));
 					}
 					objectService.addObject(asd);

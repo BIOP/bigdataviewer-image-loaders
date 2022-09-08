@@ -96,7 +96,7 @@ public class DatasetHelper {
 			}
 			else {
 				System.out.println("Downloading and caching: " + url + " size = " +
-					(int) (getFileSize(url) / 1024) + " kb");
+						(getFileSize(url) / 1024) + " kb");
 				FileUtils.copyURLToFile(url, file_out, 10000, 10000);
 				System.out.println("Downloading and caching of " + url +
 					" completed successfully ");

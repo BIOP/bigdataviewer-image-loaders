@@ -30,10 +30,10 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@SuppressWarnings({ "Unused", "CanBeFinal" })
+@SuppressWarnings({ "unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-		menuPath = "Plugins>BigDataViewer>ImagePlus>Open Image",
-		description = "Opens the current image plus as a Bdv Dataset ")
+	menuPath = "Plugins>BigDataViewer>ImagePlus>Open Image",
+	description = "Opens the current image plus as a Bdv Dataset ")
 public class ImagePlusToBdvDatasetCommand implements Command {
 
 	// Parameter for dataset creation
@@ -44,8 +44,8 @@ public class ImagePlusToBdvDatasetCommand implements Command {
 	AbstractSpimData<?> spimdata;
 
 	@Parameter(
-			label = "Dataset name (leave empty to name it like the ImagePlus title)",
-			persist = false)
+		label = "Dataset name (leave empty to name it like the ImagePlus title)",
+		persist = false)
 	public String datasetname = ""; // Cheat to allow dataset renaming
 
 	@Override

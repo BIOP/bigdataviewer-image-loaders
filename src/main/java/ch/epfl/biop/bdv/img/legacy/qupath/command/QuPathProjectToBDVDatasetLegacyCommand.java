@@ -23,6 +23,7 @@ import java.io.File;
  * images
  */
 
+@SuppressWarnings({ "unused", "CanBeFinal" })
 @Deprecated
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project (legacy)]")
@@ -31,7 +32,7 @@ public class QuPathProjectToBDVDatasetLegacyCommand extends
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
-			QuPathProjectToBDVDatasetLegacyCommand.class);
+		QuPathProjectToBDVDatasetLegacyCommand.class);
 
 	@Parameter
 	File quPathProject;
@@ -55,45 +56,55 @@ public class QuPathProjectToBDVDatasetLegacyCommand extends
 			}
 		}
 		catch (Exception e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 
 	}
 
-
 	public BioFormatsBdvOpener getOpener(String datalocation) {
-		Unit bfUnit = BioFormatsTools.getUnitFromString(this.unit);
-		Length positionReferenceFrameLength = new Length(this.refframesizeinunitlocation, bfUnit);
-		Length voxSizeReferenceFrameLength = new Length(this.refframesizeinunitvoxsize, bfUnit);
-		BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener()
-				.location(datalocation).unit(this.unit)
-				//.auto()
-				.ignoreMetadata();
+		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(this.unit);
+		Length positionReferenceFrameLength = new Length(
+			this.refframesizeinunitlocation, bfUnit);
+		Length voxSizeReferenceFrameLength = new Length(
+			this.refframesizeinunitvoxsize, bfUnit);
+		BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
+			datalocation).unit(this.unit)
+			// .auto()
+			.ignoreMetadata();
 		if (!this.switchzandc.equals("AUTO")) {
 			opener = opener.switchZandC(this.switchzandc.equals("TRUE"));
 		}
 
 		if (!this.usebioformatscacheblocksize) {
-			opener = opener.cacheBlockSize(this.cachesizex, this.cachesizey, this.cachesizez);
+			opener = opener.cacheBlockSize(this.cachesizex, this.cachesizey,
+				this.cachesizez);
 		}
 
 		if (!this.positioniscenter.equals("AUTO")) {
 			if (this.positioniscenter.equals("TRUE")) {
 				opener = opener.centerPositionConvention();
-			} else {
+			}
+			else {
 				opener = opener.cornerPositionConvention();
 			}
 		}
 
-		if (!this.flippositionx.equals("AUTO") && this.flippositionx.equals("TRUE")) {
+		if (!this.flippositionx.equals("AUTO") && this.flippositionx.equals(
+			"TRUE"))
+		{
 			opener = opener.flipPositionX();
 		}
 
-		if (!this.flippositiony.equals("AUTO") && this.flippositiony.equals("TRUE")) {
+		if (!this.flippositiony.equals("AUTO") && this.flippositiony.equals(
+			"TRUE"))
+		{
 			opener = opener.flipPositionY();
 		}
 
-		if (!this.flippositionz.equals("AUTO") && this.flippositionz.equals("TRUE")) {
+		if (!this.flippositionz.equals("AUTO") && this.flippositionz.equals(
+			"TRUE"))
+		{
 			opener = opener.flipPositionZ();
 		}
 

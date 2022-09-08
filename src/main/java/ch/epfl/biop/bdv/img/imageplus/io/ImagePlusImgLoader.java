@@ -50,9 +50,7 @@ public class ImagePlusImgLoader<T extends NativeType<T>, V extends Volatile<T> &
 		"imageplus_time_origin";
 
 	@Override
-	public Element toXml(ImagePlusImageLoader imgLoader,
-                         File basePath)
-	{
+	public Element toXml(ImagePlusImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
@@ -66,7 +64,7 @@ public class ImagePlusImgLoader<T extends NativeType<T>, V extends Volatile<T> &
 
 	@Override
 	public ImagePlusImageLoader fromXml(Element elem, File basePath,
-                                                                         AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		String imagePlusFilePath = XmlHelpers.getText(elem, IMAGEPLUS_FILEPATH_TAG);
 		int originTimePoint = XmlHelpers.getInt(elem, IMAGEPLUS_TIME_ORIGIN_TAG);
@@ -78,16 +76,16 @@ public class ImagePlusImgLoader<T extends NativeType<T>, V extends Volatile<T> &
 		{
 			switch (imp.getType()) {
 				case ImagePlus.GRAY8:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedByteInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedByteInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.GRAY16:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedShortInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedShortInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.GRAY32:
-					imgLoader = ImagePlusImageLoader.createFloatInstance(
-						imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createFloatInstance(imp,
+						originTimePoint);
 					break;
 				case ImagePlus.COLOR_RGB:
 				default:

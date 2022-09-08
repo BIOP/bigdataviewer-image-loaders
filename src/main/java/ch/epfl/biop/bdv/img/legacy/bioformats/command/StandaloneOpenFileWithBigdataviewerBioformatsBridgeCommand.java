@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Deprecated
-@SuppressWarnings({ "Unused", "CanBeFinal" })
+@SuppressWarnings({ "unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
 	description = "Support bioformats multiresolution api. Attempts to set colors based " +

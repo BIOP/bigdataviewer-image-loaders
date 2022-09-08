@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.function.Consumer;
+
 @Deprecated
 public class BioFormatsBdvOpener {
 
@@ -294,10 +295,6 @@ public class BioFormatsBdvOpener {
 		final IMetadata omeMetaOmeXml = MetadataTools.createOMEXMLMetadata();
 		memo.setMetadataStore(omeMetaOmeXml);
 
-		// TODO : fix CZI
-		// if (dataLocation.endsWith("czi"))
-		// BioFormatsBdvOpenerFix.fixCziReader(memo);
-
 		try {
 			memo.setId(dataLocation);
 		}
@@ -420,10 +417,7 @@ public class BioFormatsBdvOpener {
 			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
 
 		}
-		catch (FormatException e) {
-			e.printStackTrace();
-		}
-		catch (IOException e) {
+		catch (FormatException | IOException e) {
 			e.printStackTrace();
 		}
 		return memo;
