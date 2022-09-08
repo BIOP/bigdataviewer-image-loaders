@@ -43,8 +43,14 @@ public class ImagePlusToBdvDatasetCommand implements Command {
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData<?> spimdata;
 
+	@Parameter(
+			label = "Dataset name (leave empty to name it like the ImagePlus title)",
+			persist = false)
+	public String datasetname = ""; // Cheat to allow dataset renaming
+
 	@Override
 	public void run() {
+		datasetname = image.getTitle();
 		spimdata = ImagePlusToSpimData.getSpimData(image);
 	}
 }

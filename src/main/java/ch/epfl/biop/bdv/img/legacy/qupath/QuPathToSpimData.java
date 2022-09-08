@@ -21,13 +21,13 @@
  */
 package ch.epfl.biop.bdv.img.legacy.qupath;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.qupath.MinimalQuPathProject;
-import ch.epfl.biop.bdv.img.qupath.ProjectIO;
-import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
+import ch.epfl.biop.bdv.img.legacy.qupath.struct.MinimalQuPathProject;
+import ch.epfl.biop.bdv.img.legacy.qupath.struct.ProjectIO;
+import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ij.IJ;
