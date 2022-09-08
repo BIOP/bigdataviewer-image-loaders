@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.bioformats.io;
 
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import com.google.gson.Gson;
@@ -73,7 +74,7 @@ public class XmlIoBioFormatsImgLoader implements
 	{
 		try {
 			Gson gson = new Gson();
-			List<BioFormatsBdvOpener> openers = new ArrayList<>();
+			List<Opener<?>> openers = new ArrayList<>();
 			List<OpenerSettings> openersSettings = new ArrayList<>();
 			final int number_of_datasets = XmlHelpers.getInt(elem, DATASET_NUMBER_TAG);
 
@@ -84,7 +85,7 @@ public class XmlIoBioFormatsImgLoader implements
 						OpenerSettings.class);
 
 				openersSettings.add(settings);
-				openers.add((BioFormatsBdvOpener) settings.bioFormatsBuilder().create());
+				openers.add(settings.bioFormatsBuilder().create());
 			}
 
 			return new BioFormatsImageLoader(openers, openersSettings, sequenceDescription);

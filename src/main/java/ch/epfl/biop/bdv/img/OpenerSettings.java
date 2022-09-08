@@ -286,7 +286,7 @@ public class OpenerSettings {
         return this;
     }
 
-    public Opener create() throws Exception {
+    public Opener<?> create() throws Exception {
 
         switch (this.currentBuilder) {
             case OMERO:
