@@ -76,6 +76,7 @@ public class OpenerSettings {
     public Gateway getGateway(){return this.gateway;}
     public SecurityContext getContext(){return this.ctx;}
     public String getHost(){return this.host;}
+    public String getDataLocation(){return this.dataLocation;}
 
     // ---- cache and readers
     public OpenerSettings poolSize(int pSize){
@@ -208,7 +209,6 @@ public class OpenerSettings {
 
 
     // define unit
-    // TODO see if there is no issue using toString() on unit type directly
     public OpenerSettings unit(UnitsLength u) {
         this.unit = u.toString();
         return this;
@@ -278,6 +278,11 @@ public class OpenerSettings {
 
     public OpenerSettings setImageID(long id){
         this.imageID = id;
+        return this;
+    }
+
+    public OpenerSettings setSerie(int iSerie){
+        this.iSerie = iSerie;
         return this;
     }
 

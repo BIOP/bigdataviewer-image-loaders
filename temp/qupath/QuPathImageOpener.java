@@ -26,6 +26,7 @@ import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
+import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import loci.formats.IFormatReader;
 import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;

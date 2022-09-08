@@ -1,5 +1,5 @@
 
-package ch.epfl.biop.bdv.img.qupath;
+package ch.epfl.biop.bdv.img.qupath.struct;
 /*-
  * #%L
  * Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)

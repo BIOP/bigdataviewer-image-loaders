@@ -29,6 +29,8 @@ import bdv.cache.SharedQueue;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
+import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import loci.formats.IFormatReader;

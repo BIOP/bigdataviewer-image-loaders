@@ -31,6 +31,8 @@ import ch.epfl.biop.bdv.img.omero.OmeroToSpimData;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
+import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.SpimData;

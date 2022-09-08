@@ -49,8 +49,6 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-import ome.units.quantity.Length;
-import ome.units.unit.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +81,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 	final boolean switchZandC;
 
-	final Unit<Length> targetUnit;
 
 	final Dimensions[] dimensions;
 
@@ -140,7 +137,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			};
 		}
 
-		this.targetUnit = BioFormatsTools.getUnitFromString(opener.getUnit());
 		this.switchZandC = opener.getSwitchZAndT();
 
 		boolean isLittleEndian;
@@ -151,10 +147,10 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			//reader.setSeries(iSerie);
 			numMipmapLevels = opener.getNumMipmapLevels();//reader.getResolutionCount();
 			//reader.setResolution(0);
-			isLittleEndian = opener.getEndianness();//reader.isLittleEndian();
+			isLittleEndian = opener.getIsLittleEndian();//reader.isLittleEndian();
 
 			// MetaData
-			final IMetadata omeMeta = opener.getMetadata();//(IMetadata) reader.getMetadataStore();
+			//final IMetadata omeMeta = opener.getMetadata();//(IMetadata) reader.getMetadataStore();
 
 			//boolean is3D;
 

@@ -198,14 +198,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		return renderingDef;
 	}
 
-	public int getNumFetcherThreads() {
-		return this.settings.numFetcherThreads;
-	}
-
-	public int getNumPriorities() {
-		return this.settings.numPriorities;
-	}
-
 	public OpenerSettings getSettings(){return this.settings;}
 
 	/*public OmeroBdvOpener positionReferenceFrameLength(
@@ -531,6 +523,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		}
 	}
 
+	@Override
 	public String getImageName() {
 		return (this.imageName + "--OMERO ID:" + this.settings.imageID);
 	}
@@ -620,16 +613,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		return new int[] { this.getTileSizeX(
 				this.nMipmapLevels - 1 - level), this.getTileSizeY(this.nMipmapLevels - 1 -
 				level), 1 };
-	}
-
-	@Override
-	public int getSerieCount() {
-		return 1;
-	}
-
-	@Override
-	public IMetadata getMetadata() {
-		return null;
 	}
 
 	@Override

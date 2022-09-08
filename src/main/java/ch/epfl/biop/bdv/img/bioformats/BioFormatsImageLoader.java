@@ -27,6 +27,7 @@ import bdv.cache.CacheControl;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -82,17 +83,22 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 
 	protected SharedQueue sq;
 
-	public final int numFetcherThreads;
-	public final int numPriorities;
+	public final int numFetcherThreads = 2;
+	public final int numPriorities = 4;
+
+	final  List<OpenerSettings> openerSettings;
+
+	public  List<OpenerSettings> getOpenerSettings() {
+		return openerSettings;
+	}
 
 	public BioFormatsImageLoader(List<BioFormatsBdvOpener> openers,
-		final AbstractSequenceDescription<?, ?, ?> sequenceDescription,
-		int numFetcherThreads, int numPriorities)
+								 List<OpenerSettings> openerSettings,
+		final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
+		this.openerSettings = openerSettings;
 		this.openers = openers;
 		this.sequenceDescription = sequenceDescription;
-		this.numFetcherThreads = numFetcherThreads;
-		this.numPriorities = numPriorities;
 		sq = new SharedQueue(numFetcherThreads, numPriorities);
 
 		//openers.forEach(opener -> opener.setCache(sq));
@@ -103,15 +109,15 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 				try {
 					BioFormatsBdvOpener opener = openers.get(iF);
 
-					logger.debug("Data location = " + opener.getDataLocation());
+					//logger.debug("Data location = " + opener.getDataLocation());
 
 					//IFormatReader memo = opener.getNewReader();
 
 					tTypeGetter.put(iF, new HashMap<>());
 					vTypeGetter.put(iF, new HashMap<>());
 
-					logger.debug("Number of Series : " + opener.getSerieCount());//memo.getSeriesCount());
-					IMetadata omeMeta = opener.getMetadata();//(IMetadata) memo.getMetadataStore();
+					//logger.debug("Number of Series : " + opener.getSerieCount());//memo.getSeriesCount());
+					//IMetadata omeMeta = opener.getMetadata();//(IMetadata) memo.getMetadataStore();
 					//memo.setMetadataStore(omeMeta);
 					// -------------------------- SETUPS For each Series : one per
 					// timepoint and one per channel
@@ -119,30 +125,27 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 					//IntStream series = IntStream.range(0, opener.getSerieCount());//memo.getSeriesCount());
 
 					final int iFile = iF;
-					int iSerie = opener.getSerie();
+					// int iSerie = opener.getSerie();
 					//series.forEach(iSerie -> {
 						//memo.setSeries(iSerie);
 						// One serie = one Tile
 						// ---------- Serie >
 						// ---------- Serie > Timepoints
-						logger.debug("\t Serie " + iSerie + " Number of timesteps = " +
-							omeMeta.getPixelsSizeT(iSerie).getNumberValue().intValue());
+						logger.debug("\t Number of timesteps = " + opener.getNTimePoints());
 						// ---------- Serie > Channels
-						logger.debug("\t Serie " + iSerie + " Number of channels = " +
-							omeMeta.getChannelCount(iSerie));
+						logger.debug("\t Number of channels = " +opener.getNChannels());
 						// Properties of the serie
-						IntStream channels = IntStream.range(0, omeMeta.getChannelCount(
-							iSerie));
+						IntStream channels = IntStream.range(0, opener.getNChannels());
 						// Register Setups (one per channel and one per timepoint)
 						channels.forEach(iCh -> {
-							FileSerieChannel fsc = new FileSerieChannel(iFile, iSerie, iCh);
+							FileSerieChannel fsc = new FileSerieChannel(iFile, iF, iCh);
 							viewSetupToBFFileSerieChannel.put(viewSetupCounter, fsc);
 							viewSetupCounter++;
 						});
-						Type t = getBioformatsBdvSourceType(omeMeta, iSerie, opener.getRGB());
-						tTypeGetter.get(iF).put(iSerie, (NumericType) t);
+						Type t = opener.getPixelType();
+						tTypeGetter.get(iF).put(iF, (NumericType) t);
 						Volatile v = getVolatileOf((NumericType) t);
-						vTypeGetter.get(iF).put(iSerie, v);
+						vTypeGetter.get(iF).put(iF, v);
 				//	});
 					//memo.close();
 				}

@@ -38,7 +38,7 @@ import java.util.List;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_bioformatsimageloader",
+@ImgLoaderIo(format = "spimreconstruction.biop_bioformatsimageloader_v2",
 	type = BioFormatsImageLoader.class)
 public class XmlIoBioFormatsImgLoader implements
 	XmlIoBasicImgLoader<BioFormatsImageLoader>
@@ -55,22 +55,15 @@ public class XmlIoBioFormatsImgLoader implements
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
-		// For potential extensibility
-		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
-			OpenerSettings.class.getName()));
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
-			imgLoader.numFetcherThreads));
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
-			imgLoader.numPriorities));
-		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader.openers
-			.size()));
+		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader
+				.getOpenerSettings().size()));
 
 		Gson gson = new Gson();
-		for (int i = 0; i < imgLoader.openers.size(); i++) {
+		for (int i = 0; i < imgLoader.getOpenerSettings().size(); i++) {
 			// Opener serialization
-			elem.addContent(XmlHelpers.textElement(OPENER_TAG + "_" + i, gson.toJson(
-				imgLoader.openers.get(i).getSettings())));
+			elem.addContent(XmlHelpers.textElement(OPENER_TAG+"_"+i, gson.toJson(imgLoader.getOpenerSettings().get(i))));
 		}
+
 		return elem;
 	}
 
@@ -79,38 +72,22 @@ public class XmlIoBioFormatsImgLoader implements
 		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
-			final int number_of_datasets = XmlHelpers.getInt(elem,
-				DATASET_NUMBER_TAG);
-			final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
-
-			List<BioFormatsBdvOpener> openers = new ArrayList<>();
-
-			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
-
-			if (openerClassName.equals(
-				"ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener"))
-			{
-				openerClassName = OpenerSettings.class.getName(); // Fix for old
-																																// versions
-			}
-
-			if (!openerClassName.equals(OpenerSettings.class.getName())) {
-				throw new UnsupportedOperationException("Error class " +
-					openerClassName + " not recognized.");
-			}
-
 			Gson gson = new Gson();
+			List<BioFormatsBdvOpener> openers = new ArrayList<>();
+			List<OpenerSettings> openersSettings = new ArrayList<>();
+			final int number_of_datasets = XmlHelpers.getInt(elem, DATASET_NUMBER_TAG);
+
 			for (int i = 0; i < number_of_datasets; i++) {
 				// Opener de-serialization
 				String jsonInString = XmlHelpers.getText(elem, OPENER_TAG + "_" + i);
 				OpenerSettings settings = gson.fromJson(jsonInString,
 						OpenerSettings.class);
+
+				openersSettings.add(settings);
 				openers.add((BioFormatsBdvOpener) settings.bioFormatsBuilder().create());
 			}
 
-			return new BioFormatsImageLoader(openers, sequenceDescription,
-				numFetcherThreads, numPriorities);
+			return new BioFormatsImageLoader(openers, openersSettings, sequenceDescription);
 		}
 		catch (final Exception e) {
 			throw new RuntimeException(e);

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.qupath;
+package ch.epfl.biop.bdv.img.qupath.struct;
 
 import java.net.URI;
 import java.util.List;
