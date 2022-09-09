@@ -160,10 +160,10 @@ public class BioFormatsToSpimData {
 					// final int iS = iSerie;
 					// Properties of the serie
 					IntStream channels = IntStream.range(0, opener.getNChannels());
-				//	if (opener.getNTimePoints() > maxTimepoints)
-				//	{
+					if (opener.getNTimePoints() > maxTimepoints)
+					{
 						maxTimepoints = opener.getNTimePoints();
-				//	}
+					}
 
 					//String imageName = getImageName(dataLocation, seriesCount, omeMeta, iSerie);
 					//sn.setName(imageName);
@@ -190,8 +190,8 @@ public class BioFormatsToSpimData {
 
 						// Attempt to set color
 						Displaysettings ds = new Displaysettings(viewSetupCounter);
-						ds.min = 0;
-						ds.max = 255;
+						ds.min = ch.getMinDynamicRange();
+						ds.max = ch.getMaxDynamicRange();
 						ds.isSet = false;
 
 						// ----------- Color

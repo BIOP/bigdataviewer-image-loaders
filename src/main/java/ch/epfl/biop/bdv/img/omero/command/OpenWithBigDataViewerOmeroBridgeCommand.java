@@ -22,9 +22,8 @@
 
 package ch.epfl.biop.bdv.img.omero.command;
 
-import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.omero.OmeroToSpimData;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
@@ -117,7 +116,7 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 			StopWatch watch = new StopWatch();
 			logger.debug("All openers obtained, converting to spimdata object ");
 			watch.start();
-			spimdata = OmeroToSpimData.getSpimData(openersSettings);
+			spimdata = ImageToSpimData.getSpimData(openersSettings);
 			watch.stop();
 			logger.debug("Converted to SpimData in " + (int) (watch.getTime() /
 				1000) + " s");

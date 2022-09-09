@@ -47,7 +47,7 @@ public class BioFormatsTools {
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsTools.class);
 
-	public static class BioformatsChannel {
+	/*public static class BioformatsChannel {
 
 		final int iSerie;
 		final int iChannel;
@@ -97,7 +97,7 @@ public class BioFormatsTools {
 				return false;
 			}
 		}
-	}
+	}*/
 
 	public static Length[] getSeriesPositionAsLengths(IMetadata omeMeta,
 		int iSerie)
@@ -605,7 +605,7 @@ public class BioFormatsTools {
 	final static int[] loopG = { 0, 1, 0, 1, 1, 0, 1 };
 	final static int[] loopB = { 0, 0, 1, 1, 0, 1, 1 };
 
-	public static ARGBType getColorFromMetadata(IMetadata omeMeta, int iSerie,
+	/*public static ARGBType getColorFromMetadata(IMetadata omeMeta, int iSerie,
 		int iCh)
 	{
 		ome.xml.model.primitives.Color c = omeMeta.getChannelColor(iSerie, iCh);
@@ -634,7 +634,7 @@ public class BioFormatsTools {
 		}
 		return color;
 	}
-
+*/
 	/**
 	 * Taken from Earl F. Glynn's web page:
 	 * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra
@@ -642,7 +642,7 @@ public class BioFormatsTools {
 	 * in nm
 	 */
 
-	public static int[] waveLengthToRGB(double Wavelength) {
+	/*public static int[] waveLengthToRGB(double Wavelength) {
 		double Gamma = 0.80;
 		double IntensityMax = 255;
 		double factor;
@@ -716,7 +716,7 @@ public class BioFormatsTools {
 		// https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb
 		int[] res = waveLengthToRGB(wv);
 		return new Color(res[0], res[1], res[2]);
-	}
+	}*/
 
 	/**
 	 * Look into Fields of BioFormats UNITS class that matches the input string

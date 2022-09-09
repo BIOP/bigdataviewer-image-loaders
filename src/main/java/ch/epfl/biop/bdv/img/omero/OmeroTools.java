@@ -107,7 +107,7 @@ public class OmeroTools {
 	 * @return OMERO raw pixel data
 	 * @throws Exception
 	 */
-	public static PixelsData getPixelsDataFromOmeroID(long imageID,
+	/*public static PixelsData getPixelsDataFromOmeroID(long imageID,
 		Gateway gateway, SecurityContext ctx) throws Exception
 	{
 
@@ -116,7 +116,7 @@ public class OmeroTools {
 		PixelsData pixels = image.getDefaultPixels();
 		return pixels;
 
-	}
+	}*/
 
 
 	/**

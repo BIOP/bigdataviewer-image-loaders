@@ -22,9 +22,10 @@
 
 package ch.epfl.biop.bdv.img.omero.io;
 
+import ch.epfl.biop.bdv.img.ImageLoader;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.omero.OmeroImageLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
@@ -43,10 +44,10 @@ import java.util.Map;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_omeroimageloader",
-	type = OmeroImageLoader.class)
+@ImgLoaderIo(format = "spimreconstruction.biop_OmeroImageLoader-v1",
+	type = ImageLoader.class)
 public class XmlIoOmeroImgLoader implements
-	XmlIoBasicImgLoader<OmeroImageLoader>
+	XmlIoBasicImgLoader<ImageLoader>
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
@@ -55,21 +56,20 @@ public class XmlIoOmeroImgLoader implements
 	public static final String CACHE_NUM_PRIORITIES = "num_priorities";
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
 
-	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx =
-		new HashMap<String, OmeroTools.GatewaySecurityContext>();
+	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
 
 	@Override
-	public Element toXml(OmeroImageLoader imgLoader, File basePath) {
+	public Element toXml(ImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
 		// For potential extensibility
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
 			OpenerSettings.class.getName()));
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
+		/*elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
 			imgLoader.numFetcherThreads));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
-			imgLoader.numPriorities));
+			imgLoader.numPriorities));*/
 		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader.openers
 			.size()));
 
@@ -77,23 +77,23 @@ public class XmlIoOmeroImgLoader implements
 		for (int i = 0; i < imgLoader.openers.size(); i++) {
 			// OpenerSettings serialization
 			elem.addContent(XmlHelpers.textElement(OPENER_TAG + "_" + i, gson.toJson(
-				imgLoader.openers.get(i).getSettings())));
+					imgLoader.getOpenerSettings().get(i))));
 		}
 		return elem;
 	}
 
 	@Override
-	public OmeroImageLoader fromXml(Element elem, File basePath,
+	public ImageLoader fromXml(Element elem, File basePath,
 		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
 				DATASET_NUMBER_TAG);
-			final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
+		/*	final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
+			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);*/
 
-			List<OmeroBdvOpener> openers = new ArrayList<>();
-
+			List<Opener<?>> openers = new ArrayList<>();
+			List<OpenerSettings> openersSettings = new ArrayList<>();
 			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
 
 			if (!openerClassName.equals(OpenerSettings.class.getName())) {
@@ -136,11 +136,11 @@ public class XmlIoOmeroImgLoader implements
 							.setContext(hostToGatewayCtx.get(host).ctx);
 				}
 
-				openers.add((OmeroBdvOpener) settings.omeroBuilder().create());
+				openersSettings.add(settings);
+				openers.add(settings.omeroBuilder().create());
 			}
 
-			return new OmeroImageLoader(openers, sequenceDescription,
-				numFetcherThreads, numPriorities);
+			return new ImageLoader(openers, openersSettings, sequenceDescription);
 		}
 		catch (final Exception e) {
 			throw new RuntimeException(e);

@@ -24,15 +24,15 @@ package ch.epfl.biop.bdv.img.bioformats.entity;
 
 import mpicbg.spim.data.generic.base.NamedEntity;
 
-public class UriEntity extends NamedEntity implements
-        Comparable<UriEntity>
+public class BioFormatsUri extends NamedEntity implements
+        Comparable<BioFormatsUri>
 {
 
-    public UriEntity(final int id, final String name) {
+    public BioFormatsUri(final int id, final String name) {
         super(id, name);
     }
 
-    public UriEntity(final int id) {
+    public BioFormatsUri(final int id) {
         this(id, Integer.toString(id));
     }
 
@@ -48,9 +48,9 @@ public class UriEntity extends NamedEntity implements
      * Compares the {@link #getId() ids}.
      */
     @Override
-    public int compareTo(final UriEntity o) {
+    public int compareTo(final BioFormatsUri o) {
         return getId() - o.getId();
     }
 
-    protected UriEntity() {}
+    protected BioFormatsUri() {}
 }

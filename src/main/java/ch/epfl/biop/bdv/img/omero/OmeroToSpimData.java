@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.ChannelProperties;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
@@ -102,7 +103,7 @@ public class OmeroToSpimData {
 			for (int openerIdx = 0; openerIdx < openersSettings.size(); openerIdx++) {
 				OmeroBdvOpener opener = (OmeroBdvOpener) openersSettings.get(openerIdx).create();
 				openers.add(opener);
-				OmeroUri ou = new OmeroUri(openerIdx, opener.getDataLocation());
+				//OmeroUri ou = new OmeroUri(openerIdx, opener.getDataLocation());
 				// openerIdxCounter++;
 				if (opener.getNTimePoints() > maxTimepoints) {
 					maxTimepoints = opener.getNTimePoints();
@@ -117,27 +118,28 @@ public class OmeroToSpimData {
 
 				List<ChannelData> channelMetadata = opener.getChannelMetadata();
 				// Register Setups (one per channel and one per timepoint)
-				for (int channelIdx = 0; channelIdx < opener.getSizeC(); channelIdx++) {
-					ChannelData channelData = channelMetadata.get(channelIdx);
-					String channelName = channelData.getChannelLabeling();
-					String setupName = imageName + "-" + channelName;
+				for (int iCh = 0; iCh < opener.getNChannels(); iCh++) {
+					//ChannelData channelData = channelMetadata.get(iCh);
+					ChannelProperties ch = opener.getChannel(iCh);
+					String setupName = imageName + "-" + ch.getChannelName();
 					// logger.debug(setupName);
 
 					// For spimdata
-					Channel channel = new Channel(getChannelIndex(channelData),
-						channelName);
+					//Channel channel = new Channel(getChannelIndex(channelData),
+					//	ch.getChannelName());
 
 					// ----------- Set channel contrast (min and max values)
 					Displaysettings ds = new Displaysettings(viewSetupCounter);
-					ChannelBinding cb = opener.getRenderingDef().getChannelBinding(
-						channelIdx);
-					ds.min = cb.getInputStart().getValue();
-					ds.max = cb.getInputEnd().getValue();
-					ds.isSet = true;
+					//ChannelBinding cb = opener.getRenderingDef().getChannelBinding(
+					//		iCh);
+					ds.min = ch.getMinDynamicRange();
+					ds.max = ch.getMaxDynamicRange();
+					ds.isSet = false;
 
 					// ----------- Color
-					ARGBType color = opener.getChannelColor(channelIdx);
+					ARGBType color = ch.getColor();
 					if (color != null) {
+						ds.isSet = true;
 						ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
 							color.get()), ARGBType.blue(color.get()), ARGBType.alpha(color
 								.get()) };
@@ -145,21 +147,22 @@ public class OmeroToSpimData {
 
 					ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims,
 						voxDims, dummy_tile, channel, dummy_ang, dummy_ill);
-					vs.setAttribute(ou);
+					opener.getEntities(iCh).forEach(vs::setAttribute);
+					//vs.setAttribute(ou);
 					vs.setAttribute(ds);
 
 					viewSetups.add(vs);
 					viewSetupToOpenerIdxChannel.put(viewSetupCounter,
-						new OpenerIdxChannel(openerIdx, channelIdx));
+						new OpenerIdxChannel(openerIdx, iCh));
 					viewSetupCounter++;
 				}
 			}
 
 			// ------------------- BUILDING SPIM DATA
-			ArrayList<String> inputFilesArray = new ArrayList<>();
+			/*ArrayList<String> inputFilesArray = new ArrayList<>();
 			for (OmeroBdvOpener opener : openers) {
 				inputFilesArray.add(opener.getDataLocation());
-			}
+			}*/
 
 			List<TimePoint> timePoints = new ArrayList<>();
 			IntStream.range(0, maxTimepoints).forEach(tp -> timePoints.add(
@@ -181,9 +184,9 @@ public class OmeroToSpimData {
 
 				final int oIdx = openerIdx;
 				timePoints.forEach(iTp -> {
-					viewSetupToOpenerIdxChannel.keySet().stream().filter(
-						viewSetupId -> (viewSetupToOpenerIdxChannel.get(
-							viewSetupId).openerIdx == oIdx)).forEach(viewSetupId -> {
+					viewSetupToOpenerIdxChannel.keySet().stream()
+							.filter(viewSetupId -> (viewSetupToOpenerIdxChannel.get(viewSetupId).openerIdx == oIdx)).
+							forEach(viewSetupId -> {
 								if (iTp.getId() < nTimepoints) {
 									registrations.add(new ViewRegistration(iTp.getId(),
 										viewSetupId, rootTransform));
@@ -198,8 +201,7 @@ public class OmeroToSpimData {
 
 			SequenceDescription sd = new SequenceDescription(new TimePoints(
 				timePoints), viewSetups, null, new MissingViews(missingViews));
-			sd.setImgLoader(new OmeroImageLoader(openers, sd, openers.get(0)
-				.getNumFetcherThreads(), openers.get(0).getNumPriorities()));
+			sd.setImgLoader(new OmeroImageLoader(openers, openersSettings, sd));
 
 			final SpimData spimData = new SpimData(null, sd, new ViewRegistrations(
 				registrations));

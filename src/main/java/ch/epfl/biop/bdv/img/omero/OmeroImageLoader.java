@@ -49,6 +49,8 @@ public class OmeroImageLoader implements ViewerImgLoader,
 
 	public List<OmeroBdvOpener> openers;
 
+	public List<OpenerSettings> openerSettings;
+
 	Map<Integer, OpenerIdxChannel> viewSetupToOpenerIdxChannel = new HashMap<>();
 
 	Map<Integer, NumericType> tTypeGetter = new HashMap<>();
@@ -65,8 +67,8 @@ public class OmeroImageLoader implements ViewerImgLoader,
 
 	protected SharedQueue cc;
 
-	public final int numFetcherThreads;
-	public final int numPriorities;
+	public final int numFetcherThreads = 2;
+	public final int numPriorities = 4;
 
 	/**
 	 * OMERO image loader constructor
@@ -77,14 +79,12 @@ public class OmeroImageLoader implements ViewerImgLoader,
 	 * @param numPriorities
 	 * @throws Exception
 	 */
-	public OmeroImageLoader(List<OmeroBdvOpener> openers,
-		final AbstractSequenceDescription<?, ?, ?> sequenceDescription,
-		int numFetcherThreads, int numPriorities) throws Exception
+	public OmeroImageLoader(List<OmeroBdvOpener> openers, List<OpenerSettings> openerSettings,
+		final AbstractSequenceDescription<?, ?, ?> sequenceDescription) throws Exception
 	{
+		this.openerSettings = openerSettings;
 		this.openers = openers;
 		this.sequenceDescription = sequenceDescription;
-		this.numFetcherThreads = numFetcherThreads;
-		this.numPriorities = numPriorities;
 		cc = new SharedQueue(numFetcherThreads, numPriorities);
 
 		//openers.forEach(opener -> opener.setCache(cc));
@@ -94,13 +94,13 @@ public class OmeroImageLoader implements ViewerImgLoader,
 			// openersIdxStream.forEach(openerIdx -> {
 			for (int openerIdx = 0; openerIdx < openers.size(); openerIdx++) {
 				OmeroBdvOpener opener = openers.get(openerIdx);
-				this.openers.add(opener);
+				//this.openers.add(opener);
 				// Register Setups (one per channel and one per timepoint)
-				for (int channelIdx = 0; channelIdx < opener.getSizeC(); channelIdx++) {
+				for (int channelIdx = 0; channelIdx < opener.getNChannels(); channelIdx++) {
 					OpenerIdxChannel openerIdxChannel = new OpenerIdxChannel(openerIdx,
 						channelIdx);
 					viewSetupToOpenerIdxChannel.put(viewSetupCounter, openerIdxChannel);
-					Type t = opener.getNumericType(0);
+					Type t = opener.getPixelType();
 					tTypeGetter.put(viewSetupCounter, (NumericType) t);
 					Volatile v = getVolatileOf((NumericType) t);
 					vTypeGetter.put(viewSetupCounter, v);
@@ -148,6 +148,9 @@ public class OmeroImageLoader implements ViewerImgLoader,
 			gateway.disconnect();
 			System.out.println("Gateway disconnected");
 		});
+
+		cache.clearCache();
+		cc.shutdown();
 
 	}
 }

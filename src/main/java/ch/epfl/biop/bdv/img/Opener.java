@@ -7,9 +7,10 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
 
+import java.io.Closeable;
 import java.util.List;
 
-public interface Opener<T> {
+public interface Opener<T> extends Closeable {
 
     int getNumMipmapLevels();
 

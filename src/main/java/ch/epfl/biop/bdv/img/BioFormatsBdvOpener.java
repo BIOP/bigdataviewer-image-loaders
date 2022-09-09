@@ -24,9 +24,8 @@ package ch.epfl.biop.bdv.img;
 
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
-import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.bioformats.entity.UriEntity;
+import ch.epfl.biop.bdv.img.bioformats.entity.BioFormatsUri;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -55,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -180,6 +178,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 					.setChannelColor(iSerie,omeMeta)
 					.setRGB(this.isRGB)
 					.setPixelType(this.t)
+					.setDynamicRange()
 			);
 
 		}
@@ -311,7 +310,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		ArrayList<Entity> entityList = new ArrayList<>();
 
 		entityList.add(new SeriesNumber(iSerie, this.imageName));
-		entityList.add(new UriEntity(0, dataLocation));
+		entityList.add(new BioFormatsUri(0, dataLocation));
 		entityList.add(new ChannelName(0, channelPropertiesList.get(iChannel).getChannelName()));
 
 		return entityList;
@@ -330,13 +329,13 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		return this.isLittleEndian;
 	}
 
-	public Boolean getRGB() {
+	/*public Boolean getRGB() {
 		return this.isRGB;
-	}
+	}*/
 
-	public IMetadata getMetadata() {
+	/*public IMetadata getMetadata() {
 			return this.omeMeta;
-	}
+	}*/
 
 
 
@@ -370,6 +369,17 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		}
 		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
 				image_index + ": " + pt);
+	}
+
+	@Override
+	public void close() throws IOException {
+		getPixelReader().shutDown(reader -> {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 

@@ -22,9 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.ItemIO;
@@ -67,7 +66,7 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 	AbstractSpimData spimdata;
 
 	public void run() {
-		List<OpenerSettings> openers = new ArrayList<>();
+		List<OpenerSettings> openerSettings = new ArrayList<>();
 
 		BioformatsBigdataviewerBridgeDatasetCommand settings =
 			new BioformatsBigdataviewerBridgeDatasetCommand();
@@ -76,13 +75,13 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 
 		for (File f : files) {
 			logger.debug("Getting opener for file f " + f.getAbsolutePath());
-			openers.add(settings.getSettings(f));
+			openerSettings.add(settings.getSettings(f));
 		}
 
 		StopWatch watch = new StopWatch();
 		logger.debug("All openers obtained, converting to spimdata object ");
 		watch.start();
-		spimdata = BioFormatsToSpimData.getSpimData(openers);
+		spimdata = ImageToSpimData.getSpimData(openerSettings);
 		watch.stop();
 		logger.debug("Converted to SpimData in " + (int) (watch.getTime() / 1000) +
 			" s");

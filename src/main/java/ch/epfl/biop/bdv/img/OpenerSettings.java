@@ -290,7 +290,13 @@ public class OpenerSettings {
 
         switch (this.currentBuilder) {
             case OMERO:
-                return new OmeroBdvOpener().create(this);
+                return new OmeroBdvOpener().create(
+                        gateway,
+                        ctx,
+                        imageID,
+                        poolSize,
+                        unit,
+                        dataLocation);
             case IMAGEJ: break;
             case OPENSLIDE: break;
             case BIOFORMATS:

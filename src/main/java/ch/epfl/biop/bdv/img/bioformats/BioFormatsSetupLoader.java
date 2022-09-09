@@ -23,9 +23,11 @@
 package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.AbstractViewerSetupImgLoader;
+import bdv.ViewerSetupImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.BiopSetupLoader;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
@@ -56,9 +58,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends AbstractViewerSetupImgLoader<T, V> implements
-	MultiResolutionSetupImgLoader<T>
-{
+	extends /*AbstractViewerSetupImgLoader<T, V> ,*/ BiopSetupLoader<T,V,A>{
+		//implements
+		//MultiResolutionSetupImgLoader<T> {
 
 	private static final Logger logger = LoggerFactory.getLogger(
 		BioFormatsSetupLoader.class);

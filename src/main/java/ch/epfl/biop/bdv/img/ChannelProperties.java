@@ -22,13 +22,16 @@ public class ChannelProperties {
     final protected static Logger logger = LoggerFactory.getLogger(
             ChannelProperties.class);
     public ARGBType color;
-    String name;
+    String name = "";
     int nChannels = 1;
     Type<? extends  NumericType> pixelType;
-    Boolean isRGB;
+    Boolean isRGB = false;
     int iChannel;
     int emissionWavelength = -1;
     int excitationWavelength = -1;
+
+    double minDynamicRange = 0.0;
+    double maxDynamicRange = 255.0;
 
     final static int[] loopR = { 1, 0, 0, 1, 1, 1, 0 };
     final static int[] loopG = { 0, 1, 0, 1, 1, 0, 1 };
@@ -41,6 +44,13 @@ public class ChannelProperties {
 
     public String getChannelName() {
         return name;
+    }
+
+    public double getMinDynamicRange() {
+        return minDynamicRange;
+    }
+    public double getMaxDynamicRange() {
+        return maxDynamicRange;
     }
 
     public ChannelProperties(int iChannel){
@@ -92,7 +102,6 @@ public class ChannelProperties {
     }
 
     public ChannelProperties setChannelColor(int iSerie, IMetadata metadata){
-
             ome.xml.model.primitives.Color c = metadata.getChannelColor(iSerie, this.iChannel);
             if (c != null) {
                 logger.debug("c = [" + c.getRed() + "," + c.getGreen() + "," + c
@@ -135,7 +144,6 @@ public class ChannelProperties {
     public ChannelProperties setChannelName(int iSerie, IMetadata metadata){
 
         String channelName = metadata.getChannelName(iSerie, this.iChannel);
-
         if (channelName != null && !channelName.equals("")) {
             this.name = metadata.getChannelName(iSerie, this.iChannel);
         }
@@ -154,6 +162,19 @@ public class ChannelProperties {
 
     public ChannelProperties setPixelType(Type<? extends  NumericType> pixelType){
         this.pixelType = pixelType;
+        return this;
+    }
+
+    public ChannelProperties setDynamicRange(RenderingDef rd){
+        this.minDynamicRange = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
+        this.maxDynamicRange = rd.getChannelBinding(this.iChannel).getInputEnd().getValue();
+        return this;
+    }
+
+    public ChannelProperties setDynamicRange(){
+        this.minDynamicRange = 0.0;
+        this.maxDynamicRange = 255.0;
+
         return this;
     }
 
@@ -266,7 +287,7 @@ public class ChannelProperties {
                     .equals(bc.pixelType)) && (iChannel == bc.iChannel) &&
                     (emissionWavelength == (bc.emissionWavelength)) &&
                     (excitationWavelength == (bc.excitationWavelength)) &&
-                    (nChannels == (bc.nChannels));
+                    (nChannels == (bc.nChannels)) && (color == (bc.color));
         }
         else {
             return false;

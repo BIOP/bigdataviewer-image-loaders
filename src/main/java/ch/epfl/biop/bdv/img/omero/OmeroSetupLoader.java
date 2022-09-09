@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img.omero;
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.BiopSetupLoader;
 import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
@@ -56,8 +57,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends AbstractViewerSetupImgLoader<T, V> implements
-	MultiResolutionSetupImgLoader<T>
+	//extends AbstractViewerSetupImgLoader<T, V> implements
+	//MultiResolutionSetupImgLoader<T>
+	extends BiopSetupLoader<T,V ,A>
 {
 
 	final private static Logger logger = LoggerFactory.getLogger(
@@ -224,7 +226,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 	}*/
 
 	// getters
-	public Gateway getGateway() {
+	/*public Gateway getGateway() {
 		return opener.getGateway();
 	}
 
@@ -234,7 +236,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 
 	public Long getOmeroId() {
 		return opener.getOmeroId();
-	}
+	}*/
 
 	@Override
 	public RandomAccessibleInterval<V> getVolatileImage(int timepointId,

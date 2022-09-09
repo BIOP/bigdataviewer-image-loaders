@@ -408,7 +408,7 @@ public class QuPathToSpimData {
 				newRegistrations));
 
 			// disconnect the gateways
-			hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
+			//hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
 
 			return newSpimData;
 
@@ -418,7 +418,7 @@ public class QuPathToSpimData {
 		}
 
 		// disconnect the gateways
-		hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
+		//hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
 
 		return null;
 	}
