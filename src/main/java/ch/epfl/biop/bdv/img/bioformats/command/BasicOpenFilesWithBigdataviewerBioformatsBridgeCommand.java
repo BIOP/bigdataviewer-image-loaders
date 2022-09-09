@@ -73,15 +73,25 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 		settings.splitrgbchannels = splitrgbchannels;
 		settings.unit = unit;
 
+		// map file reader
 		for (File f : files) {
 			logger.debug("Getting opener for file f " + f.getAbsolutePath());
-			openerSettings.add(settings.getSettings(f));
+			// open reader
+			// get nSeries
+			// for iserie
+			//     addopener with reader
+			//	   openerSettings.add(settings.getSettings(f).setSerie(0));
+
+
+
+			openerSettings.add(settings.getSettings(f).setSerie(0));
 		}
 
 		StopWatch watch = new StopWatch();
 		logger.debug("All openers obtained, converting to spimdata object ");
 		watch.start();
 		spimdata = ImageToSpimData.getSpimData(openerSettings);
+		// close readers for map
 		watch.stop();
 		logger.debug("Converted to SpimData in " + (int) (watch.getTime() / 1000) +
 			" s");

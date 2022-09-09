@@ -26,7 +26,7 @@ import bdv.cache.CacheControl;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
+//import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;

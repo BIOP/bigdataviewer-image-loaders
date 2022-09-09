@@ -316,7 +316,8 @@ public class OpenerSettings {
                         cacheBlockSize,
                         // Channel options
                         swZC,
-                        splitRGBChannels);
+                        splitRGBChannels
+                        );
         }
         return null;
     }
