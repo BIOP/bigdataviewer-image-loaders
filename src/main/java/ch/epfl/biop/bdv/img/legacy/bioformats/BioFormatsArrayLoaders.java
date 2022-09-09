@@ -34,6 +34,9 @@ import java.nio.ByteOrder;
 
 @Deprecated
 // Copied from N5 Array Loader
+/**
+ * Bytes loaders for bio-formats readers
+ */
 public class BioFormatsArrayLoaders {
 
 	abstract static class BioformatsArrayLoader {

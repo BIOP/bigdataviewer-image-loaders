@@ -182,10 +182,20 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 *
+	 * @return the pool of readers
+	 */
 	public ReaderPool getReaderPool() {
 		return pool;
 	}
 
+	/**
+	 *
+	 * @param numFetcherThreads number of fetcher threads
+	 * @param numPriorities  number of priorities (resolution levels)
+	 * @return builder
+	 */
 	public BioFormatsBdvOpener queueOptions(int numFetcherThreads,
 		int numPriorities)
 	{
@@ -195,11 +205,21 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 *
+	 * @param sq shared queue
+	 * @return the builder
+	 */
 	public BioFormatsBdvOpener setCache(SharedQueue sq) {
 		this.cc = sq;
 		return this;
 	}
 
+	/**
+	 *
+	 * @param filePath the file to open
+	 * @return the builder
+	 */
 	public BioFormatsBdvOpener file(String filePath) {
 		this.dataLocation = filePath;
 		return this;
@@ -210,6 +230,10 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 * flips along x y and z the image
+	 * @return builder
+	 */
 	public BioFormatsBdvOpener flipPositionXYZ() {
 		if (this.positionPreTransformMatrixArray == null) {
 			positionPreTransformMatrixArray = new AffineTransform3D()
@@ -222,6 +246,10 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 * flips along x the image
+	 * @return builder
+	 */
 	public BioFormatsBdvOpener flipPositionX() {
 		if (this.positionPreTransformMatrixArray == null) {
 			positionPreTransformMatrixArray = new AffineTransform3D()
@@ -234,6 +262,10 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 *
+	 * @return the builder
+	 */
 	public BioFormatsBdvOpener flipPositionY() {
 		if (this.positionPreTransformMatrixArray == null) {
 			positionPreTransformMatrixArray = new AffineTransform3D()
@@ -246,6 +278,10 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 *
+	 * @return the builder
+	 */
 	public BioFormatsBdvOpener flipPositionZ() {
 		if (this.positionPreTransformMatrixArray == null) {
 			positionPreTransformMatrixArray = new AffineTransform3D()
@@ -258,6 +294,11 @@ public class BioFormatsBdvOpener {
 		return this;
 	}
 
+	/**
+	 * Applies a transform to all images
+	 * @param at3d the transform to apply
+	 * @return the builder
+	 */
 	public BioFormatsBdvOpener setPositionPreTransform(AffineTransform3D at3d) {
 		positionPreTransformMatrixArray = at3d.getRowPackedCopy();
 		return this;
