@@ -30,6 +30,7 @@ import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
 import org.jdom2.Element;
 
+@Deprecated
 @ViewSetupAttributeIo(name = "qupathentryentity",
         type = QuPathEntryEntity.class)
 public class XmlIoQuPathEntryEntity extends
