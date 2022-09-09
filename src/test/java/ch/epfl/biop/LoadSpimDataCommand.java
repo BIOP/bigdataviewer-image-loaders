@@ -36,7 +36,7 @@ import java.io.File;
 @Plugin(type = Command.class, menuPath = "Test>Load BDV Dataset")
 public class LoadSpimDataCommand implements Command {
 
-	@Parameter(style = "save")
+	@Parameter(style = "open")
 	File file;
 
 	@Parameter(type = ItemIO.OUTPUT)

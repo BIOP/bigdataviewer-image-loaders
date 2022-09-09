@@ -48,9 +48,11 @@ public class SaveSpimDataCommand implements Command {
 	public void run() {
 		try {
 			if (spimData instanceof SpimData) {
+				spimData.setBasePath(file.getParentFile());
 				(new XmlIoSpimData()).save((SpimData) spimData, file.getAbsolutePath());
 			}
 			else if (spimData instanceof SpimDataMinimal) {
+				spimData.setBasePath(file.getParentFile());
 				(new XmlIoSpimDataMinimal()).save((SpimDataMinimal) spimData, file
 					.getAbsolutePath());
 			}
