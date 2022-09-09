@@ -33,6 +33,6 @@ public class SimpleIJLaunch {
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 		// DebugTools.enableLogging("DEBUG");
-		DebugTools.enableLogging("OFF");
+		DebugTools.enableLogging("INFO");
 	}
 }

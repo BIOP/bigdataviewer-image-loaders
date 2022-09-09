@@ -24,6 +24,9 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
+import ij.IJ;
+import loci.formats.*;
+import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.ItemIO;
@@ -76,15 +79,25 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 		// map file reader
 		for (File f : files) {
 			logger.debug("Getting opener for file f " + f.getAbsolutePath());
-			// open reader
-			// get nSeries
-			// for iserie
-			//     addopener with reader
-			//	   openerSettings.add(settings.getSettings(f).setSerie(0));
+			IFormatReader reader = new ImageReader();
+			reader.setFlattenedResolutions(false);
+			Memoizer memo = new Memoizer(reader);
+			int nSeries = 0;
+			try {
+				logger.debug("setId for reader " + f.getAbsolutePath());
+				StopWatch watch = new StopWatch();
+				watch.start();
+				memo.setId(f.getAbsolutePath());
+				nSeries = memo.getSeriesCount();
+				watch.stop();
+				logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
+			} catch (Exception e) {
+				IJ.log("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
+			}
+			for (int i = 0; i<nSeries; i++) {
+				openerSettings.add(settings.getSettings(f).setSerie(i).cornerPositionConvention());
+			}
 
-
-
-			openerSettings.add(settings.getSettings(f).setSerie(0));
 		}
 
 		StopWatch watch = new StopWatch();

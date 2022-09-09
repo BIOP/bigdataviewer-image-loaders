@@ -215,13 +215,13 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 																	// readers
 
 		try {
-			logger.debug("setId for reader " + dataLocation);
+			logger.info("setId for reader " + dataLocation);
 			StopWatch watch = new StopWatch();
 			watch.start();
 			memo.setId(dataLocation);
 			memo.setSeries(iSerie);
 			watch.stop();
-			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
+			logger.info("id set in " + (int) (watch.getTime() / 1000) + " s");
 
 		}
 		catch (FormatException | IOException e) {
