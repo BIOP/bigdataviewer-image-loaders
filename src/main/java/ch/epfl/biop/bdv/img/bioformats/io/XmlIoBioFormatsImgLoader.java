@@ -22,7 +22,6 @@
 
 package ch.epfl.biop.bdv.img.bioformats.io;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.ImageLoader;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
@@ -31,7 +30,6 @@ import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
-import mpicbg.spim.data.sequence.ImgLoader;
 import org.jdom2.Element;
 
 import java.io.File;
@@ -48,8 +46,6 @@ public class XmlIoBioFormatsImgLoader implements
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
 	public static final String OPENER_TAG = "opener";
-	public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
-	public static final String CACHE_NUM_PRIORITIES = "num_priorities";
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
 
 	@Override

@@ -34,36 +34,41 @@ public class OpenerSettings {
     protected double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
     protected boolean positionIsImageCenter = true; // Top left corner otherwise
 
+
     //---- Target unit
     protected Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
     protected Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
 
     protected String unit = UnitsLength.MICROMETER.toString();
 
+
     //-------- How to open the dataset (block size, number of threads per image)
     protected int poolSize = 10;
-    protected boolean useDefaultXYBlockSize = true; // Block size : use the one
+    protected boolean useDefaultXYBlockSize = true; // Block size
     protected FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
             0 }, new long[] { 512, 512, 1 }); // needs a default size for z
 
+
     // Channels options
     protected boolean swZC = false; // Switch Z and Channels
-   //PUT IT PUBLIC to be able to access the type outside
     protected boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI
 
-    // ---- Opener core options
 
+    // ---- Opener core options
     protected OpenerType currentBuilder;
     protected String dataLocation = "";
 
+
     // ---- BioFormats specific
     protected int iSerie = 0;
+
 
     // ---- OMERO specific
     transient protected Gateway gateway;
     transient protected SecurityContext ctx;
     transient protected String host;
     protected long imageID;
+
 
     public enum OpenerType {
         BIOFORMATS,
@@ -72,11 +77,13 @@ public class OpenerSettings {
         OPENSLIDE
     };
 
+
     // GETTERS
     public Gateway getGateway(){return this.gateway;}
     public SecurityContext getContext(){return this.ctx;}
     public String getHost(){return this.host;}
     public String getDataLocation(){return this.dataLocation;}
+
 
     // ---- cache and readers
     public OpenerSettings poolSize(int pSize){
@@ -244,6 +251,7 @@ public class OpenerSettings {
         return this;
     }
 
+
     // define which kind of builder to deal with
     public OpenerSettings omeroBuilder(){
         this.currentBuilder = OpenerType.OMERO;
@@ -265,6 +273,8 @@ public class OpenerSettings {
         return this;
     }
 
+
+    // OMERO specific
     public OpenerSettings setGateway(Gateway gateway){
         this.gateway = gateway;
         return this;
@@ -281,10 +291,13 @@ public class OpenerSettings {
         return this;
     }
 
+
+    // BioFormats specific
     public OpenerSettings setSerie(int iSerie){
         this.iSerie = iSerie;
         return this;
     }
+
 
     public Opener<?> create() throws Exception {
 

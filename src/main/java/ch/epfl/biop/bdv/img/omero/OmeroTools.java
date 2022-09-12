@@ -100,24 +100,6 @@ public class OmeroTools {
 		return new SecurityContext(groupID);
 	}
 
-	/**
-	 * @param imageID ID of the OMERO image to access
-	 * @param gateway OMERO gateway
-	 * @param ctx OMERO Security context
-	 * @return OMERO raw pixel data
-	 * @throws Exception
-	 */
-	/*public static PixelsData getPixelsDataFromOmeroID(long imageID,
-		Gateway gateway, SecurityContext ctx) throws Exception
-	{
-
-		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-		ImageData image = browse.getImage(ctx, imageID);
-		PixelsData pixels = image.getDefaultPixels();
-		return pixels;
-
-	}*/
-
 
 	/**
 	 * Look into Fields of BioFormats UNITS class that matches the input string

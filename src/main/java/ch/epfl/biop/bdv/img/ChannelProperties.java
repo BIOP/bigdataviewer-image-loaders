@@ -14,38 +14,49 @@ import omero.model.enums.UnitsLength;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
+import java.awt.Color;
 
 
+/**
+ *
+ */
 public class ChannelProperties {
 
     final protected static Logger logger = LoggerFactory.getLogger(
             ChannelProperties.class);
-    public ARGBType color;
+
+    // Channel core
     String name = "";
     int nChannels = 1;
+    int iChannel;
+
+
+    // pixel infos
+    double minDynamicRange = 0.0;
+    double maxDynamicRange = 255.0;
     Type<? extends  NumericType> pixelType;
     Boolean isRGB = false;
-    int iChannel;
+
+
+    // Wavelength and color
+    public ARGBType color;
     int emissionWavelength = -1;
     int excitationWavelength = -1;
 
-    double minDynamicRange = 0.0;
-    double maxDynamicRange = 255.0;
 
+    // LUT
     final static int[] loopR = { 1, 0, 0, 1, 1, 1, 0 };
     final static int[] loopG = { 0, 1, 0, 1, 1, 0, 1 };
     final static int[] loopB = { 0, 0, 1, 1, 0, 1, 1 };
 
 
+    // GETTERS
     public ARGBType getColor() {
         return color;
     }
-
     public String getChannelName() {
         return name;
     }
-
     public double getMinDynamicRange() {
         return minDynamicRange;
     }
@@ -53,10 +64,22 @@ public class ChannelProperties {
         return maxDynamicRange;
     }
 
+    /**
+     * Constructor with the channel ID
+     * @param iChannel
+     */
     public ChannelProperties(int iChannel){
         this.iChannel = iChannel;
     }
 
+    // BUILDER PATTERN
+
+    /**
+     * For BioFormats
+     * @param iSerie
+     * @param metadata
+     * @return
+     */
     public ChannelProperties setEmissionWavelength(int iSerie, IMetadata metadata){
         if (metadata.getChannelEmissionWavelength(iSerie, iChannel) != null) {
             this.emissionWavelength = metadata.getChannelEmissionWavelength(iSerie, iChannel)
@@ -68,6 +91,12 @@ public class ChannelProperties {
         return this;
     }
 
+    /**
+     * For OMERO
+     * @param channelData
+     * @return
+     * @throws BigResult
+     */
     public ChannelProperties setEmissionWavelength(ChannelData channelData) throws BigResult {
         if (channelData.getEmissionWavelength(UnitsLength.NANOMETER) != null) {
             this.emissionWavelength = (int) channelData.getEmissionWavelength(
@@ -79,6 +108,12 @@ public class ChannelProperties {
         return this;
     }
 
+    /**
+     * For BioFormats
+     * @param iSerie
+     * @param metadata
+     * @return
+     */
     public ChannelProperties setExcitationWavelength(int iSerie, IMetadata metadata){
         if (metadata.getChannelExcitationWavelength(iSerie, iChannel) != null) {
             this.excitationWavelength = metadata.getChannelExcitationWavelength(iSerie, iChannel)
@@ -90,6 +125,12 @@ public class ChannelProperties {
         return this;
     }
 
+    /**
+     * For OMERO
+     * @param channelData
+     * @return
+     * @throws BigResult
+     */
     public ChannelProperties setExcitationWavelength(ChannelData channelData) throws BigResult {
         if (channelData.getExcitationWavelength(UnitsLength.NANOMETER) != null) {
             this.excitationWavelength = (int) channelData.getExcitationWavelength(
@@ -101,6 +142,13 @@ public class ChannelProperties {
         return this;
     }
 
+
+    /**
+     * For BioFormats
+     * @param iSerie
+     * @param metadata
+     * @return
+     */
     public ChannelProperties setChannelColor(int iSerie, IMetadata metadata){
             ome.xml.model.primitives.Color c = metadata.getChannelColor(iSerie, this.iChannel);
             if (c != null) {
@@ -131,6 +179,11 @@ public class ChannelProperties {
     }
 
 
+    /**
+     * For OMERO
+     * @param renderingDef
+     * @return
+     */
     public ChannelProperties setChannelColor(RenderingDef renderingDef){
         ChannelBinding cb = renderingDef.getChannelBinding(this.iChannel);
 
@@ -141,6 +194,12 @@ public class ChannelProperties {
     }
 
 
+    /**
+     * For BioFormats
+     * @param iSerie
+     * @param metadata
+     * @return
+     */
     public ChannelProperties setChannelName(int iSerie, IMetadata metadata){
 
         String channelName = metadata.getChannelName(iSerie, this.iChannel);
@@ -155,26 +214,40 @@ public class ChannelProperties {
         return this;
     }
 
+    /**
+     * For OMERO
+     * @param channelData
+     * @return
+     */
     public ChannelProperties setChannelName(ChannelData channelData){
        this.name = channelData.getChannelLabeling();
        return this;
     }
 
-    public ChannelProperties setPixelType(Type<? extends  NumericType> pixelType){
-        this.pixelType = pixelType;
-        return this;
-    }
-
+    /**
+     * For OMERO
+     * @param rd
+     * @return
+     */
     public ChannelProperties setDynamicRange(RenderingDef rd){
         this.minDynamicRange = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
         this.maxDynamicRange = rd.getChannelBinding(this.iChannel).getInputEnd().getValue();
         return this;
     }
 
+    /**
+     * Default Dynamic range
+     * @return
+     */
     public ChannelProperties setDynamicRange(){
         this.minDynamicRange = 0.0;
         this.maxDynamicRange = 255.0;
 
+        return this;
+    }
+
+    public ChannelProperties setPixelType(Type<? extends  NumericType> pixelType){
+        this.pixelType = pixelType;
         return this;
     }
 
@@ -189,9 +262,12 @@ public class ChannelProperties {
     }
 
 
-
+    /**
+     * taken from https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb
+     * @param wv
+     * @return
+     */
     public static Color getColorFromWavelength(int wv) {
-        // https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb
         int[] res = waveLengthToRGB(wv);
         return new Color(res[0], res[1], res[2]);
     }
@@ -202,7 +278,6 @@ public class ChannelProperties {
      * Lab Report</a> Return a RGB array encoding a color from an input wavelength
      * in nm
      */
-
     public static int[] waveLengthToRGB(double Wavelength) {
         double Gamma = 0.80;
         double IntensityMax = 255;

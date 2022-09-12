@@ -60,48 +60,81 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Contains all BioFormats-specific methods and fields necessary to open an image.
+ */
 public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsBdvOpener.class);
 
-	transient protected Consumer<IFormatReader> readerModifier = (e) -> {};
-
-	//public OpenerSettings settings;
+	// -------- How to open the dataset (reader pool, transforms)
+	protected Consumer<IFormatReader> readerModifier = (e) -> {};
 	private final ReaderPool pool;
-	private int nTimePoints;
-	private IMetadata omeMeta;
-	private boolean isLittleEndian;
-	private boolean isRGB;
-	private int[] cellDimensions;
-	private Dimensions[] dimensions;
-	private String format;
-	private int nMipMapLevels;
-	private VoxelDimensions voxelDimensions;
-
-	private List<ChannelProperties> channelPropertiesList;
-
-	private int iSerie;
-
-	private final String dataLocation;
-
-	private final boolean splitRGBChannels;
-	private final boolean swZC;
 	private AffineTransform3D rootTransform;
 
+
+	// -------- Opener core options
+	private int nTimePoints;
 	private String imageName;
+	private String format;
+	private IMetadata omeMeta;
+	private final String dataLocation;
 
-	int nChannels;
 
+	// -------- Pixels characteristics
+	private boolean isLittleEndian;
+	private boolean isRGB;
+	private VoxelDimensions voxelDimensions;
 	Type<? extends NumericType> t;
 
+
+	// -------- Resolutions options
+	private int[] cellDimensions;
+	private int nMipMapLevels;
+
+
+	// -------- Image dimensions
+	private Dimensions[] dimensions;
+
+
+	// -------- Channel options and properties
+	private List<ChannelProperties> channelPropertiesList;
+	private final boolean splitRGBChannels;
+	private final boolean swZC;
+	int nChannels;
+
+
+	// -------- Series
+	private int iSerie;
+
+	/**
+	 * Class constructor : sets all fields
+	 *
+	 * @param dataLocation
+	 * @param iSerie
+	 * @param positionPreTransformMatrixArray
+	 * @param positionPostTransformMatrixArray
+	 * @param positionIsImageCenter
+	 * @param defaultSpaceUnit
+	 * @param defaultVoxelUnit
+	 * @param unit
+	 * @param poolSize
+	 * @param useDefaultXYBlockSize
+	 * @param cacheBlockSize
+	 * @param swZC
+	 * @param splitRGBChannels
+	 * @throws URISyntaxException
+	 */
 	public BioFormatsBdvOpener(
+			// opener core option
 			String dataLocation,
 			int iSerie,
 			// Location of the image
 			double[] positionPreTransformMatrixArray,
 			double[] positionPostTransformMatrixArray,
 			boolean positionIsImageCenter,
+			// units
 			Length defaultSpaceUnit,
 			Length defaultVoxelUnit,
 			String unit,
@@ -109,9 +142,11 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			int poolSize,
 			boolean useDefaultXYBlockSize,
 			FinalInterval cacheBlockSize,
+			// channel options
 			boolean swZC,
 			boolean splitRGBChannels
 	) throws URISyntaxException {
+
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
@@ -144,21 +179,18 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			e.printStackTrace();
 		}
 
-		this.rootTransform = BioFormatsTools
-				.getSeriesRootTransform(this.omeMeta, iSerie, BioFormatsTools.getUnitFromString(unit),
-						positionPreTransformMatrixArray, // AffineTransform3D
-						// positionPreTransform,
-						positionPostTransformMatrixArray, // AffineTransform3D
-						// positionPostTransform,
-						defaultSpaceUnit,
-						positionIsImageCenter, // boolean positionIsImageCenter,
-						new AffineTransform3D().getRowPackedCopy(), // voxSizePreTransform,
-						new AffineTransform3D().getRowPackedCopy(), // AffineTransform3D
-						// voxSizePostTransform,
-						defaultVoxelUnit,
-						//, // null, //Length
-						// voxSizeReferenceFrameLength,
-						new boolean[]{false, false, false} // axesOfImageFlip
+		this.rootTransform = BioFormatsTools.getSeriesRootTransform(
+				this.omeMeta, //metadata
+				iSerie, // serie
+				BioFormatsTools.getUnitFromString(unit), // unit
+				positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
+				positionPostTransformMatrixArray, // AffineTransform3D for positionPostTransform,
+				defaultSpaceUnit,
+				positionIsImageCenter, // boolean positionIsImageCenter,
+				new AffineTransform3D().getRowPackedCopy(), // voxSizePreTransform,
+				new AffineTransform3D().getRowPackedCopy(), // voxSizePostTransform,
+				defaultVoxelUnit,
+				new boolean[]{false, false, false} // axesOfImageFlip
 				);
 
 		this.imageName = getImageName(this.omeMeta,iSerie,dataLocation);
@@ -167,6 +199,13 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 
+	/**
+	 * Build a channelProperties object for each image channel.
+	 * @param omeMeta = image metadata
+	 * @param iSerie : serie ID
+	 * @param nChannels : number of channel
+	 * @return list of ChannelProperties objects
+	 */
 	private List<ChannelProperties> getChannelProperties(IMetadata omeMeta, int iSerie, int nChannels){
 		List<ChannelProperties> channelPropertiesList = new ArrayList<>();
 		for(int i = 0; i < nChannels; i++){
@@ -186,6 +225,13 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 
+	/**
+	 *
+	 * @param omeMeta = image metadata
+	 * @param iSerie : serie ID
+	 * @param dataLocation : path of the image
+	 * @return the name of the image with the serie ID and without extension.
+	 */
 	private String getImageName(IMetadata omeMeta, int iSerie, String dataLocation){
 		String imageName = omeMeta.getImageName(iSerie);
 		String fileNameWithoutExtension = FilenameUtils.removeExtension(new File(dataLocation).getName());
@@ -200,6 +246,15 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		}
 	}
 
+
+	/**
+	 * Build a new IFormatReader to retrieve all pixels and channels information of an image opened
+	 * with BioFormats.
+	 *
+	 * Be careful : calling this method can take some time. Need to call it as less times as possible.
+	 *
+	 * @return the reader
+	 */
 	public IFormatReader getNewReader() {
 		logger.debug("Getting new reader for " + dataLocation);
 		IFormatReader reader = new ImageReader();
@@ -218,11 +273,10 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			logger.info("setId for reader " + dataLocation);
 			StopWatch watch = new StopWatch();
 			watch.start();
-			memo.setId(dataLocation);
-			memo.setSeries(iSerie);
+			memo.setId(dataLocation); // take some time
+			memo.setSeries(iSerie); // because one opener per serie
 			watch.stop();
 			logger.info("id set in " + (int) (watch.getTime() / 1000) + " s");
-
 		}
 		catch (FormatException | IOException e) {
 			e.printStackTrace();
@@ -230,6 +284,63 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		return memo;
 	}
 
+	/**
+	 *
+	 * @param pt bioformats compatible pixel type
+	 * @param isReaderRGB is pixel RGB
+	 * @param image_index
+	 * @return the bdv compatible pixel type
+	 * @throws UnsupportedOperationException
+	 */
+	private static Type<? extends NumericType> getBioformatsBdvSourceType(PixelType pt, boolean isReaderRGB,
+																		  int image_index) throws UnsupportedOperationException
+	{
+		if (isReaderRGB) {
+			if (pt == PixelType.UINT8) {
+				return new ARGBType();
+			}
+			else {
+				throw new UnsupportedOperationException("Unhandled 16 bits RGB images");
+			}
+		}
+		else {
+			if (pt == PixelType.UINT8) {
+				return new UnsignedByteType();
+			}
+			if (pt == PixelType.UINT16) {
+				return new UnsignedShortType();
+			}
+			if (pt == PixelType.INT32) {
+				return new IntType();
+			}
+			if (pt == PixelType.FLOAT) {
+				return new FloatType();
+			}
+		}
+		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
+				image_index + ": " + pt);
+	}
+
+
+	// GETTERS
+	public boolean getSwitchZAndT() {
+		return swZC;
+	}
+	public String getReaderFormat() {
+		return this.format;
+	}
+	public Boolean getIsLittleEndian() {
+		return this.isLittleEndian;
+	}
+
+
+	/**
+	 *
+	 * @param sizeX
+	 * @param sizeY
+	 * @param sizeZ
+	 * @return image dimensions
+	 */
 	static Dimensions getDimension(long sizeX, long sizeY, long sizeZ) {
 		return new Dimensions() {
 
@@ -247,6 +358,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		};
 	}
 
+	// OVERRIDDEN METHODS
 	@Override
 	public int getNumMipmapLevels() {
 		return this.nMipMapLevels;
@@ -270,10 +382,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public VoxelDimensions getVoxelDimensions() {
 		return this.voxelDimensions;
-	}
-
-	public boolean getSwitchZAndT() {
-		return swZC;
 	}
 
 	@Override
@@ -321,58 +429,9 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		return this.imageName;
 	}
 
-	public String getReaderFormat() {
-		return this.format;
-	}
-
-	public Boolean getIsLittleEndian() {
-		return this.isLittleEndian;
-	}
-
-	/*public Boolean getRGB() {
-		return this.isRGB;
-	}*/
-
-	/*public IMetadata getMetadata() {
-			return this.omeMeta;
-	}*/
-
-
-
-	private static Type<? extends NumericType> getBioformatsBdvSourceType(PixelType pt, boolean isReaderRGB,
-												  int image_index) throws UnsupportedOperationException
-	{
-		//final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
-		//reader.setSeries(image_index);
-		if (isReaderRGB) {
-			if (pt == PixelType.UINT8) {
-				return new ARGBType();
-			}
-			else {
-				throw new UnsupportedOperationException("Unhandled 16 bits RGB images");
-			}
-		}
-		else {
-			//PixelType pt = pixtype;
-			if (pt == PixelType.UINT8) {
-				return new UnsignedByteType();
-			}
-			if (pt == PixelType.UINT16) {
-				return new UnsignedShortType();
-			}
-			if (pt == PixelType.INT32) {
-				return new IntType();
-			}
-			if (pt == PixelType.FLOAT) {
-				return new FloatType();
-			}
-		}
-		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
-				image_index + ": " + pt);
-	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		getPixelReader().shutDown(reader -> {
 			try {
 				reader.close();

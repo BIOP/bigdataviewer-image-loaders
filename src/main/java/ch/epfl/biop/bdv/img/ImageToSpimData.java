@@ -23,7 +23,6 @@ package ch.epfl.biop.bdv.img;
  */
 
 
-//import ch.epfl.biop.bdv.img.bioformats.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.img.bioformats.FileChannel;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import mpicbg.spim.data.SpimData;
@@ -56,43 +55,44 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
- * Converting BioFormats structure into an Xml Dataset, compatible for
+ * Converting generic image structure (BioFormats, Omero, OpenSlide or other) into an Xml Dataset, compatible for
  * BigDataViewer and FIJI BIG Plugins Limitation Series are considered as Tiles,
  * no Illumination or Angle is considered
  *
  * @author nicolas.chiaruttini@epfl.ch, BIOP, EPFL 2020
+ * @author remy.dornier@epfl.ch, BIOP, EPFL 2022
  */
 public class ImageToSpimData {
 
     final protected static Logger logger = LoggerFactory.getLogger(
             ImageToSpimData.class);
 
-    private int getChannelId(int iChannel, ChannelProperties channelProperties)
-    {
-        if (!channelToId.containsKey(channelProperties)) {
-            // No : add it in the channel hashmap
-            channelToId.put(channelProperties, channelCounter);
-            logger.debug("New Channel " + iChannel + ", set as number " + channelCounter);
-            channelIdToChannel.put(channelCounter, new Channel(channelCounter));
-            channelCounter++;
-        }
-        else {
-            logger.debug("Channel " + iChannel + ", already known.");
-        }
-
-        return channelIdToChannel.get(channelToId.get(channelProperties)).getId();
-    }
-
+    // -------- ViewSetups map and counters
     int viewSetupCounter = 0;
     int nTileCounter = 0;
-    int maxTimepoints = -1;
+    final Map<Integer, FileChannel> viewSetupToFileChannel = new HashMap<>();
+
+
+    // Channel registration to Ids
     int channelCounter = 0;
-
     final Map<Integer, Channel> channelIdToChannel = new HashMap<>();
-    final ArrayList<Opener<?>> openers = new ArrayList<>();
     final Map<ChannelProperties, Integer> channelToId = new HashMap<>();
-    final Map<Integer, FileChannel> viewSetupToBFFileSerieChannel = new HashMap<>();
 
+
+    // TimePoints
+    int maxTimepoints = -1;
+
+
+    // openers registration
+    final ArrayList<Opener<?>> openers = new ArrayList<>();
+
+    /**
+     * Build a SpimData object from a list of OpenerSettings
+     * A SpimData is made of many ViewSetups, and
+     * there is one ViewSetup per channel/serie/timepoint/slice
+     * @param openerSettings
+     * @return
+     */
     protected AbstractSpimData getSpimDataInstance(List<OpenerSettings> openerSettings) {
 
         // No Illumination
@@ -169,7 +169,7 @@ public class ImageToSpimData {
 
                     // add viewsetup to the list
                     viewSetups.add(vs);
-                    viewSetupToBFFileSerieChannel.put(viewSetupCounter, new FileChannel(iFile, iCh));
+                    viewSetupToFileChannel.put(viewSetupCounter, new FileChannel(iFile, iCh));
                     viewSetupCounter++;
 
                 });
@@ -193,8 +193,8 @@ public class ImageToSpimData {
 
                 // create views
                 timePoints.forEach(iTp -> {
-                    viewSetupToBFFileSerieChannel.keySet().stream()
-                            .filter(viewSetupId -> (viewSetupToBFFileSerieChannel.get(viewSetupId).iFile == iFile))
+                    viewSetupToFileChannel.keySet().stream()
+                            .filter(viewSetupId -> (viewSetupToFileChannel.get(viewSetupId).iFile == iFile))
                             .forEach(viewSetupId -> {
                                 if (iTp.getId() < nTimePoints) {
                                     registrations.add(new ViewRegistration(iTp.getId(), viewSetupId, rootTransform)); // do not need to keep the root transform per setupID
@@ -221,16 +221,57 @@ public class ImageToSpimData {
     }
 
 
+    /**
+     * Get or create a unique ID for each identical channel among all images.
+     * If two channels of two different images have the same color, pixel type, name, position and so on
+     * (see {@link ChannelProperties} equals method), they will have the same ID.
+     * @param iChannel
+     * @param channelProperties
+     * @return
+     */
+    private int getChannelId(int iChannel, ChannelProperties channelProperties)
+    {
+        if (!channelToId.containsKey(channelProperties)) {
+            // No : add it in the channel hashmap
+            channelToId.put(channelProperties, channelCounter);
+            logger.debug("New Channel " + iChannel + ", set as number " + channelCounter);
+            channelIdToChannel.put(channelCounter, new Channel(channelCounter));
+            channelCounter++;
+        }
+        else {
+            logger.debug("Channel " + iChannel + ", already known.");
+        }
+
+        return channelIdToChannel.get(channelToId.get(channelProperties)).getId();
+    }
+
+    // CLASS BUILDERS
+
+    /**
+     * Create {@link SpimData} from a list of {@link OpenerSettings}
+     * @param openersSettings
+     * @return
+     */
     public static AbstractSpimData getSpimData(List<OpenerSettings> openersSettings) {
         return new ImageToSpimData().getSpimDataInstance(openersSettings);
     }
 
+    /**
+     * Create {@link SpimData} from one {@link OpenerSettings}
+     * @param openerSetting
+     * @return
+     */
     public static AbstractSpimData getSpimData(OpenerSettings openerSetting) {
         ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();
         singleOpenerList.add(openerSetting);
         return ImageToSpimData.getSpimData(singleOpenerList);
     }
 
+    /**
+     * Create default {@link SpimData} for BioFormats opener from a list of Files
+     * @param files
+     * @return
+     */
     public static AbstractSpimData getBioFormatsSpimData(List<File> files) {
         ArrayList<OpenerSettings> openerSettingsList = new ArrayList<>();
         for (File f : files) {
@@ -239,6 +280,11 @@ public class ImageToSpimData {
         return ImageToSpimData.getSpimData(openerSettingsList);
     }
 
+    /**
+     * Create default {@link SpimData} for OMERO opener from a list of Files
+     * @param files
+     * @return
+     */
     public static AbstractSpimData getOmeroSpimData(List<File> files) {
         ArrayList<OpenerSettings> openerSettingsList = new ArrayList<>();
         for (File f : files) {
@@ -247,10 +293,20 @@ public class ImageToSpimData {
         return ImageToSpimData.getSpimData(openerSettingsList);
     }
 
+    /**
+     * Create default {@link OpenerSettings} for BioFormats opener from a list of Files
+     * @param dataLocation
+     * @return
+     */
     public static OpenerSettings getBioFormatsDefaultSettings(String dataLocation) {
         return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS, dataLocation);
     }
 
+    /**
+     * Create default {@link OpenerSettings} for OMERO opener from a list of Files
+     * @param dataLocation
+     * @return
+     */
     public static OpenerSettings getOmeroDefaultSettings(String dataLocation) {
         return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO, dataLocation);
     }

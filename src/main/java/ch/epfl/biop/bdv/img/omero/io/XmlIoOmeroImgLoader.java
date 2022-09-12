@@ -23,7 +23,6 @@
 package ch.epfl.biop.bdv.img.omero.io;
 
 import ch.epfl.biop.bdv.img.ImageLoader;
-import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
@@ -52,8 +51,6 @@ public class XmlIoOmeroImgLoader implements
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
 	public static final String OPENER_TAG = "opener";
-	public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
-	public static final String CACHE_NUM_PRIORITIES = "num_priorities";
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
 
 	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
@@ -66,10 +63,6 @@ public class XmlIoOmeroImgLoader implements
 		// For potential extensibility
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
 			OpenerSettings.class.getName()));
-		/*elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
-			imgLoader.numFetcherThreads));
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
-			imgLoader.numPriorities));*/
 		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader.openers
 			.size()));
 
@@ -89,8 +82,6 @@ public class XmlIoOmeroImgLoader implements
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
 				DATASET_NUMBER_TAG);
-		/*	final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);*/
 
 			List<Opener<?>> openers = new ArrayList<>();
 			List<OpenerSettings> openersSettings = new ArrayList<>();

@@ -49,42 +49,51 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-public class ImageLoader implements ViewerImgLoader,
-	MultiResolutionImgLoader, Closeable
+/**
+ * Generic class implementing how to load an image on BDV.
+ * Only setup loaders depend on the opener type (BioFormats, OMERO, OpenSlide, and other)
+ */
+public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
 {
 
-	final protected static Logger logger = LoggerFactory.getLogger(
-		ImageLoader.class);
+	final protected static Logger logger = LoggerFactory.getLogger(ImageLoader.class);
 
-	final public List<Opener<?>> openers;
 
+	// -------- ViewSetups core infos (pixel type, channels)
 	final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
-
-	final Map<Integer, FileChannel> viewSetupToBFFileSerieChannel =
-		new HashMap<>();
-
+	final Map<Integer, FileChannel> viewSetupToFileChannel = new HashMap<>();
 	int viewSetupCounter = 0;
-
 	final Map<Integer, NumericType> tTypeGetter = new HashMap<>();
-
 	final Map<Integer, Volatile> vTypeGetter = new HashMap<>();
 
+
+	// -------- setupLoader registrtation
 	final HashMap<Integer, BiopSetupLoader> setupLoaders = new HashMap<>();
 
-	@SuppressWarnings("CanBeFinal")
-	protected VolatileGlobalCellCache cache;
 
-	protected SharedQueue sq;
-
+	// -------- How to open image (threds, cache)
+	protected final VolatileGlobalCellCache cache;
+	protected final SharedQueue sq;
 	public final int numFetcherThreads = 2;
 	public final int numPriorities = 4;
 
-	final  List<OpenerSettings> openerSettings;
 
+	// -------- Openers core infos
+	final  List<OpenerSettings> openerSettings;
+	final public List<Opener<?>> openers;
+
+
+	// GETTER
 	public  List<OpenerSettings> getOpenerSettings() {
 		return openerSettings;
 	}
 
+	/**
+	 * Constructor
+	 * @param openers
+	 * @param openerSettings
+	 * @param sequenceDescription
+	 */
 	public ImageLoader(List<Opener<?>> openers,
                        List<OpenerSettings> openerSettings,
                        final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
@@ -92,14 +101,15 @@ public class ImageLoader implements ViewerImgLoader,
 		this.openerSettings = openerSettings;
 		this.openers = openers;
 		this.sequenceDescription = sequenceDescription;
-		sq = new SharedQueue(numFetcherThreads, numPriorities);
+		this.sq = new SharedQueue(numFetcherThreads, numPriorities);
 
+		// for each opener
 		IntStream openersIdxStream = IntStream.range(0, openers.size());
 		if ((sequenceDescription != null)) {
 			openersIdxStream.forEach(iF -> {
 				try {
+					// get the opener
 					Opener<?> opener = openers.get(iF);
-
 					final int iFile = iF;
 
 					logger.debug("\t Number of timesteps = " + opener.getNTimePoints());
@@ -109,10 +119,11 @@ public class ImageLoader implements ViewerImgLoader,
 					IntStream channels = IntStream.range(0, opener.getNChannels());
 					channels.forEach(iCh -> {
 						FileChannel fsc = new FileChannel(iFile, iCh);
-						viewSetupToBFFileSerieChannel.put(viewSetupCounter, fsc);
+						viewSetupToFileChannel.put(viewSetupCounter, fsc);
 						viewSetupCounter++;
 					});
 
+					// get pixel types
 					Type t = opener.getPixelType();
 					tTypeGetter.put(iF, (NumericType) t);
 					Volatile v = getVolatileOf((NumericType) t);
@@ -127,16 +138,23 @@ public class ImageLoader implements ViewerImgLoader,
 		cache = new VolatileGlobalCellCache(sq);
 	}
 
+	/**
+	 *
+	 * @param setupId : viewsetup id
+	 * @return the setupLoader corresponding to the current viewsetup id
+	 */
 	public BiopSetupLoader getSetupImgLoader(int setupId) {
 		try {
+			// if already registered setup loader
 			if (setupLoaders.containsKey(setupId)) {
 				return setupLoaders.get(setupId);
 			}
 			else {
-				int iF = viewSetupToBFFileSerieChannel.get(setupId).iFile;
-				int iC = viewSetupToBFFileSerieChannel.get(setupId).iChannel;
+				int iF = viewSetupToFileChannel.get(setupId).iFile;
+				int iC = viewSetupToFileChannel.get(setupId).iChannel;
 				logger.debug("loading file number = " + iF + " setupId = " + setupId);
 
+				// select the correct setup loader according to opener type
 				try {
 					if (openers.get(iF) instanceof BioFormatsBdvOpener) {
 						BioFormatsSetupLoader imgL = new BioFormatsSetupLoader((BioFormatsBdvOpener) openers.get(iF),
@@ -156,7 +174,6 @@ public class ImageLoader implements ViewerImgLoader,
 					e.printStackTrace();
 				}
 
-				// TODO find a way to return other sedtuploaders
 				return null;
 			}
 		}
@@ -171,9 +188,6 @@ public class ImageLoader implements ViewerImgLoader,
 		return cache;
 	}
 
-	/*public SharedQueue getQueue() {
-		return sq;
-	}*/
 
 	@Override
 	public void close() {
@@ -185,6 +199,11 @@ public class ImageLoader implements ViewerImgLoader,
 	}
 
 
+	/**
+	 *
+	 * @param t
+	 * @return volatile pixel type from t
+	 */
 	public static Volatile getVolatileOf(NumericType t) {
 		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
 
