@@ -22,7 +22,10 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import ij.IJ;
 import loci.formats.IFormatReader;
+import loci.formats.ImageReader;
+import loci.formats.Memoizer;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -31,12 +34,14 @@ import net.imglib2.type.numeric.ARGBType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
@@ -98,6 +103,27 @@ public class BioFormatsTools {
 			}
 		}
 	}*/
+
+	public static int getNSeries(File f){
+		logger.debug("Getting opener for file f " + f.getAbsolutePath());
+		IFormatReader reader = new ImageReader();
+		reader.setFlattenedResolutions(false);
+		Memoizer memo = new Memoizer(reader);
+		int nSeries = 0;
+		try {
+			logger.debug("setId for reader " + f.getAbsolutePath());
+			StopWatch watch = new StopWatch();
+			watch.start();
+			memo.setId(f.getAbsolutePath());
+			nSeries = memo.getSeriesCount();
+			watch.stop();
+			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
+		} catch (Exception e) {
+			IJ.log("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
+		}
+
+		return nSeries;
+	}
 
 	public static Length[] getSeriesPositionAsLengths(IMetadata omeMeta,
 		int iSerie)

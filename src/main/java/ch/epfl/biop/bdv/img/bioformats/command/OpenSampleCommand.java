@@ -24,6 +24,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.UNITS;
@@ -64,19 +65,37 @@ public class OpenSampleCommand implements Command {
 
 			Length millimeter = new Length(1, UNITS.MILLIMETER);
 
-			OpenerSettings opener20 = new OpenerSettings().location(
-				f20).centerPositionConvention().millimeter()
-				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron).bioFormatsBuilder();
-
-			OpenerSettings opener60 = new OpenerSettings().location(
-				f60).centerPositionConvention().millimeter()
-				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron).bioFormatsBuilder();
-
 			ArrayList<OpenerSettings> settings = new ArrayList<>();
-			settings.add(opener20);
-			settings.add(opener60);
+
+			for (int i = 0; i< BioFormatsTools.getNSeries(f20); i++) {
+				OpenerSettings opener20 = new OpenerSettings()
+								.location(f20)
+								.centerPositionConvention()
+								.millimeter()
+								.voxSizeReferenceFrameLength(millimeter)
+								.positionReferenceFrameLength(micron)
+								.bioFormatsBuilder()
+								.setSerie(i)
+								.cornerPositionConvention();
+
+				settings.add(opener20);
+			}
+
+			for (int i = 0; i< BioFormatsTools.getNSeries(f60); i++) {
+				OpenerSettings opener60 = new OpenerSettings()
+						.location(f60)
+						.centerPositionConvention()
+						.millimeter()
+						.voxSizeReferenceFrameLength(millimeter)
+						.positionReferenceFrameLength(micron)
+						.bioFormatsBuilder()
+						.setSerie(i)
+						.cornerPositionConvention();
+
+				settings.add(opener60);
+			}
+			//settings.add(opener20);
+			//settings.add(opener60);
 
 			spimData = ImageToSpimData.getSpimData(settings);
 

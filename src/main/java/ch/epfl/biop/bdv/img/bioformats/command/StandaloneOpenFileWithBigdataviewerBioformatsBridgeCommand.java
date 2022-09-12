@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 import bdv.util.BdvFunctions;
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -63,7 +64,10 @@ public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
 		settings.unit = unit;
 
 		List<OpenerSettings> openerSettings = new ArrayList<>();
-		openerSettings.add(settings.getSettings(file));
+		for (int i = 0; i< BioFormatsTools.getNSeries(file); i++) {
+			openerSettings.add(settings.getSettings(file).setSerie(i).cornerPositionConvention());
+		}
+
 		final AbstractSpimData spimData = ImageToSpimData.getSpimData(openerSettings);
 		BdvFunctions.show(spimData);
 	}
