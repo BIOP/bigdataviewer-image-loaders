@@ -41,6 +41,7 @@ public class MinimalQuPathProject {
 		public int entryID;
 		public String randomizedName;
 		public String imageName;
+		public int indexInQuPathProject; // not in the initial QuPath project => should be added manually
 	}
 
 	public static class ServerBuilderMetadata {
@@ -61,8 +62,8 @@ public class MinimalQuPathProject {
 
 	public static class ChannelInfo {
 
-		int color;
-		String name;
+		public int color;
+		public String name;
 	}
 
 	public static class ServerBuilderEntry {

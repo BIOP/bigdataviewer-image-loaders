@@ -18,16 +18,15 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ *//*
+
 
 package ch.epfl.biop.bdv.img.qupath;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.Opener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.OmeroBdvOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
-import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
@@ -54,12 +53,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
 
+*/
 /**
  * See documentation in {@link QuPathImageLoader}
  * 
  * @author Nicolas Chiaruttini, EPFL, BIOP, 2021
  * @author Rémy Dornier, EPFL, BIOP, 2022
- */
+ *//*
+
 
 public class QuPathToSpimData {
 
@@ -67,7 +68,7 @@ public class QuPathToSpimData {
 		QuPathToSpimData.class);
 
 	Map<URI, AbstractSpimData> spimDataMap = new HashMap<>();
-	Map<URI, QuPathImageOpener> uriToOpener = new HashMap<>();
+	Map<URI, OpenerSettings> uriToOpenerSettings = new HashMap<>();
 
 	Map<URI, QuPathImageOpener> uriToFileOpener = new HashMap<>();
 	Map<URI, String> uriToImageName = new HashMap<>();
@@ -76,16 +77,14 @@ public class QuPathToSpimData {
 		new HashMap<>();
 
 	public AbstractSpimData getSpimDataInstance(URI quPathProject,
-		GuiParams guiparams)
+		OpenerSettings projectSettings)
 	{
 
 		try {
 			// Deserialize the QuPath project
-			JsonObject projectJson = ProjectIO.loadRawProject(new File(
-				quPathProject));
+			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject));
 			Gson gson = new Gson();
-			MinimalQuPathProject project = gson.fromJson(projectJson,
-				MinimalQuPathProject.class);
+			MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
 			logger.debug("Opening QuPath project " + project.uri);
 
 			// IJ.log("projectJson : "+projectJson);
@@ -93,17 +92,25 @@ public class QuPathToSpimData {
 			project.images.forEach(image -> {
 				logger.debug("Opening qupath image " + image);
 
-				QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams,
-							project.images.indexOf(image));
+				OpenerSettings imageSettings = new OpenerSettings();
+				QuPathSourceIdentifier identifier = new QuPathSourceIdentifier();
+				// get the rotation angle if the image has been loaded in qupath with the
+				// rotation command
+				double angleRotationZAxis = 0;
+				if (image.serverBuilder.builderType.equals("rotated")) {
+					angleRotationZAxis = getAngleRotationZAxis(image);
+				}
+
+
+				// fill the identifier
+				identifier.indexInQuPathProject = project.images.indexOf(image);
+				identifier.entryID = image.entryID;
+				identifier.angleRotationZAxis = angleRotationZAxis;
 
 				try {
 					// check for omero opener and ask credentials if necessary
-					if (image.serverBuilder.providerClassName.equals(
-						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
-					{
-						if (!hostToGatewayCtx.containsKey(
-							image.serverBuilder.providerClassName))
-						{
+					if (image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
+						if (!hostToGatewayCtx.containsKey(image.serverBuilder.providerClassName)) {
 							// ask credentials
 							logger.debug("Ask credentials to user");
 							Boolean onlyCredentials = false;
@@ -129,19 +136,27 @@ public class QuPathToSpimData {
 						}
 
 						// initialize omero opener
-						OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(
-							image.serverBuilder.providerClassName);
-						qpOpener.create(gtCtx.host, gtCtx.port, gtCtx.gateway, gtCtx.ctx).setReader()
-							.loadMetadata();
-
+						OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(image.serverBuilder.providerClassName);
+						identifier.sourceFile = image.serverBuilder.uri.toString();
+						identifier.serieNumber = 0;
+						imageSettings.setGateway(gtCtx.gateway).setContext(gtCtx.ctx).omeroBuilder();
 					}
 					else {
-						// initialize bioformats opener
-						if(!uriToFileOpener.containsKey(image.serverBuilder.uri)) {
-							qpOpener.create("", -1, null, null).setReader().loadMetadata();
-							uriToFileOpener.put(image.serverBuilder.uri,qpOpener);
+						if (image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")){
+							int iSerie = image.serverBuilder.args.indexOf("--series");
+
+							if (iSerie == -1) {
+								logger.error("Series not found in qupath project server builder!");
+								identifier.serieNumber = 0;
+							}
+							else {
+								identifier.serieNumber = Integer.parseInt(image.serverBuilder.args.get(iSerie + 1));
+							}
+
+							identifier.sourceFile = Paths.get(image.serverBuilder.uri).toString();
+							imageSettings.setSerie(identifier.serieNumber).bioFormatsBuilder();
 						}else{
-							qpOpener.create("", -1, null, null).setReader(uriToFileOpener.get(image.serverBuilder.uri).getReader()).loadMetadata();
+							logger.error("Unsupported " + image.serverBuilder.providerClassName + " provider Class Name");
 						}
 					}
 				}
@@ -149,14 +164,18 @@ public class QuPathToSpimData {
 					throw new RuntimeException(e);
 				}
 
-				// get opener
-				Object opener = qpOpener.getOpener();
 
 				// create a unique URI for each image based on the name of the image
 				// file AND on the name of the serie
 				URI enhancedURI;
 				try {
-					// get the name of the serie (real image name)
+
+					enhancedURI = new URI(image.serverBuilder.uri.toString() + "-s"+identifier.serieNumber);
+					identifier.uri = enhancedURI;
+
+					*/
+/*//*
+/ get the name of the serie (real image name)
 					String imageName = qpOpener.getOmeMetaIdxOmeXml().getImageName(
 						qpOpener.getIdentifier().bioformatsIndex);
 
@@ -171,14 +190,16 @@ public class QuPathToSpimData {
 						enhancedURI = qpOpener.getURI();
 						String[] nameWithoutExtension = image.imageName.split("\\.");
 						uriToImageName.put(enhancedURI, nameWithoutExtension[0]);
-					}
+					}*//*
+
 				}
 				catch (URISyntaxException e) {
 					throw new RuntimeException(e);
 				}
 
 				// build spimdata depending on the opener class
-				if (!rawURI.contains(qpOpener.getURI())) {
+				*/
+/*if (!rawURI.contains(qpOpener.getURI())) {
 					if (opener instanceof BioFormatsBdvOpener) {
 						spimDataMap.put(enhancedURI, (SpimData) BioFormatsToSpimData
 							.getSpimData(Collections.singletonList(
@@ -201,39 +222,42 @@ public class QuPathToSpimData {
 					spimDataMap.put(enhancedURI, spimDataMap.get(spimDataMap.keySet()
 						.stream().filter(e -> e.toString().contains(qpOpener.getURI()
 							.toString())).findFirst().get()));
-				}
-				uriToOpener.put(enhancedURI, qpOpener);
+				}*//*
+
+				uriToOpenerSettings.put(enhancedURI, imageSettings);
 			});
 
 			// regroup all the spimdata in one big spimdata
 			logger.debug("Grouping spmidata");
-			spimDataMap.keySet().forEach(spimUri -> {
-				// get spimdata, opener and identifier
-				SpimData localSpimData = (SpimData) spimDataMap.get(spimUri);
-				QuPathImageOpener qpOpener = uriToOpener.get(spimUri);
-				QuPathImageLoader.QuPathSourceIdentifier identifier = qpOpener
-					.getIdentifier();
+			uriToOpenerSettings.keySet().forEach(uri -> {
+				OpenerSettings settings = uriToOpenerSettings.get(uri);
+				Opener<?> opener = null;
+				try {
+					opener = settings.create();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				QuPathImageLoader.QuPathSourceIdentifier identifier = //qpOpener.getIdentifier();
 				MinimalQuPathProject.PixelCalibrations pixelCalibrations = qpOpener
 					.getPixelCalibrations();
 
 				// create a QuPath Entry
 				QuPathEntryEntity qpentry = new QuPathEntryEntity(project.images.get(
 					identifier.indexInQuPathProject).entryID);
-				qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(spimUri,
-					identifier.bioformatsIndex));
-				qpentry.setQuPathProjectionLocation(Paths.get(quPathProject)
-					.toString());
-				SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
+				qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(settings.getDataLocation(), settings.getSerie()));
+				qpentry.setQuPathProjectionLocation(Paths.get(quPathProject).toString());
+				//SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
 
 				// update spimdata by adding attributed to viewsetups
 				localSpimData.getSequenceDescription().getViewSetups().values().forEach(
 					vss -> {
-						vss.setAttribute(sn);
+						//vss.setAttribute(sn);
 						vss.setAttribute(qpentry);
 					});
 
 				// create a new AffineTransform3D based on pixelCalibration
-				AffineTransform3D quPathRescaling = new AffineTransform3D();
+			*/
+/*	AffineTransform3D quPathRescaling = new AffineTransform3D();
 				if (pixelCalibrations != null) {
 					double scaleX = 1.0;
 					double scaleY = 1.0;
@@ -259,9 +283,9 @@ public class QuPathToSpimData {
 								.doubleValue();
 							logger.debug("rescaling x");
 						}
-						/*} else {
-						    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-						}*/
+						//} else {
+						//    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+						//}
 					}
 					if (pixelCalibrations.pixelHeight != null) {
 						MinimalQuPathProject.PixelCalibration pc =
@@ -280,9 +304,9 @@ public class QuPathToSpimData {
 								.doubleValue();
 							logger.debug("rescaling y");
 						}
-						/*} else {
-						    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-						}*/
+						//} else {
+						//    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+						//}
 					}
 					if (pixelCalibrations.zSpacing != null) {
 						MinimalQuPathProject.PixelCalibration pc =
@@ -303,9 +327,9 @@ public class QuPathToSpimData {
 							}
 							// logger.warn("Null Z voxel size");
 						}
-						/*} else {
-						    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-						}*/
+						//} else {
+						//    logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+						//}
 					}
 					logger.debug("ScaleX: " + scaleX + " scaleY:" + scaleY + " scaleZ:" +
 						scaleZ);
@@ -326,14 +350,16 @@ public class QuPathToSpimData {
 								double oY = vr.getModel().get(1, 3);
 								double oZ = vr.getModel().get(2, 3);
 								vr.getModel().preConcatenate(quPathRescaling);
+								quPathRescaling.preConcatenate()
 								vr.getModel().set(oX, 0, 3);
 								vr.getModel().set(oY, 1, 3);
 								vr.getModel().set(oZ, 2, 3);
 							}
 						});
-				}
+				}*//*
+
 				// update spimdata
-				spimDataMap.replace(spimUri, spimDataMap.get(spimUri), localSpimData);
+				spimDataMap.replace(uri, spimDataMap.get(uri), localSpimData);
 			});
 
 			// get the longest time serie
@@ -399,7 +425,7 @@ public class QuPathToSpimData {
 				newListOfTimePoint), newViewSetups, null, new MissingViews(
 					newMissingViews));
 			sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(
-				uriToOpener.values()), sd, 2, 4));
+				uriToOpenerSettings.values()), sd, 2, 4));
 
 			// create the new spimdata
 			final SpimData newSpimData = new SpimData(null, sd, new ViewRegistrations(
@@ -420,4 +446,27 @@ public class QuPathToSpimData {
 
 		return null;
 	}
+
+
+
+
+
+	public static class QuPathSourceIdentifier {
+
+		int indexInQuPathProject;
+		int entryID;
+		String sourceFile;
+		int serieNumber;
+		double angleRotationZAxis = 0;
+		URI uri;
+
+		public String toString() {
+			String str = "";
+			str += "sourceFile:" + sourceFile + "[bf:" + serieNumber + " - qp:" +
+					indexInQuPathProject + "]";
+			return str;
+		}
+	}
+
 }
+*/

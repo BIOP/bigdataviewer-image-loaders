@@ -1,6 +1,8 @@
 package ch.epfl.biop.bdv.img;
 
 
+import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
+import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
@@ -12,6 +14,7 @@ import omero.model.enums.UnitsLength;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Paths;
 
 /**
  * Equivalent to a Builder class, serializable, which can create an {@link Opener}
@@ -70,17 +73,22 @@ public class OpenerSettings {
     protected long imageID;
 
 
+    // --------- QuPath specific
+    URI qpProject;
+    MinimalQuPathProject.ImageEntry qpImage = null;
+
     public enum OpenerType {
         BIOFORMATS,
         OMERO,
         IMAGEJ,
-        OPENSLIDE
+        OPENSLIDE,
+        QUPATH
     };
 
 
     // GETTERS
-    public Gateway getGateway(){return this.gateway;}
-    public SecurityContext getContext(){return this.ctx;}
+    public MinimalQuPathProject.ImageEntry getQpImage(){return this.qpImage;}
+    public URI getQpProject(){return this.qpProject;}
     public String getHost(){return this.host;}
     public String getDataLocation(){return this.dataLocation;}
 
@@ -192,7 +200,7 @@ public class OpenerSettings {
     }
 
     public OpenerSettings location(URI uri) {
-        this.dataLocation = uri.toString();
+        this.dataLocation = Paths.get(uri).toString();//uri.toString();
         return this;
     }
 
@@ -273,6 +281,12 @@ public class OpenerSettings {
         return this;
     }
 
+    public OpenerSettings quPathBuilder(){
+        this.currentBuilder = OpenerType.QUPATH;
+        return this;
+    }
+
+
 
     // OMERO specific
     public OpenerSettings setGateway(Gateway gateway){
@@ -299,19 +313,53 @@ public class OpenerSettings {
     }
 
 
-    public Opener<?> create() throws Exception {
+    // QuPath specific
+    public OpenerSettings setQpImage(MinimalQuPathProject.ImageEntry qpImage) {
+        this.qpImage = qpImage;
+        return this;
+    }
+    public OpenerSettings setQpProject(URI qpproj) {
+        this.qpProject = qpproj;
+        return this;
+    }
 
+
+    public Opener<?> create() throws Exception {
         switch (this.currentBuilder) {
             case OMERO:
-                return new OmeroBdvOpener().create(
+                return new OmeroBdvOpener(
                         gateway,
                         ctx,
                         imageID,
                         poolSize,
                         unit,
-                        dataLocation);
+                        dataLocation
+                );
             case IMAGEJ: break;
             case OPENSLIDE: break;
+            case QUPATH: new QuPathImageOpener().create(
+                    dataLocation,
+                    iSerie,
+                    // Location of the image
+                    positionPreTransformMatrixArray,
+                    positionPostTransformMatrixArray,
+                    positionIsImageCenter,
+                    defaultSpaceUnit,
+                    defaultVoxelUnit,
+                    unit,
+                    // How to stream it
+                    poolSize,
+                    useDefaultXYBlockSize,
+                    cacheBlockSize,
+                    // Channel options
+                    swZC,
+                    splitRGBChannels,
+                    gateway,
+                    ctx,
+                    imageID,
+                    qpImage,
+                    qpProject
+            );
             case BIOFORMATS:
                 return new BioFormatsBdvOpener(
                         dataLocation,
@@ -330,10 +378,12 @@ public class OpenerSettings {
                         // Channel options
                         swZC,
                         splitRGBChannels
-                        );
+                );
         }
         return null;
+
     }
+
 
     public static OpenerSettings getDefaultSettings(OpenerType type, String location){
         switch (type){

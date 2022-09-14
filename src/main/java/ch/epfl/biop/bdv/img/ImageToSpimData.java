@@ -112,7 +112,7 @@ public class ImageToSpimData {
                 this.openers.add(opener);
 
                 // get image location
-                String dataLocation = openerSettings.get(iF).getDataLocation(); // other entity
+                String dataLocation = openerSettings.get(iF).getDataLocation();
                 logger.debug("Data located at " + dataLocation);
 
                 // TODO see if it is necessary to keep the tile with nTileCounter

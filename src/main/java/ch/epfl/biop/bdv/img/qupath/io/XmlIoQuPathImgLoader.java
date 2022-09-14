@@ -22,8 +22,11 @@
 
 package ch.epfl.biop.bdv.img.qupath.io;
 
+import ch.epfl.biop.bdv.img.ImageLoader;
+import ch.epfl.biop.bdv.img.Opener;
+import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
-import ch.epfl.biop.bdv.img.qupath.QuPathImageLoader;
+//import ch.epfl.biop.bdv.img.qupath.QuPathImageLoader;
 import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
@@ -44,15 +47,15 @@ import java.util.Map;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader_v2",
-	type = QuPathImageLoader.class)
+@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader_v3",
+	type = ImageLoader.class)
 public class XmlIoQuPathImgLoader implements
-	XmlIoBasicImgLoader<QuPathImageLoader>
+	XmlIoBasicImgLoader<ImageLoader>
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
-	public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
-	public static final String CACHE_NUM_PRIORITIES = "num_priorities";
+	//public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
+	//public static final String CACHE_NUM_PRIORITIES = "num_priorities";
 	public static final String QUPATH_PROJECT_TAG = "qupath_project";
 	public static final String OPENER_MODEL_TAG = "opener_model";
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
@@ -67,28 +70,28 @@ public class XmlIoQuPathImgLoader implements
 	 * @return
 	 */
 	@Override
-	public Element toXml(QuPathImageLoader imgLoader, File basePath) {
+	public Element toXml(ImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
 		// For potential extensibility
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
+		/*elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
 			imgLoader.numFetcherThreads));
 		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
-			imgLoader.numPriorities));
+			imgLoader.numPriorities));*/
 		elem.addContent(XmlHelpers.textElement(QUPATH_PROJECT_TAG, (new Gson())
-			.toJson(imgLoader.getProjectURI(), URI.class)));
+			.toJson(imgLoader.getOpenerSettings().get(0).getQpProject(), URI.class)));
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
 			QuPathImageOpener.class.getName()));
 		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader
-			.getModelOpener().size()));
+			.getOpenerSettings().size()));
 
 		// write each opener separately
 		Gson gson = new Gson();
-		for (int i = 0; i < imgLoader.getModelOpener().size(); i++) {
+		for (int i = 0; i < imgLoader.getOpenerSettings().size(); i++) {
 			// Opener serialization
 			elem.addContent(XmlHelpers.textElement(OPENER_MODEL_TAG + "_" + i, gson
-				.toJson(imgLoader.getModelOpener().get(i))));
+				.toJson(imgLoader.getOpenerSettings().get(i))));
 		}
 
 		return elem;
@@ -104,16 +107,17 @@ public class XmlIoQuPathImgLoader implements
 	 * @return
 	 */
 	@Override
-	public QuPathImageLoader fromXml(Element elem, File basePath,
+	public ImageLoader fromXml(Element elem, File basePath,
 		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
 				DATASET_NUMBER_TAG);
-			final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
+			/*final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
+			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);*/
 
-			List<QuPathImageOpener> openers = new ArrayList<>();
+			List<Opener<?>> openers = new ArrayList<>();
+			List<OpenerSettings> openerSettingsList = new ArrayList<>();
 			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
 
 			if (!openerClassName.equals(QuPathImageOpener.class.getName())) {
@@ -124,61 +128,53 @@ public class XmlIoQuPathImgLoader implements
 			Gson gson = new Gson();
 			for (int i = 0; i < number_of_datasets; i++) {
 				// Opener de-serialization
-				String jsonInString = XmlHelpers.getText(elem, OPENER_MODEL_TAG + "_" +
-					i);
-				QuPathImageOpener opener = (gson.fromJson(jsonInString,
-					QuPathImageOpener.class));
+				String jsonInString = XmlHelpers.getText(elem, OPENER_MODEL_TAG + "_" + i);
+				OpenerSettings openerSettings = (gson.fromJson(jsonInString, OpenerSettings.class));
 
 				// check for omero opener and ask credentials if necessary
-				if (opener.getImage().serverBuilder.providerClassName.equals(
+				if (openerSettings.getQpImage().serverBuilder.providerClassName.equals(
 					"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
 				{
-					if (!hostToGatewayCtx.containsKey(opener
-						.getImage().serverBuilder.providerClassName))
+					if (!hostToGatewayCtx.containsKey(openerSettings.getHost()))
 					{
 						// ask for user credentials
-						Boolean onlyCredentials = true;
+						Boolean onlyCredentials = false;
 						String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
-							onlyCredentials);
-						String username = credentials[0];
-						String password = credentials[1];
+								onlyCredentials);
+						String host = credentials[0];
+						int port = Integer.parseInt(credentials[1]);
+						String username = credentials[2];
+						String password = credentials[3];
 						credentials = new String[] {};
 
-						// connect to omero
-						Gateway gateway = OmeroTools.omeroConnect(opener.getHost(), opener
-							.getPort(), username, password);
+						// connect to OMERO
+						Gateway gateway = OmeroTools.omeroConnect(host, port,
+								username, password);
 						SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
-						ctx.setServerInformation(new ServerInformation(opener.getHost()));
 
 						// add it in the channel hashmap
 						OmeroTools.GatewaySecurityContext gtCtx =
-							new OmeroTools.GatewaySecurityContext(opener.getHost(), opener
-								.getPort(), gateway, ctx);
-						hostToGatewayCtx.put(opener
-							.getImage().serverBuilder.providerClassName, gtCtx);
+								new OmeroTools.GatewaySecurityContext(host, port,
+										gateway, ctx);
+						hostToGatewayCtx.put(host, gtCtx);
 					}
 
 					// create omero image opener
-					OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(opener
-						.getImage().serverBuilder.providerClassName);
-					opener.create(gtCtx.host, gtCtx.port, gtCtx.gateway, gtCtx.ctx)
-						.loadMetadata();
-
-					// create bioformats opener
+					OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(openerSettings.getHost());
+					openerSettings.setGateway(gtCtx.gateway).setContext(gtCtx.ctx);
 				}
-				else opener.create("", -1, null, null).loadMetadata();
-
-				openers.add(opener);
+				openerSettings.quPathBuilder();
+				openerSettingsList.add(openerSettings);
+				openers.add(openerSettings.create());
 			}
 
 			String qupathProjectUri = XmlHelpers.getText(elem, QUPATH_PROJECT_TAG);
 			URI qpProjURI = (new Gson()).fromJson(qupathProjectUri, URI.class);
 
 			// disconnect all gateway
-			hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
+			//hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
 
-			return new QuPathImageLoader(qpProjURI, openers, sequenceDescription,
-				numFetcherThreads, numPriorities);
+			return new ImageLoader(openers, openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {
 			e.printStackTrace();

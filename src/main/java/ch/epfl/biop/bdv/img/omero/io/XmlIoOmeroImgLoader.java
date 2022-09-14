@@ -107,8 +107,8 @@ public class XmlIoOmeroImgLoader implements
 					Boolean onlyCredentials = false;
 					String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
 						onlyCredentials);
-					int port = Integer.parseInt(credentials[0]);
-					String host = credentials[1];
+					String host = credentials[0];
+					int port = Integer.parseInt(credentials[1]);
 					String username = credentials[2];
 					String password = credentials[3];
 					credentials = new String[] {};

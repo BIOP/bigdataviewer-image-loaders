@@ -163,7 +163,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	 * @return
 	 * @throws Exception
 	 */
-	public OmeroBdvOpener create(
+	public OmeroBdvOpener (
 			Gateway gateway,
 			SecurityContext ctx,
 			long imageID,
@@ -297,8 +297,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 
 		boolean isRGB = this.nChannels == 3 && this.pixelType instanceof UnsignedByteType;
 		this.channelPropertiesList = getChannelProperties(this.channelMetadata,this.renderingDef, this.nChannels, this.pixelType, isRGB);
-
-		return this;
 	}
 
 
@@ -471,10 +469,10 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public AffineTransform3D getTransform() {
 		AffineTransform3D transform = new AffineTransform3D();
 		transform.identity();
-		transform.scale(getPixelSizeX() * (double) imageSize.get(0)[0] /
-				(double) imageSize.get(0)[0], getPixelSizeY() * (double) imageSize
-				.get(0)[1] / (double) imageSize.get(0)[1], getPixelSizeZ() *
-				(double) imageSize.get(0)[2] / (double) imageSize.get(0)[2]);
+		transform.scale(
+				getPixelSizeX(),
+				getPixelSizeY(),
+				getPixelSizeZ());
 		transform.translate(new double[] { getStagePosX(), getStagePosY(), 0 });
 
 		return transform;

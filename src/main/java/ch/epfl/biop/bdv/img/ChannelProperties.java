@@ -195,6 +195,19 @@ public class ChannelProperties {
 
 
     /**
+     * For OMERO
+     * @param colorIdx
+     * @return
+     */
+    public ChannelProperties setChannelColor(int colorIdx){
+        Color color = new Color(colorIdx);
+
+        this.color =  new ARGBType(ARGBType.rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+        return this;
+    }
+
+
+    /**
      * For BioFormats
      * @param iSerie
      * @param metadata
@@ -222,6 +235,17 @@ public class ChannelProperties {
     public ChannelProperties setChannelName(ChannelData channelData){
        this.name = channelData.getChannelLabeling();
        return this;
+    }
+
+
+    /**
+     * Generic
+     * @param name
+     * @return
+     */
+    public ChannelProperties setChannelName(String name){
+        this.name = name;
+        return this;
     }
 
     /**

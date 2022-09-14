@@ -18,7 +18,8 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ *//*
+
 
 package ch.epfl.biop.bdv.img.qupath;
 
@@ -51,8 +52,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
+*/
 /**
- * QuPath Image Loader. In combination with {@link QuPathToSpimData}, this class
+ * QuPath Image Loader. In combination with {QuPathToSpimData}, this class
  * is used to convert a QuPath project file into a BDV compatible dataset. There
  * are some limitations: only bioformats image server, rotated image server and
  * omero-raw image server are supported ( among probably other limitations ).
@@ -61,7 +63,8 @@ import java.util.stream.IntStream;
  *
  * @author Nicolas Chiaruttini, EPFL, BIOP, 2021
  * @author Rémy Dornier, EPFL, BIOP, 2022
- */
+ *//*
+
 public class QuPathImageLoader implements ViewerImgLoader,
 	MultiResolutionImgLoader
 {
@@ -243,22 +246,7 @@ public class QuPathImageLoader implements ViewerImgLoader,
 		return openerModel;
 	}
 
-	public static class QuPathSourceIdentifier {
 
-		int indexInQuPathProject;
-		int entryID;
-		String sourceFile;
-		int bioformatsIndex;
-		double angleRotationZAxis = 0;
-		URI uri;
-
-		public String toString() {
-			String str = "";
-			str += "sourceFile:" + sourceFile + "[bf:" + bioformatsIndex + " - qp:" +
-				indexInQuPathProject + "]";
-			return str;
-		}
-	}
 
 	public static class QuPathEntryAndChannel {
 
@@ -271,3 +259,4 @@ public class QuPathImageLoader implements ViewerImgLoader,
 		}
 	}
 }
+*/

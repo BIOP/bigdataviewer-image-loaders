@@ -18,7 +18,8 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ *//*
+
 
 package ch.epfl.biop.bdv.img.qupath;
 
@@ -43,13 +44,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
+*/
 /**
  * See documentation in {@link QuPathImageLoader} This class builds the
  * setupLoader corresponding to the opener type (Bioformat or Omero) and get all
  * the necessary info from this loader.
  *
  * @author Rémy Dornier, EPFL, BIOP, 2022
- */
+ *//*
+
 
 public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
 	extends AbstractViewerSetupImgLoader<T, V> implements
@@ -253,3 +256,4 @@ public class QuPathSetupLoader<T extends NumericType<T> & NativeType<T>, V exten
 		return null;
 	}
 }
+*/
