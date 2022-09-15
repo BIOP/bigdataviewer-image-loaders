@@ -124,7 +124,10 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 		// get the rotation angle if the image has been loaded in qupath with the
 		// rotation command
-		double angleRotationZAxis = getAngleRotationZAxis(image);
+		if (image.serverBuilder.builderType.equals("rotated")) {
+			double angleRotationZAxis = getAngleRotationZAxis(image);
+		}
+
 
 		this.image = image;
 		this.unit = unit;
@@ -137,21 +140,24 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			try {
 				//this.identifier = new QuPathImageLoader.QuPathSourceIdentifier();
 				//this.identifier.angleRotationZAxis = angleRotationZAxis;
-				/*URI uri = new URI(image.serverBuilder.uri.getScheme(),
-					image.serverBuilder.uri.getHost(), image.serverBuilder.uri
-						.getPath(), null);
-				String filePath;*/
 
+				/*String filePath;*/
+
+				System.out.println("provided class name : "+image.serverBuilder.providerClassName);
 				// create openers
 				if (image.serverBuilder.providerClassName.equals(
 					"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder"))
 				{
 					// This appears to work more reliably than converting to a File
-					//filePath = Paths.get(uri).toString();
+					/*URI uri = new URI(image.serverBuilder.uri.getScheme(),
+					image.serverBuilder.uri.getHost(), image.serverBuilder.uri
+						.getPath(), null);
+					String filePath = Paths.get(uri).toString();*/
 
 					//BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(
 					//	filePath);//.ignoreMetadata();
-					//this.opener = bfOpener;
+					//this.opener = bfOpener;.
+					System.out.println("datalocation bioformat : "+dataLocation);
 					this.opener = (Opener<T>) new BioFormatsBdvOpener(
 							dataLocation,
 							iSerie,
@@ -177,7 +183,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
 					{
 						//filePath = this.image.serverBuilder.uri.toString();
-
+						System.out.println("datalocation omero : "+dataLocation);
 						this.opener = (Opener<T>) new OmeroBdvOpener(
 							gateway,
 							ctx,
@@ -473,6 +479,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
 			MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
+			System.out.println(channel.color);
 			return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
 		}
 		else return this.opener.getChannel(iChannel);
@@ -495,6 +502,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
 
 		newEntities.add(qpentry);
+		newEntities.forEach(e->System.out.println(e));
 		return newEntities;
 	}
 
@@ -508,9 +516,14 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		if(this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
+			System.out.println("find NChannel with qupath");
 			return this.image.serverBuilder.metadata.channels.size();
 		}
-		else return this.opener.getNChannels();
+
+		else {
+			System.out.println("find NChannel with Bioformats");
+			return this.opener.getNChannels();
+		}
 	}
 
 	@Override
@@ -535,8 +548,13 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public AffineTransform3D getTransform() {
-		return getTransform(this.image.serverBuilder.metadata.pixelCalibration,
-				this.unit, opener.getTransform(), getVoxelDimensions());
+		if(this.image.serverBuilder != null &&
+				this.image.serverBuilder.metadata != null &&
+				this.image.serverBuilder.metadata.pixelCalibration != null){
+			return getTransform(this.image.serverBuilder.metadata.pixelCalibration,
+					this.unit, opener.getTransform(), getVoxelDimensions());
+		}else
+			return this.opener.getTransform();
 	}
 
 	@Override

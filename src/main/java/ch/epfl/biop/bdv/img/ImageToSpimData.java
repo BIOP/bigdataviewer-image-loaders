@@ -113,6 +113,7 @@ public class ImageToSpimData {
 
                 // get image location
                 String dataLocation = openerSettings.get(iF).getDataLocation();
+                System.out.println("datalocation in spimdata : "+dataLocation);
                 logger.debug("Data located at " + dataLocation);
 
                 // TODO see if it is necessary to keep the tile with nTileCounter
@@ -136,6 +137,7 @@ public class ImageToSpimData {
                 fi.setName(dataLocation);
 
                 IntStream channels = IntStream.range(0, opener.getNChannels());
+                System.out.println("NChannels in SpimData "+opener.getNChannels());
                 channels.forEach(iCh -> {
                     // get channel properties
                     ChannelProperties ch = opener.getChannel(iCh);

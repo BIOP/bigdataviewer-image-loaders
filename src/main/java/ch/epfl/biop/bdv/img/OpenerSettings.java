@@ -14,6 +14,7 @@ import omero.model.enums.UnitsLength;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 /**
@@ -199,8 +200,13 @@ public class OpenerSettings {
         return this;
     }
 
-    public OpenerSettings location(URI uri) {
-        this.dataLocation = Paths.get(uri).toString();//uri.toString();
+    public OpenerSettings location(URI uri) throws URISyntaxException {
+        if(uri.getScheme().equals("https") || uri.getScheme().equals("http"))
+            this.dataLocation = uri.toString();
+        else {
+            URI newuri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), null);
+            this.dataLocation = Paths.get(newuri).toString();
+        }
         return this;
     }
 
@@ -337,7 +343,7 @@ public class OpenerSettings {
                 );
             case IMAGEJ: break;
             case OPENSLIDE: break;
-            case QUPATH: new QuPathImageOpener().create(
+            case QUPATH: return new QuPathImageOpener().create(
                     dataLocation,
                     iSerie,
                     // Location of the image

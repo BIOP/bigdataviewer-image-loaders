@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,10 +98,15 @@ public class QuPathProjectToBDVDatasetCommand extends
 
 				image.indexInQuPathProject = project.images.indexOf(image);
 
-				OpenerSettings openerSettings = settings.getSettings(image.serverBuilder.uri.toString())
+				OpenerSettings openerSettings = settings.getSettings()
 						.setQpImage(image)
 						.setQpProject(project.uri)
 						.quPathBuilder();
+				try {
+					openerSettings.location(image.serverBuilder.uri);
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
 
 				try {
 					if (image.serverBuilder.providerClassName.equals(

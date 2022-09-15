@@ -96,7 +96,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 		label = "Reference frame size in unit (voxel size)")
 	public double refframesizeinunitvoxsize = 1;
 
-	public OpenerSettings getSettings(String datalocation) {
+	public OpenerSettings getSettings() {
 
 		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(unit);
 
@@ -105,7 +105,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 		Length voxSizeReferenceFrameLength = new Length(refframesizeinunitvoxsize,
 			bfUnit);
 
-		OpenerSettings settings = new OpenerSettings().location(datalocation).unit(unit).bioFormatsBuilder();
+		OpenerSettings settings = new OpenerSettings().unit(unit).bioFormatsBuilder();
 		/*BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
 			datalocation).unit(unit).auto().ignoreMetadata();*/
 
@@ -162,7 +162,7 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 	}
 
 	public OpenerSettings getSettings(File f) {
-		return getSettings(f.getAbsolutePath());
+		return getSettings().location(f.getAbsolutePath());
 	}
 
 	@Override
