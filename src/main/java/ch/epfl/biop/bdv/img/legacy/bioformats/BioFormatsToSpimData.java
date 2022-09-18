@@ -79,7 +79,10 @@ public class BioFormatsToSpimData {
 			channelToId.put(channel, channelCounter);
 			logger.debug("New Channel for series " + iSerie + ", channel " +
 				iChannel + ", set as number " + channelCounter);
-			channelIdToChannel.put(channelCounter, new Channel(channelCounter));
+			Channel channelEntity = new Channel(channelCounter);
+			channelEntity.setName(channel.chName);
+
+			channelIdToChannel.put(channelCounter, channelEntity);
 			channelCounter++;
 		}
 		else {
