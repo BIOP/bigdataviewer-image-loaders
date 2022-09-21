@@ -328,9 +328,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 
 	// GETTERS
-	public boolean getSwitchZAndT() {
-		return swZC;
-	}
 	public String getReaderFormat() {
 		return this.format;
 	}
@@ -492,7 +489,4 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		}
 
 	}
-
-
-
 }

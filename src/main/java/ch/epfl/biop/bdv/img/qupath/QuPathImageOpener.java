@@ -78,15 +78,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	private int iSerie;
 
 
-	// getter functions
-	public URI getURI() {
-		return this.image.serverBuilder.uri;
-	}
-
-	public Opener<?> getSubOpener() {
-		return this.opener;
-	}
-
 	public MinimalQuPathProject.ImageEntry getImage() {
 		return this.image;
 	}
@@ -140,25 +131,13 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			logger.debug("URI image server");
 
 			try {
-				//this.identifier = new QuPathImageLoader.QuPathSourceIdentifier();
-				//this.identifier.angleRotationZAxis = angleRotationZAxis;
-
-				/*String filePath;*/
 
 				System.out.println("provided class name : "+image.serverBuilder.providerClassName);
 				// create openers
 				if (image.serverBuilder.providerClassName.equals(
 					"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder"))
 				{
-					// This appears to work more reliably than converting to a File
-					/*URI uri = new URI(image.serverBuilder.uri.getScheme(),
-					image.serverBuilder.uri.getHost(), image.serverBuilder.uri
-						.getPath(), null);
-					String filePath = Paths.get(uri).toString();*/
 
-					//BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(
-					//	filePath);//.ignoreMetadata();
-					//this.opener = bfOpener;.
 					System.out.println("datalocation bioformat : "+dataLocation);
 					this.opener = (Opener<T>) new BioFormatsBdvOpener(
 							dataLocation,
@@ -184,8 +163,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 					if (this.image.serverBuilder.providerClassName.equals(
 						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
 					{
-						//filePath = this.image.serverBuilder.uri.toString();
-						System.out.println("datalocation omero : "+dataLocation);
 						this.opener = (Opener<T>) new OmeroBdvOpener(
 							gateway,
 							ctx,
@@ -206,28 +183,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 						return this;
 					}
 				}
-
-				// fill the identifier
-				//this.identifier.uri = this.image.serverBuilder.uri;
-				//this.identifier.sourceFile = filePath;
-				//this.identifier.indexInQuPathProject = this.indexInQuPathProject;
-				//this.identifier.entryID = this.image.entryID;
-
-				// get bioformats serie number
-				/*int iSerie = this.image.serverBuilder.args.indexOf("--series");
-
-				if (iSerie == -1) {
-					logger.error("Series not found in qupath project server builder!");
-					this.identifier.bioformatsIndex = 0;// was initially -1 but put to 0
-																							// because of index -1 does not
-																							// exists (in QuPathToSpimData /
-																							// BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths()
-				}
-				else {
-					this.identifier.bioformatsIndex = Integer.parseInt(
-						this.image.serverBuilder.args.get(iSerie + 1));
-				}*/
-
 			}
 			catch (Exception e) {
 				logger.error("URI Syntax error " + e.getMessage());
@@ -354,99 +309,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 		return rootTransform;
 	}
-
-
-	/**
-	 * Fill the opener metadata with QuPath metadata
-	 * 
-	 * @return this object
-	 */
-	/*public QuPathImageOpener loadMetadata() {
-		if (this.image.serverBuilder != null) {
-			// if metadata is null, it means that the image has been imported using
-			// BioFormats
-			if (this.image.serverBuilder.metadata != null) {
-				MinimalQuPathProject.PixelCalibrations pixelCalibration =
-					this.image.serverBuilder.metadata.pixelCalibration;
-				this.pixelCalibrations = pixelCalibration;
-
-				if (pixelCalibration != null) {
-					// fill pixels size and unit
-					this.omeMetaIdxOmeXml.setPixelsPhysicalSizeX(new Length(
-						pixelCalibration.pixelWidth.value, convertStringToUnit(
-							pixelCalibration.pixelWidth.unit)), 0);
-					this.omeMetaIdxOmeXml.setPixelsPhysicalSizeY(new Length(
-						pixelCalibration.pixelHeight.value, convertStringToUnit(
-							pixelCalibration.pixelHeight.unit)), 0);
-					this.omeMetaIdxOmeXml.setPixelsPhysicalSizeZ(new Length(
-						pixelCalibration.zSpacing.value, convertStringToUnit(
-							pixelCalibration.zSpacing.unit)), 0);
-
-					// fill channels' name and color
-					List<MinimalQuPathProject.ChannelInfo> channels =
-						this.image.serverBuilder.metadata.channels;
-					for (int i = 0; i < channels.size(); i++) {
-						this.omeMetaIdxOmeXml.setChannelName(channels.get(i).name, 0, i);
-						this.omeMetaIdxOmeXml.setChannelColor(new Color(channels.get(
-							i).color), 0, i);
-					}
-				}
-				else logger.warn(
-					"PixelCalibration field does not exist in the image metadata");
-			}
-			else logger.warn("Metadata are not available in the image metadata");
-		}
-		else logger.warn("The image does not contain any builder");
-
-		return this;
-	}*/
-
-	/**
-	 * Sets the reader for this opener with an existing reader (to not build it twice
-	 * because it takes very long time).
-	 *
-	 * @param reader
-	 * @return this opener
-	 */
-	/*public QuPathImageOpener setReader(IFormatReader reader){
-		if(this.image.serverBuilder.providerClassName.equals(
-				"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
-			this.reader = reader;
-			this.seriesCount = reader.getSeriesCount();
-			this.omeMetaIdxOmeXml = (IMetadata) reader.getMetadataStore();
-		}else{
-			this.setReader();
-		}
-
-		return this;
-	}*/
-
-	/**
-	 * Build a reader for this opener
-	 * @return this opener
-	 */
-	/*public QuPathImageOpener setReader(){
-		if(this.image.serverBuilder.providerClassName.equals(
-				"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
-			IFormatReader Ireader = ((BioFormatsBdvOpener) (this.opener)).getNewReader();
-			this.reader = Ireader;
-			this.seriesCount = Ireader.getSeriesCount();
-			this.omeMetaIdxOmeXml = (IMetadata) Ireader.getMetadataStore();
-		}else{
-			if(this.image.serverBuilder.providerClassName.equals(
-					"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")){
-				this.reader = null;
-				this.seriesCount = 1;
-				this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
-			}else{
-				logger.error("Reader cannot be set ; Unsupported " +
-						this.image.serverBuilder.providerClassName +
-						" provider Class Name");
-			}
-		}
-
-		return this;
-	}*/
 
 	/**
 	 * Convert the string unit from QuPath metadata into Unit class readable by
@@ -584,10 +446,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		this.opener.close();
 	}
 
-
-
-
-
 	public VoxelDimensions getVoxelDimensions(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String unit)
 	{
 		// Always 3 to allow for big stitcher compatibility
@@ -655,170 +513,4 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		}
 		return voxelDimensions;
 	}
-
-
-
-
-
-
-
-
-
-	/**
-	 * create and initialize an OmeroSourceOpener object to read images from OMERO
-	 * in BDV
-	 * 
-	 * @param datalocation : url of the image
-	 * @param gateway : connected gateway
-	 * @param ctx
-	 * @return
-	 * @throws Exception
-	 */
-	/*public OmeroBdvOpener getInitializedOmeroBDVOpener(String datalocation,
-		Gateway gateway, SecurityContext ctx) throws Exception
-	{
-		Unit bfUnit = BioFormatsTools.getUnitFromString(this.defaultParams
-			.getUnit());
-		Length positionReferenceFrameLength = new Length(this.defaultParams
-			.getRefframesizeinunitlocation(), bfUnit);
-		Length voxSizeReferenceFrameLength = new Length(this.defaultParams
-			.getVoxSizeReferenceFrameLength(), bfUnit);
-
-		// create the Omero opener
-		OmeroBdvOpener opener = new OmeroBdvOpener().location(datalocation)
-			.ignoreMetadata();
-
-		// flip x, y and z axis
-		if (!this.defaultParams.getFlippositionx().equals("AUTO") &&
-			this.defaultParams.getFlippositionx().equals("TRUE"))
-		{
-			opener = opener.flipPositionX();
-			logger.debug("FlipPositionX");
-		}
-
-		if (!this.defaultParams.getFlippositiony().equals("AUTO") &&
-			this.defaultParams.getFlippositiony().equals("TRUE"))
-		{
-			opener = opener.flipPositionY();
-			logger.debug("FlipPositionY");
-		}
-
-		if (!this.defaultParams.getFlippositionz().equals("AUTO") &&
-			this.defaultParams.getFlippositionz().equals("TRUE"))
-		{
-			opener = opener.flipPositionZ();
-			logger.debug("FlipPositionZ");
-		}
-
-		// set unit length and references
-		UnitsLength unit = this.defaultParams.getUnit().equals("MILLIMETER")
-			? UnitsLength.MILLIMETER : this.defaultParams.getUnit().equals(
-				"MICROMETER") ? UnitsLength.MICROMETER : this.defaultParams.getUnit()
-					.equals("NANOMETER") ? UnitsLength.NANOMETER : null;
-		logger.debug("Convert input unit to " + unit.name());
-		opener = opener.unit(unit);
-		opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
-		opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
-
-		// split RGB channels
-		if (this.defaultParams.getSplitChannels()) {
-			opener = opener.splitRGBChannels();
-			logger.debug("splitRGBChannels");
-		}
-
-		// set omero connection
-		String[] imageString = datalocation.split("%3D");
-		String[] omeroId = imageString[1].split("-");
-
-		logger.debug("OmeroID : " + omeroId[1]);
-		opener.gateway(gateway).securityContext(ctx).imageID(Long.parseLong(
-			omeroId[1])).host(ctx.getServerInformation().getHost()).create();
-
-		return opener;
-	}*/
-
-	/**
-	 * create and initialize an BioFormatsBdvOpener object to read images from
-	 * Bioformats in BDV
-	 * 
-	 * @param datalocation : uri of the image
-	 * @return
-	 */
-	/*public BioFormatsBdvOpener getInitializedBioFormatsBDVOpener(
-		String datalocation)
-	{
-		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(this.defaultParams
-			.getUnit());
-		Length positionReferenceFrameLength = new Length(this.defaultParams
-			.getRefframesizeinunitlocation(), bfUnit);
-		Length voxSizeReferenceFrameLength = new Length(this.defaultParams
-			.getVoxSizeReferenceFrameLength(), bfUnit);
-
-		// create the bioformats opener
-		BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
-			datalocation).ignoreMetadata();
-
-		// Switch channels and Z axis
-		if (!this.defaultParams.getSwitchzandc().equals("AUTO")) {
-			opener = opener.switchZandC(this.defaultParams.getSwitchzandc().equals(
-				"TRUE"));
-			logger.debug("Switch Z and C");
-		}
-
-		// configure cache block size
-		if (!this.defaultParams.getUsebioformatscacheblocksize()) {
-			opener = opener.cacheBlockSize(this.defaultParams.getCachesizex(),
-				this.defaultParams.getCachesizey(), this.defaultParams.getCachesizez());
-			logger.debug("cacheBlockSize : " + this.defaultParams.getCachesizex() +
-				", " + this.defaultParams.getCachesizey() + ", " + this.defaultParams
-					.getCachesizez());
-		}
-
-		// configure the coordinates origin convention
-		if (!this.defaultParams.getPositoniscenter().equals("AUTO")) {
-			if (this.defaultParams.getPositoniscenter().equals("TRUE")) {
-				opener = opener.centerPositionConvention();
-				logger.debug("CENTER position convention");
-			}
-			else {
-				opener = opener.cornerPositionConvention();
-				logger.debug("CORNER position convention");
-			}
-		}
-
-		// flip x,y and z axis
-		if (!this.defaultParams.getFlippositionx().equals("AUTO") &&
-			this.defaultParams.getFlippositionx().equals("TRUE"))
-		{
-			opener = opener.flipPositionX();
-			logger.debug("FlipPositionX");
-		}
-
-		if (!this.defaultParams.getFlippositiony().equals("AUTO") &&
-			this.defaultParams.getFlippositiony().equals("TRUE"))
-		{
-			opener = opener.flipPositionY();
-			logger.debug("FlipPositionY");
-		}
-
-		if (!this.defaultParams.getFlippositionz().equals("AUTO") &&
-			this.defaultParams.getFlippositionz().equals("TRUE"))
-		{
-			opener = opener.flipPositionZ();
-			logger.debug("FlipPositionZ");
-		}
-
-		// set unit length
-		logger.debug("Convert input unit to " + this.defaultParams.getUnit());
-		opener = opener.unit(bfUnit);
-		opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
-		opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
-
-		// split channels
-		if (this.defaultParams.getSplitChannels()) {
-			opener = opener.splitRGBChannels();
-			logger.debug("splitRGBChannels");
-		}
-		return opener;
-	}*/
 }

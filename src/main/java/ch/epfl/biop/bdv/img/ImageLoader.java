@@ -64,8 +64,6 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
 	final Map<Integer, OpenerAndChannelIndex> viewSetupToOpenerChannel = new HashMap<>();
 	int viewSetupCounter = 0;
-	final Map<Integer, NumericType> tTypeGetter = new HashMap<>();
-	final Map<Integer, Volatile> vTypeGetter = new HashMap<>();
 
 
 	// -------- setupLoader registrtation
@@ -123,13 +121,6 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 						viewSetupToOpenerChannel.put(viewSetupCounter, oci);
 						viewSetupCounter++;
 					});
-
-					// get pixel types
-					/*Type t = opener.getPixelType();
-					tTypeGetter.put(iF, (NumericType) t);
-					Volatile v = getVolatileOf((NumericType) t);
-					vTypeGetter.put(iF, v);*/
-
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -160,21 +151,6 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 					BiopSetupLoader<?,?,?> imgL = openers.get(iOpener).getSetupLoader(iC, setupId, this::getCacheControl);
 					setupLoaders.put(setupId, imgL);
 					return imgL;
-
-					/*if (openers.get(iOpener) instanceof BioFormatsBdvOpener) {
-						BioFormatsSetupLoader imgL = new BioFormatsSetupLoader((BioFormatsBdvOpener) openers.get(iOpener),
-								iC, setupId, tTypeGetter.get(iOpener), vTypeGetter.get(iOpener), this::getCacheControl);
-
-						setupLoaders.put(setupId, imgL);
-						return imgL;
-					}
-					if (openers.get(iOpener) instanceof OmeroBdvOpener) {
-						OmeroSetupLoader imgL = new OmeroSetupLoader((OmeroBdvOpener) openers.get(iOpener),
-								iC, setupId, tTypeGetter.get(iOpener), vTypeGetter.get(iOpener), this::getCacheControl);
-
-						setupLoaders.put(setupId, imgL);
-						return imgL;
-					}*/
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -202,24 +178,4 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 			sq.shutdown();
 		}
 	}
-
-
-	/**
-	 *
-	 * @param t
-	 * @return volatile pixel type from t
-	 */
-	/*public static Volatile getVolatileOf(NumericType t) {
-		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
-
-		if (t instanceof IntType) return new VolatileIntType();
-
-		if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
-
-		if (t instanceof FloatType) return new VolatileFloatType();
-
-		if (t instanceof ARGBType) return new VolatileARGBType();
-		return null;
-	}*/
-
 }
