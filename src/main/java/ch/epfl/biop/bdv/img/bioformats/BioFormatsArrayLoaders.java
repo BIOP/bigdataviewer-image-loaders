@@ -61,7 +61,7 @@ public class BioFormatsArrayLoaders {
 
 		@Override
 		public VolatileByteArray loadArray(int timepoint, int setup, int level,
-			int[] dimensions, long[] min) throws InterruptedException
+										   int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
 				IFormatReader reader = readerPool.acquire();
@@ -76,26 +76,14 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				if (dimensions[2] == 1) {
-					// Optimisation (maybe useful ? should avoid an array allocation and
-					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX,
-						minY, w, h);
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
+				ByteBuffer buffer = ByteBuffer.allocate(nElements);
+				for (int z = minZ; z < maxZ; z++) {
+					byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
+							timepoint), minX, minY, w, h);
+					buffer.put(bytesCurrentPlane);
 				}
-				else {
-					byte[] bytes = new byte[nElements];
-					int offset = 0;
-					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
-						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
-						offset += nElements;
-					}
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
-				}
+				readerPool.recycle(reader);
+				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
 				throw new InterruptedException(e.getMessage());
@@ -238,7 +226,7 @@ public class BioFormatsArrayLoaders {
 		// so 4 bytes
 		@Override
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
-			int[] dimensions, long[] min) throws InterruptedException
+										  int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
 				IFormatReader reader = readerPool.acquire();
@@ -257,7 +245,7 @@ public class BioFormatsArrayLoaders {
 
 				if (d == 1) {
 					bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
-						w, h);
+							w, h);
 				}
 				else {
 					int nBytesPerPlane = nElements * 3;
@@ -267,17 +255,26 @@ public class BioFormatsArrayLoaders {
 						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
 								timepoint), minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
-							nBytesPerPlane);
+								nBytesPerPlane);
 						offset += nBytesPerPlane;
 					}
 				}
+				boolean interleaved = reader.isInterleaved();
 				readerPool.recycle(reader);
 				int[] ints = new int[nElements];
 				int idxPx = 0;
-				for (int i = 0; i < nElements; i++) {
-					ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
-						((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
-					idxPx += 3;
+				if (interleaved) {
+					for (int i = 0; i < nElements; i++) {
+						ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
+								((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
+						idxPx += 3;
+					}
+				} else {
+					int bOffset = 2*nElements;
+					for (int i = 0; i < nElements; i++) {
+						ints[i] = ((bytes[idxPx] & 0xff) << 16 ) | ((bytes[idxPx+nElements] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
+						idxPx += 1;
+					}
 				}
 				return new VolatileIntArray(ints, true);
 			}
