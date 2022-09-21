@@ -85,28 +85,15 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				if (dimensions[2] == 1) {
-					// Optimisation (maybe useful ?) should avoid an array allocation and
-					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						minZ, timepoint) : reader.getIndex(minZ, channel, timepoint), minX,
-						minY, w, h);
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
+				ByteBuffer buffer = ByteBuffer.allocate(nElements);
+				for (int z = minZ; z < maxZ; z++) {
+					byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
+						.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
+							timepoint), minX, minY, w, h);
+					buffer.put(bytesCurrentPlane);
 				}
-				else {
-					byte[] bytes = new byte[nElements];
-					int offset = 0;
-					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
-						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
-						offset += nElements;
-					}
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
-				}
+				readerPool.recycle(reader);
+				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
 				throw new InterruptedException(e.getMessage());
