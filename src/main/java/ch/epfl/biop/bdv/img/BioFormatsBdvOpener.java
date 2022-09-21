@@ -22,6 +22,8 @@
 
 package ch.epfl.biop.bdv.img;
 
+import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
@@ -38,6 +40,7 @@ import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalInterval;
+import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
@@ -46,6 +49,7 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.*;
 import ome.units.quantity.Length;
 import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
@@ -199,96 +203,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
 	}
 
-	/**
-	 * Class constructor : sets all fields
-	 *
-	 * @param dataLocation
-	 * @param iSerie
-	 * @param positionPreTransformMatrixArray
-	 * @param positionPostTransformMatrixArray
-	 * @param positionIsImageCenter
-	 * @param defaultSpaceUnit
-	 * @param defaultVoxelUnit
-	 * @param unit
-	 * @param poolSize
-	 * @param useDefaultXYBlockSize
-	 * @param cacheBlockSize
-	 * @param swZC
-	 * @param splitRGBChannels
-	 * @throws URISyntaxException
-	 */
-	public BioFormatsBdvOpener(
-			// opener core option
-			String dataLocation,
-			int iSerie,
-			// Location of the image
-			double[] positionPreTransformMatrixArray,
-			double[] positionPostTransformMatrixArray,
-			boolean positionIsImageCenter,
-			// units
-			Length defaultSpaceUnit,
-			Length defaultVoxelUnit,
-			String unit,
-			// How to stream it
-			int poolSize,
-			boolean useDefaultXYBlockSize,
-			FinalInterval cacheBlockSize,
-			// channel options
-			boolean swZC,
-			boolean splitRGBChannels,
-			MinimalQuPathProject qpoproj
-	) throws URISyntaxException {
-
-		this.dataLocation = dataLocation;
-		this.iSerie = iSerie;
-		this.splitRGBChannels = splitRGBChannels;
-		this.swZC = swZC;
-		this.pool = new ReaderPool(poolSize, true, this::getNewReader);
-
-		// open the reader and get all necessary information
-		try (IFormatReader reader = getNewReader()) {
-			this.omeMeta = (IMetadata) reader.getMetadataStore();
-			this.nChannels = this.omeMeta.getChannelCount(iSerie);
-			this.nMipMapLevels = reader.getResolutionCount();
-			this.nTimePoints = reader.getSizeT();
-			this.voxelDimensions = BioFormatsTools.getSeriesVoxelDimensions(this.omeMeta,
-					this.iSerie, BioFormatsTools.getUnitFromString(unit), defaultVoxelUnit);
-			this.isLittleEndian = reader.isLittleEndian();
-			this.isRGB = reader.isRGB();
-			this.format = reader.getFormat();
-
-			this.cellDimensions = new int[] {
-					useDefaultXYBlockSize ? reader.getOptimalTileWidth() : (int) cacheBlockSize.dimension(0),
-					useDefaultXYBlockSize ? reader.getOptimalTileHeight() : (int) cacheBlockSize.dimension(1),
-					useDefaultXYBlockSize ? 1 : (int) cacheBlockSize.dimension(2) };
-
-			this.dimensions = new Dimensions[this.nMipMapLevels];
-			for (int level = 0; level < this.nMipMapLevels; level++) {
-				reader.setResolution(level);
-				this.dimensions[level] = getDimension(reader.getSizeX(), reader.getSizeY(), reader.getSizeZ());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		this.rootTransform = BioFormatsTools.getSeriesRootTransform(
-				this.omeMeta, //metadata
-				iSerie, // serie
-				BioFormatsTools.getUnitFromString(unit), // unit
-				positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
-				positionPostTransformMatrixArray, // AffineTransform3D for positionPostTransform,
-				defaultSpaceUnit,
-				positionIsImageCenter, // boolean positionIsImageCenter,
-				new AffineTransform3D().getRowPackedCopy(), // voxSizePreTransform,
-				new AffineTransform3D().getRowPackedCopy(), // voxSizePostTransform,
-				defaultVoxelUnit,
-				new boolean[]{false, false, false} // axesOfImageFlip
-		);
-
-		this.imageName = getImageName(this.omeMeta,iSerie,dataLocation);
-		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
-		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
-	}
 
 	/**
 	 * Build a channelProperties object for each image channel.
@@ -420,9 +334,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	public String getReaderFormat() {
 		return this.format;
 	}
-	public Boolean getIsLittleEndian() {
-		return this.isLittleEndian;
-	}
 
 
 	/**
@@ -473,6 +384,17 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public VoxelDimensions getVoxelDimensions() {
 		return this.voxelDimensions;
+	}
+
+	@Override
+	public boolean isLittleEndian() {
+		return this.isLittleEndian;
+	}
+
+	@Override
+	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+		return new BioFormatsSetupLoader(this,
+				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
 
 	@Override
@@ -530,6 +452,25 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 				e.printStackTrace();
 			}
 		});
+	}
+
+
+	/**
+	 *
+	 * @param t
+	 * @return volatile pixel type from t
+	 */
+	private Volatile getVolatileOf(NumericType t) {
+		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
+
+		if (t instanceof IntType) return new VolatileIntType();
+
+		if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
+
+		if (t instanceof FloatType) return new VolatileFloatType();
+
+		if (t instanceof ARGBType) return new VolatileARGBType();
+		return null;
 	}
 
 

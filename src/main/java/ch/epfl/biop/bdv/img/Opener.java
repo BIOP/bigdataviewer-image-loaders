@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.img;
 
+import bdv.img.cache.VolatileGlobalCellCache;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -9,6 +10,7 @@ import net.imglib2.type.numeric.NumericType;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Interface for all specific openers.
@@ -97,4 +99,14 @@ public interface Opener<T> extends Closeable {
      */
     VoxelDimensions getVoxelDimensions();
 
+    /**
+     * @return pixel's endianness
+     */
+    boolean isLittleEndian();
+
+    /**
+     * @return opener's setup loader
+     */
+    BiopSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
+                                          Supplier<VolatileGlobalCellCache> cacheSupplier);
 }

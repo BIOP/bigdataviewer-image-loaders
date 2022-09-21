@@ -22,6 +22,7 @@
 
 package ch.epfl.biop.bdv.img.qupath;
 
+import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.*;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -81,7 +83,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		return this.image.serverBuilder.uri;
 	}
 
-	public Object getOpener() {
+	public Opener<?> getSubOpener() {
 		return this.opener;
 	}
 
@@ -479,7 +481,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
 			MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
-			System.out.println(channel.color);
 			return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
 		}
 		else return this.opener.getChannel(iChannel);
@@ -504,11 +505,12 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		newEntities.add(qpentry);
 		newEntities.forEach(e->System.out.println(e));
 		return newEntities;
+
 	}
 
 	@Override
 	public String getImageName() {
-		return this.image.imageName;
+		return this.opener.getImageName();//this.image.imageName;
 	}
 
 	@Override
@@ -516,12 +518,12 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		if(this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
-			System.out.println("find NChannel with qupath");
+			//System.out.println("find NChannel with qupath");
 			return this.image.serverBuilder.metadata.channels.size();
 		}
 
 		else {
-			System.out.println("find NChannel with Bioformats");
+			//System.out.println("find NChannel with Bioformats");
 			return this.opener.getNChannels();
 		}
 	}
@@ -565,6 +567,16 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			return getVoxelDimensions(this.image.serverBuilder.metadata.pixelCalibration,this.unit);
 		}
 		else return this.opener.getVoxelDimensions();
+	}
+
+	@Override
+	public boolean isLittleEndian() {
+		return this.opener.isLittleEndian();
+	}
+
+	@Override
+	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+		return this.opener.getSetupLoader(channelIdx, setupIdx, cacheSupplier);
 	}
 
 	@Override

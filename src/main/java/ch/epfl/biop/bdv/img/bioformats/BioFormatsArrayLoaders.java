@@ -40,14 +40,11 @@ public class BioFormatsArrayLoaders {
 
 		final protected ResourcePool<IFormatReader> readerPool;
 		final protected int channel;
-		final protected boolean switchZandC;
 
-		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel,
-			boolean switchZandC)
+		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel)
 		{
 			this.readerPool = readerPool;
 			this.channel = channel;
-			this.switchZandC = switchZandC;
 		}
 
 	}
@@ -57,9 +54,9 @@ public class BioFormatsArrayLoaders {
 	{
 
 		public BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel, boolean switchZandC)
+			int channel)
 		{
-			super(readerPool, channel, switchZandC);
+			super(readerPool, channel);
 		}
 
 		@Override
@@ -82,8 +79,7 @@ public class BioFormatsArrayLoaders {
 				if (dimensions[2] == 1) {
 					// Optimisation (maybe useful ? should avoid an array allocation and
 					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						minZ, timepoint) : reader.getIndex(minZ, channel, timepoint), minX,
+					byte[] bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX,
 						minY, w, h);
 					readerPool.recycle(reader);
 					return new VolatileByteArray(bytes, true);
@@ -92,8 +88,7 @@ public class BioFormatsArrayLoaders {
 					byte[] bytes = new byte[nElements];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
+						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
 								timepoint), minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
 						offset += nElements;
@@ -120,9 +115,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel, boolean switchZandC, boolean littleEndian)
+			int channel,boolean littleEndian)
 		{
-			super(readerPool, channel, switchZandC);
+			super(readerPool, channel);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -150,8 +145,7 @@ public class BioFormatsArrayLoaders {
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
@@ -179,9 +173,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool,
-										  int channel, boolean switchZandC, boolean littleEndian)
+										  int channel, boolean littleEndian)
 		{
-			super(readerPool, channel, switchZandC);
+			super(readerPool, channel);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -209,8 +203,7 @@ public class BioFormatsArrayLoaders {
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
@@ -236,9 +229,9 @@ public class BioFormatsArrayLoaders {
 	{
 
 		public BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel, boolean switchZandC)
+			int channel)
 		{
-			super(readerPool, channel, switchZandC);
+			super(readerPool, channel);
 		}
 
 		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
@@ -263,8 +256,7 @@ public class BioFormatsArrayLoaders {
 				byte[] bytes;
 
 				if (d == 1) {
-					bytes = reader.openBytes(switchZandC ? reader.getIndex(channel, minZ,
-						timepoint) : reader.getIndex(minZ, channel, timepoint), minX, minY,
+					bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
 						w, h);
 				}
 				else {
@@ -272,8 +264,7 @@ public class BioFormatsArrayLoaders {
 					bytes = new byte[nBytesPerPlane];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
+						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
 								timepoint), minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
 							nBytesPerPlane);
@@ -308,9 +299,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool,
-										int channel, boolean switchZandC, boolean littleEndian)
+										int channel, boolean littleEndian)
 		{
-			super(readerPool, channel, switchZandC);
+			super(readerPool, channel);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -338,8 +329,7 @@ public class BioFormatsArrayLoaders {
 				int nElements = (w * h * d);
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}

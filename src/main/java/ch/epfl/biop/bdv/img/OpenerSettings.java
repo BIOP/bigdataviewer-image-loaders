@@ -341,8 +341,6 @@ public class OpenerSettings {
                         unit,
                         dataLocation
                 );
-            case IMAGEJ: break;
-            case OPENSLIDE: break;
             case QUPATH: return new QuPathImageOpener().create(
                     dataLocation,
                     iSerie,
@@ -385,6 +383,8 @@ public class OpenerSettings {
                         swZC,
                         splitRGBChannels
                 );
+            case IMAGEJ: break;
+            case OPENSLIDE: break;
         }
         return null;
 

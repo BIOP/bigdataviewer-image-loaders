@@ -29,6 +29,7 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.FileChannel;
 import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
+import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
 import net.imglib2.Volatile;
@@ -61,7 +62,7 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 
 	// -------- ViewSetups core infos (pixel type, channels)
 	final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
-	final Map<Integer, FileChannel> viewSetupToFileChannel = new HashMap<>();
+	final Map<Integer, OpenerAndChannelIndex> viewSetupToOpenerChannel = new HashMap<>();
 	int viewSetupCounter = 0;
 	final Map<Integer, NumericType> tTypeGetter = new HashMap<>();
 	final Map<Integer, Volatile> vTypeGetter = new HashMap<>();
@@ -118,16 +119,16 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 					// Register Setups (one per channel and one per timepoint)
 					IntStream channels = IntStream.range(0, opener.getNChannels());
 					channels.forEach(iCh -> {
-						FileChannel fsc = new FileChannel(iFile, iCh);
-						viewSetupToFileChannel.put(viewSetupCounter, fsc);
+						OpenerAndChannelIndex oci = new OpenerAndChannelIndex(iFile, iCh);
+						viewSetupToOpenerChannel.put(viewSetupCounter, oci);
 						viewSetupCounter++;
 					});
 
 					// get pixel types
-					Type t = opener.getPixelType();
+					/*Type t = opener.getPixelType();
 					tTypeGetter.put(iF, (NumericType) t);
 					Volatile v = getVolatileOf((NumericType) t);
-					vTypeGetter.put(iF, v);
+					vTypeGetter.put(iF, v);*/
 
 				}
 				catch (Exception e) {
@@ -150,26 +151,30 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 				return setupLoaders.get(setupId);
 			}
 			else {
-				int iF = viewSetupToFileChannel.get(setupId).iFile;
-				int iC = viewSetupToFileChannel.get(setupId).iChannel;
-				logger.debug("loading file number = " + iF + " setupId = " + setupId);
+				int iOpener = viewSetupToOpenerChannel.get(setupId).openerIndex;
+				int iC = viewSetupToOpenerChannel.get(setupId).channelIndex;
+				//logger.debug("loading file number = " + iF + " setupId = " + setupId);
 
 				// select the correct setup loader according to opener type
 				try {
-					if (openers.get(iF) instanceof BioFormatsBdvOpener) {
-						BioFormatsSetupLoader imgL = new BioFormatsSetupLoader((BioFormatsBdvOpener) openers.get(iF),
-								iC, setupId, tTypeGetter.get(iF), vTypeGetter.get(iF), this::getCacheControl);
+					BiopSetupLoader<?,?,?> imgL = openers.get(iOpener).getSetupLoader(iC, setupId, this::getCacheControl);
+					setupLoaders.put(setupId, imgL);
+					return imgL;
+
+					/*if (openers.get(iOpener) instanceof BioFormatsBdvOpener) {
+						BioFormatsSetupLoader imgL = new BioFormatsSetupLoader((BioFormatsBdvOpener) openers.get(iOpener),
+								iC, setupId, tTypeGetter.get(iOpener), vTypeGetter.get(iOpener), this::getCacheControl);
 
 						setupLoaders.put(setupId, imgL);
 						return imgL;
 					}
-					if (openers.get(iF) instanceof OmeroBdvOpener) {
-						OmeroSetupLoader imgL = new OmeroSetupLoader((OmeroBdvOpener) openers.get(iF),
-								iC, setupId, tTypeGetter.get(iF), vTypeGetter.get(iF), this::getCacheControl);
+					if (openers.get(iOpener) instanceof OmeroBdvOpener) {
+						OmeroSetupLoader imgL = new OmeroSetupLoader((OmeroBdvOpener) openers.get(iOpener),
+								iC, setupId, tTypeGetter.get(iOpener), vTypeGetter.get(iOpener), this::getCacheControl);
 
 						setupLoaders.put(setupId, imgL);
 						return imgL;
-					}
+					}*/
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -184,7 +189,7 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	}
 
 	@Override
-	public CacheControl getCacheControl() {
+	public VolatileGlobalCellCache getCacheControl() {
 		return cache;
 	}
 
@@ -204,7 +209,7 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	 * @param t
 	 * @return volatile pixel type from t
 	 */
-	public static Volatile getVolatileOf(NumericType t) {
+	/*public static Volatile getVolatileOf(NumericType t) {
 		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
 
 		if (t instanceof IntType) return new VolatileIntType();
@@ -215,6 +220,6 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 
 		if (t instanceof ARGBType) return new VolatileARGBType();
 		return null;
-	}
+	}*/
 
 }

@@ -22,20 +22,27 @@
 
 package ch.epfl.biop.bdv.img;
 
+import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
+import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import ch.epfl.biop.bdv.img.omero.RawPixelsStorePool;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
+import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.*;
 import ome.model.units.BigResult;
 import omero.ServerError;
 import omero.api.RawPixelsStorePrx;
@@ -57,6 +64,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static omero.gateway.model.PixelsData.FLOAT_TYPE;
 import static omero.gateway.model.PixelsData.UINT16_TYPE;
@@ -138,9 +146,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public long getPixelsID() {
 		return this.pixelsID;
 	}
-	public double getPixelSizeX() {
-		return this.psizeX;
-	}
+	public double getPixelSizeX() { return this.psizeX; }
 	public double getPixelSizeY() {
 		return this.psizeY;
 	}
@@ -153,7 +159,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public double getStagePosY() {
 		return this.stagePosY;
 	}
-	public Gateway getGateway() {return this.gateway;}
 
 
 	/**
@@ -449,6 +454,24 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		return dimensions;
 	}
 
+	/**
+	 *
+	 * @param t
+	 * @return volatile pixel type from t
+	 */
+	private Volatile getVolatileOf(NumericType t) {
+		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
+
+		if (t instanceof IntType) return new VolatileIntType();
+
+		if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
+
+		if (t instanceof FloatType) return new VolatileFloatType();
+
+		if (t instanceof ARGBType) return new VolatileARGBType();
+		return null;
+	}
+
 	// OVERRIDDEN METHODS
 	@Override
 	public String getImageName() {
@@ -524,6 +547,17 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			};
 		}
 		return voxelDimensions;
+	}
+
+	@Override
+	public boolean isLittleEndian() {
+		return false;
+	}
+
+	@Override
+	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+		return new OmeroSetupLoader(this,
+				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
 
 	@Override

@@ -75,7 +75,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 	// Channels
 	final int iChannel;
-	final boolean switchZandC;
 
 
 	// -------- ViewSetup
@@ -140,11 +139,10 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 
 		// channel options
-		switchZandC = opener.getSwitchZAndT();
 		iChannel = channelIndex;
 
 		// pixels characteristics
-		boolean isLittleEndian = opener.getIsLittleEndian();
+		boolean isLittleEndian = opener.isLittleEndian();
 		voxelsDimensions = opener.getVoxelDimensions();
 
 		// timepoints
@@ -163,7 +161,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 		// compute mipmap levels
 		// Fix vsi issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
-		if (opener.getReaderFormat().equals("CellSens VSI")) {
+		/*if (opener.getReaderFormat().equals("CellSens VSI")) {
 			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
 				double downscalingFactor = Math.pow(2, iLevel);
 				mmResolutions[iLevel][0] = downscalingFactor;
@@ -171,7 +169,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 				mmResolutions[iLevel][2] = 1;
 			}
 		}
-		else {
+		else {*/
 			int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
 										  (int) dimensions[0].dimension(1),
 										  (int) dimensions[0].dimension(2) };
@@ -183,33 +181,33 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 				mmResolutions[iLevel][1] = (double) srcL0dims[1] / (double) srcLidims[1];
 				mmResolutions[iLevel][2] = (double) srcL0dims[2] / (double) srcLidims[2];
 			}
-		}
+		//}
 
 		// get the ArrayLoader corresponding to the pixelType
 		if (t instanceof UnsignedByteType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
-					readerPool, iChannel, switchZandC);
+					readerPool, iChannel);
 		}
 		else if (t instanceof UnsignedShortType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-					readerPool, iChannel, switchZandC, isLittleEndian);
+					readerPool, iChannel, isLittleEndian);
 		}
 		else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
-					readerPool, iChannel, switchZandC, isLittleEndian);
+					readerPool, iChannel, isLittleEndian);
 		}
 		else if (t instanceof IntType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-					readerPool, iChannel, switchZandC, isLittleEndian);
+					readerPool, iChannel, isLittleEndian);
 		}
 		else if (t instanceof ARGBType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
-					readerPool, iChannel, switchZandC);
+					readerPool, iChannel);
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()
