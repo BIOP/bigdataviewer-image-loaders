@@ -62,7 +62,6 @@ public class OpenSampleCommand implements Command {
 			File f60 = DatasetHelper.getDataset(DatasetHelper.ND2_60X);
 
 			Length micron = new Length(1, UNITS.MICROMETER);
-
 			Length millimeter = new Length(1, UNITS.MILLIMETER);
 
 			ArrayList<OpenerSettings> settings = new ArrayList<>();
@@ -94,8 +93,6 @@ public class OpenSampleCommand implements Command {
 
 				settings.add(opener60);
 			}
-			//settings.add(opener20);
-			//settings.add(opener60);
 
 			spimData = ImageToSpimData.getSpimData(settings);
 

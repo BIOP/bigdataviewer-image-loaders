@@ -23,7 +23,6 @@
 package ch.epfl.biop.bdv.img;
 
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
 import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
@@ -180,6 +179,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		// get pixels
 		PixelsData pixels = getPixelsDataFromOmeroID(imageID, gateway, ctx);
 		this.pixelsID = pixels.getId();
+		logger.debug("Opener :" +this+" pixel.getID : "+this.pixelsID);
 		this.gateway = gateway;
 		this.securityContext = ctx;
 		this.omeroImageID = imageID;
@@ -205,11 +205,11 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			tileSize = imageSize;
 		}
 		else {
-			System.out.println("Get image size and tile sizes...");
+			logger.debug("Get image size and tile sizes...");
 			Instant start = Instant.now();
 			ResolutionDescription[] resDesc = rawPixStore.getResolutionDescriptions();
 			Instant finish = Instant.now();
-			System.out.println("Done! Time elapsed : " + Duration.between(start,
+			logger.debug("Done! Time elapsed : " + Duration.between(start,
 				finish));
 			int tileSizeX = rawPixStore.getTileSize()[0];
 			int tileSizeY = rawPixStore.getTileSize()[1];
@@ -238,7 +238,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.renderingDef = gateway.getRenderingSettingsService(ctx).getRenderingSettings(pixelsID);
 
 		// --X and Y stage positions--
-		System.out.println("Begin SQL request for OMERO image with ID : " + imageID);
+		logger.debug("Begin SQL request for OMERO image with ID : " + imageID);
 		List<IObject> objectinfos = gateway.getQueryService(ctx)
 			.findAllByQuery("select info from PlaneInfo as info " +
 				"join fetch info.deltaT as dt " +
@@ -277,7 +277,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			this.stagePosX = 0;
 			this.stagePosY = 0;
 		}
-		System.out.println("SQL request completed!");
+		logger.debug("SQL request completed!");
 		// psizes are expressed in the unit given in the builder
 		this.psizeX = 1;
 		this.psizeY = 1;
@@ -550,6 +550,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}
 
 	@Override
+	// https://forum.image.sc/t/omero-py-how-to-get-tiles-at-different-zoom-level-pyramidal-image/45643/11
+	// OMERO always produce big-endian pixels
 	public boolean isLittleEndian() {
 		return false;
 	}

@@ -94,6 +94,4 @@ public class QuPathTools {
 
         return rootTransform;
     }
-
-
-    }
+}

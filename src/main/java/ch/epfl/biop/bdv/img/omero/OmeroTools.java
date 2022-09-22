@@ -22,16 +22,12 @@
 
 package ch.epfl.biop.bdv.img.omero;
 
-import ome.units.UNITS;
-import ome.units.quantity.Length;
-import ome.units.unit.Unit;
 import omero.gateway.Gateway;
 import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
 import omero.gateway.facility.BrowseFacility;
 import omero.gateway.model.ExperimenterData;
 import omero.gateway.model.ImageData;
-import omero.gateway.model.PixelsData;
 import omero.log.SimpleLogger;
 import omero.model.enums.UnitsLength;
 

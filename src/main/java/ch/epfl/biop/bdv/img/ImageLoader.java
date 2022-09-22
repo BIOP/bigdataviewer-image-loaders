@@ -23,24 +23,10 @@
 package ch.epfl.biop.bdv.img;
 
 import bdv.ViewerImgLoader;
-import bdv.cache.CacheControl;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
-import ch.epfl.biop.bdv.img.bioformats.FileChannel;
-import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
-import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
-import net.imglib2.Volatile;
-import net.imglib2.type.Type;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.type.volatiles.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +52,11 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	int viewSetupCounter = 0;
 
 
-	// -------- setupLoader registrtation
-	final HashMap<Integer, BiopSetupLoader> setupLoaders = new HashMap<>();
+	// -------- setupLoader registration
+	final HashMap<Integer, BiopSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
 
 
-	// -------- How to open image (threds, cache)
+	// -------- How to open image (threads, cache)
 	protected final VolatileGlobalCellCache cache;
 	protected final SharedQueue sq;
 	public final int numFetcherThreads = 2;
@@ -178,4 +164,16 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 			sq.shutdown();
 		}
 	}
+
+
+	public class OpenerAndChannelIndex {
+		final int openerIndex;
+		final int channelIndex;
+
+		public OpenerAndChannelIndex(int openerIndex, int channelIndex) {
+			this.openerIndex = openerIndex;
+			this.channelIndex = channelIndex;
+		}
+	}
+
 }

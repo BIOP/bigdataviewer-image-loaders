@@ -26,12 +26,8 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.*;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
-import ch.epfl.biop.bdv.img.qupath.command.GuiParams;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
-import loci.formats.IFormatReader;
-import loci.formats.MetadataTools;
-import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -42,10 +38,8 @@ import net.imglib2.type.numeric.NumericType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import ome.xml.model.primitives.Color;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
-import omero.model.enums.UnitsLength;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -372,7 +366,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public String getImageName() {
-		return this.opener.getImageName();//this.image.imageName;
+		return this.image.imageName;
 	}
 
 	@Override
@@ -380,12 +374,9 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		if(this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
-			//System.out.println("find NChannel with qupath");
 			return this.image.serverBuilder.metadata.channels.size();
 		}
-
 		else {
-			//System.out.println("find NChannel with Bioformats");
 			return this.opener.getNChannels();
 		}
 	}

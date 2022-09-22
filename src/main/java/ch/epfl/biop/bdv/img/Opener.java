@@ -89,7 +89,7 @@ public interface Opener<T> extends Closeable {
 
 
     /**
-     * @return the AffineTranform used to recover the original display
+     * @return the AffineTransform used to recover the original display
      */
     AffineTransform3D getTransform();
 

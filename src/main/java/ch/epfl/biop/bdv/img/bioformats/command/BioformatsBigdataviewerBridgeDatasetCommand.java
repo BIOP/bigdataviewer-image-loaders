@@ -22,7 +22,6 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ome.units.quantity.Length;
@@ -99,63 +98,54 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 	public OpenerSettings getSettings() {
 
 		Unit<Length> bfUnit = BioFormatsTools.getUnitFromString(unit);
-
-		Length positionReferenceFrameLength = new Length(refframesizeinunitlocation,
-			bfUnit);
-		Length voxSizeReferenceFrameLength = new Length(refframesizeinunitvoxsize,
-			bfUnit);
+		Length positionReferenceFrameLength = new Length(refframesizeinunitlocation, bfUnit);
+		Length voxSizeReferenceFrameLength = new Length(refframesizeinunitvoxsize, bfUnit);
 
 		OpenerSettings settings = new OpenerSettings().unit(unit).bioFormatsBuilder();
-		/*BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener().location(
-			datalocation).unit(unit).auto().ignoreMetadata();*/
 
 		if (!switchzandc.equals("AUTO")) {
-			settings = settings.switchZandC(switchzandc.equals("TRUE"));//opener = opener.switchZandC(switchzandc.equals("TRUE"));
+			settings = settings.switchZandC(switchzandc.equals("TRUE"));
 		}
 
 		if (!usebioformatscacheblocksize) {
-			settings = settings.cacheBlockSize(cachesizex, cachesizey, cachesizez);;//opener = opener.cacheBlockSize(cachesizex, cachesizey, cachesizez);
+			settings = settings.cacheBlockSize(cachesizex, cachesizey, cachesizez);
 		}
 
 		if (numberofblockskeptinmemory > 0) {
-			//settings = settings.cacheBounded(numberofblockskeptinmemory);// opener = opener.cacheBounded(numberofblockskeptinmemory);
+			//settings = settings.cacheBounded(numberofblockskeptinmemory);
 		}
 
 		// Not sure it is useful here because the metadata location is handled
 		// somewhere else
 		if (!positioniscenter.equals("AUTO")) {
 			if (positioniscenter.equals("TRUE")) {
-				settings = settings.centerPositionConvention();//opener = opener.centerPositionConvention();
+				settings = settings.centerPositionConvention();
 			}
 			else {
-				settings = settings.cornerPositionConvention();//opener = opener.cornerPositionConvention();
+				settings = settings.cornerPositionConvention();
 			}
 		}
 
 		if (!flippositionx.equals("AUTO")) {
 			if (flippositionx.equals("TRUE")) {
-				settings = settings.flipPositionX();//opener = opener.flipPositionX();
+				settings = settings.flipPositionX();
 			}
 		}
 
 		if (!flippositiony.equals("AUTO")) {
 			if (flippositiony.equals("TRUE")) {
-				settings = settings.flipPositionY();//settings = settings.flipPositionY();
+				settings = settings.flipPositionY();
 			}
 		}
 
 		if (!flippositionz.equals("AUTO")) {
 			if (flippositionz.equals("TRUE")) {
-				settings = settings.flipPositionZ();//settings = settings.flipPositionZ();
+				settings = settings.flipPositionZ();
 			}
 		}
 
-		//opener = opener.unit(unit);
-
-		settings = settings.positionReferenceFrameLength(positionReferenceFrameLength);//opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
-
+		settings = settings.positionReferenceFrameLength(positionReferenceFrameLength);
 		settings = settings.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
-
 		if (splitrgbchannels) settings = settings.splitRGBChannels();
 
 		return settings;

@@ -28,7 +28,6 @@ import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
 import ch.epfl.biop.bdv.img.bioformats.entity.BioFormatsUri;
-import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;

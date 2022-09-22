@@ -251,6 +251,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-biop-tools</artifactId>
+			<version>0.5.3</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
 		</dependency>

@@ -129,8 +129,6 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		}
 
 		// pixels characteristics
-		// https://forum.image.sc/t/omero-py-how-to-get-tiles-at-different-zoom-level-pyramidal-image/45643/11
-		// OMERO always produce big-endian pixels
 		boolean isLittleEndian = opener.isLittleEndian();
 		voxelsDimensions = opener.getVoxelDimensions();
 

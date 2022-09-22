@@ -54,8 +54,6 @@ public class XmlIoQuPathImgLoader implements
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
-	//public static final String CACHE_NUM_FETCHER = "num_fetcher_threads";
-	//public static final String CACHE_NUM_PRIORITIES = "num_priorities";
 	public static final String QUPATH_PROJECT_TAG = "qupath_project";
 	public static final String OPENER_MODEL_TAG = "opener_model";
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
@@ -75,10 +73,6 @@ public class XmlIoQuPathImgLoader implements
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
 		// For potential extensibility
-		/*elem.addContent(XmlHelpers.intElement(CACHE_NUM_FETCHER,
-			imgLoader.numFetcherThreads));
-		elem.addContent(XmlHelpers.intElement(CACHE_NUM_PRIORITIES,
-			imgLoader.numPriorities));*/
 		elem.addContent(XmlHelpers.textElement(QUPATH_PROJECT_TAG, (new Gson())
 			.toJson(imgLoader.getOpenerSettings().get(0).getQpProject(), URI.class)));
 		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
@@ -113,8 +107,6 @@ public class XmlIoQuPathImgLoader implements
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
 				DATASET_NUMBER_TAG);
-			/*final int numFetcherThreads = XmlHelpers.getInt(elem, CACHE_NUM_FETCHER);
-			final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);*/
 
 			List<Opener<?>> openers = new ArrayList<>();
 			List<OpenerSettings> openerSettingsList = new ArrayList<>();
@@ -163,13 +155,16 @@ public class XmlIoQuPathImgLoader implements
 					OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(openerSettings.getHost());
 					openerSettings.setGateway(gtCtx.gateway).setContext(gtCtx.ctx);
 				}
+
+				String qupathProjectUri = XmlHelpers.getText(elem, QUPATH_PROJECT_TAG);
+				URI qpProjURI = (new Gson()).fromJson(qupathProjectUri, URI.class);
+
+				openerSettings.setQpProject(qpProjURI);
 				openerSettings.quPathBuilder();
+
 				openerSettingsList.add(openerSettings);
 				openers.add(openerSettings.create());
 			}
-
-			String qupathProjectUri = XmlHelpers.getText(elem, QUPATH_PROJECT_TAG);
-			URI qpProjURI = (new Gson()).fromJson(qupathProjectUri, URI.class);
 
 			// disconnect all gateway
 			//hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());

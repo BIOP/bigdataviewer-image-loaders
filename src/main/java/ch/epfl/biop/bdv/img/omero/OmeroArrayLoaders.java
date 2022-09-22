@@ -113,6 +113,7 @@ public class OmeroArrayLoaders {
 			int channel, int nResolutionLevels, int sx, int sy, int sz,
 			boolean littleEndian)
 		{
+
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 
 			if (littleEndian) {
