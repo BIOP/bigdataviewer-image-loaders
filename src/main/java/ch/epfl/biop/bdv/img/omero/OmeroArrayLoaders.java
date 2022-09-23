@@ -36,6 +36,9 @@ import java.nio.ByteOrder;
 // Copied from N5 Array Loader
 public class OmeroArrayLoaders {
 
+	/**
+	 * Generic class with the necessary elements to read and load pixels
+	 */
 	abstract static class OmeroArrayLoader {
 
 		final protected ResourcePool<RawPixelsStorePrx> pixelStorePool;
@@ -56,6 +59,9 @@ public class OmeroArrayLoaders {
 
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : Byte (8 bits)
+	 */
 	public static class OmeroUnsignedByteArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileByteArray>
 	{
@@ -71,6 +77,7 @@ public class OmeroArrayLoaders {
 										   int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
@@ -83,13 +90,18 @@ public class OmeroArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY,
 							w, h);
 					buffer.put(bytesCurrentPlane);
 				}
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
 				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
@@ -103,6 +115,9 @@ public class OmeroArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : unsigned short (16 bits)
+	 */
 	public static class OmeroUnsignedShortArrayLoader extends OmeroArrayLoader
 		implements CacheArrayLoader<VolatileShortArray>
 	{
@@ -129,6 +144,7 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
@@ -141,13 +157,19 @@ public class OmeroArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
+				// unsigned short specific transform
 				short[] shorts = new short[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asShortBuffer().get(shorts);
@@ -164,6 +186,9 @@ public class OmeroArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : float (32 bits)
+	 */
 	public static class OmeroFloatArrayLoader extends OmeroArrayLoader implements
 		CacheArrayLoader<VolatileFloatArray>
 	{
@@ -187,7 +212,7 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
-
+				// get the reader
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
@@ -200,13 +225,19 @@ public class OmeroArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
+				// float specific transform
 				float[] floats = new float[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asFloatBuffer().get(floats);
@@ -223,6 +254,9 @@ public class OmeroArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : RGB (3 * 8 bits)
+	 */
 	public static class OmeroRGBArrayLoader extends OmeroArrayLoader implements
 		CacheArrayLoader<VolatileIntArray>
 	{
@@ -240,6 +274,7 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
@@ -252,8 +287,9 @@ public class OmeroArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				byte[] bytes;
 
+				// read pixels
+				byte[] bytes;
 				if (d == 1) {
 					bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w,
 						h);
@@ -270,7 +306,11 @@ public class OmeroArrayLoaders {
 						offset += nBytesPerPlane;
 					}
 				}
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
+				// RGB specific transform
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				for (int i = 0; i < nElements; i++) {
@@ -293,7 +333,9 @@ public class OmeroArrayLoaders {
 		{
 			try {
 				throw new UnsupportedOperationException("OMERO is not really supposed to give RGB images. But apparently that's the case. Please reach out to the developpers to fix this!");
-				/*RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				/*
+				// get the reader
+				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -306,8 +348,9 @@ public class OmeroArrayLoaders {
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
 				byte[] bytes;
-
 				int nBytesPerPlane = nElements * 3;
+
+				// read pixels
 				bytes = new byte[nBytesPerPlane];
 				int offset = 0;
 				for (int z = minZ; z < maxZ; z++) {
@@ -319,7 +362,11 @@ public class OmeroArrayLoaders {
 				}
 
 				boolean interleaved = false;//true;//rawPixStore.isInterleaved();
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
+				// RGB specific transform
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				if (interleaved) {
@@ -348,6 +395,9 @@ public class OmeroArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : int (16 bits)
+	 */
 	public static class OmeroIntArrayLoader extends OmeroArrayLoader implements
 		CacheArrayLoader<VolatileIntArray>
 	{
@@ -371,6 +421,7 @@ public class OmeroArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
@@ -383,13 +434,19 @@ public class OmeroArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = rawPixStore.getTile(z, channel, timepoint, minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				pixelStorePool.recycle(rawPixStore);
+
+				// int specific transform
 				int[] ints = new int[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asIntBuffer().get(ints);

@@ -128,8 +128,12 @@ public class OmeroTools {
 		return null;
 	}
 
-	public static String[] getOmeroConnectionInputParameters(
-		boolean onlyCredentials)
+	/**
+	 * Minimal Graphical interface that catches user's name and password. Host and port are set by default
+	 * but can be changed if necessary.
+	 * @return connection information (host, port, username, password)
+	 */
+	public static String[] getOmeroConnectionInputParameters()
 	{
 
 		// build the gui
@@ -142,15 +146,12 @@ public class OmeroTools {
 		// build the main window
 		JPanel myPanel = new JPanel();
 		myPanel.setLayout(new BoxLayout(myPanel, BoxLayout.Y_AXIS));
-		if (!onlyCredentials) {
-			myPanel.add(new JLabel("host"));
-			myPanel.add(host);
-			myPanel.add(Box.createVerticalStrut(15)); // a spacer
-			myPanel.add(new JLabel("port"));
-			myPanel.add(port);
-			myPanel.add(Box.createVerticalStrut(15)); // a spacer
-		}
-
+		myPanel.add(new JLabel("host"));
+		myPanel.add(host);
+		myPanel.add(Box.createVerticalStrut(15)); // a spacer
+		myPanel.add(new JLabel("port"));
+		myPanel.add(port);
+		myPanel.add(Box.createVerticalStrut(15)); // a spacer
 		myPanel.add(new JLabel("Username"));
 		myPanel.add(username);
 		myPanel.add(Box.createVerticalStrut(15)); // a spacer
@@ -163,10 +164,8 @@ public class OmeroTools {
 			JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
 			ArrayList<String> omeroParameters = new ArrayList<>();
-			if (!onlyCredentials) {
-				omeroParameters.add(host.getText());
-				omeroParameters.add(port.getValue().toString());
-			}
+			omeroParameters.add(host.getText());
+			omeroParameters.add(port.getValue().toString());
 			omeroParameters.add(username.getText());
 			char[] chArray = jpf.getPassword();
 			omeroParameters.add(new String(chArray));
@@ -178,6 +177,9 @@ public class OmeroTools {
 		return null;
 	}
 
+	/**
+	 * Minimal class saving all connection information and objects except username and password
+	 */
 	public static class GatewaySecurityContext {
 
 		public Gateway gateway;

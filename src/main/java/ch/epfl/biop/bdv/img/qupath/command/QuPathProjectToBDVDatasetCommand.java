@@ -113,9 +113,7 @@ public class QuPathProjectToBDVDatasetCommand extends
 							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
 						if (!hostToGatewayCtx.containsKey(image.serverBuilder.providerClassName)) {
 							// ask for user credentials
-							Boolean onlyCredentials = false;
-							String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
-									onlyCredentials);
+							String[] credentials = OmeroTools.getOmeroConnectionInputParameters();
 							String host = credentials[0];
 							int port = Integer.parseInt(credentials[1]);
 							String username = credentials[2];

@@ -78,12 +78,33 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 
 	/**
-	 * Constructor building the qupath opener //TODO see what to do with guiparams
-	 *
+	 * Void constructor
 	 */
 	public QuPathImageOpener(){
 	}
 
+	/**
+	 * Create an OMERO or BioFormats opener depending on the providerClassName of QuPath
+	 * @param dataLocation
+	 * @param iSerie
+	 * @param positionPreTransformMatrixArray
+	 * @param positionPostTransformMatrixArray
+	 * @param positionIsImageCenter
+	 * @param defaultSpaceUnit
+	 * @param defaultVoxelUnit
+	 * @param unit
+	 * @param poolSize
+	 * @param useDefaultXYBlockSize
+	 * @param cacheBlockSize
+	 * @param swZC
+	 * @param splitRGBChannels
+	 * @param gateway
+	 * @param ctx
+	 * @param imageID
+	 * @param image
+	 * @param qpPathProject
+	 * @return
+	 */
 	public Opener<?> create(// opener core option
 						 	String dataLocation,
 						 	int iSerie,
@@ -115,7 +136,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			double angleRotationZAxis = getAngleRotationZAxis(image);
 		}
 
-
 		this.image = image;
 		this.unit = unit;
 		this.qpProj = qpPathProject;
@@ -126,13 +146,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 			try {
 
-				System.out.println("provided class name : "+image.serverBuilder.providerClassName);
+				logger.debug("provided class name : "+image.serverBuilder.providerClassName);
 				// create openers
 				if (image.serverBuilder.providerClassName.equals(
 					"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder"))
 				{
-
-					System.out.println("datalocation bioformat : "+dataLocation);
 					this.opener = (Opener<T>) new BioFormatsBdvOpener(
 							dataLocation,
 							iSerie,
@@ -222,11 +240,17 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		return angleRotationZAxis;
 	}
 
-
+	/**
+	 * Scale the rootTransform of the basic opener (OMERO, BioFormats) with QuPath unit and pixel dimensions
+	 * @param pixelCalibrations
+	 * @param outputUnit
+	 * @param rootTransform
+	 * @param voxSizes
+	 * @return
+	 */
 	private AffineTransform3D getTransform(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String outputUnit,
 												 AffineTransform3D rootTransform, VoxelDimensions voxSizes) {
 
-		// create a new AffineTransform3D based on pixelCalibration
 		AffineTransform3D quPathRescaling = new AffineTransform3D();
 
 		if (pixelCalibrations != null) {
@@ -238,6 +262,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			double voxSizeY = voxSizes.dimension(1);
 			double voxSizeZ = voxSizes.dimension(2);
 
+			// compute scaling factor
 			if (pixelCalibrations.pixelWidth != null) {
 				MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
 				Length voxLengthX = new Length(voxSizeX, BioFormatsTools.getUnitFromString(voxSizes.unit()));
@@ -289,7 +314,9 @@ public class QuPathImageOpener<T> implements Opener<T> {
 					finalScaley - 1.0) > 0.0001) || (Math.abs(finalScalez -
 					1.0) > 0.0001)) {
 				logger.debug("Perform QuPath rescaling");
+				// create a new AffineTransform3D based on pixelCalibration
 				quPathRescaling.scale(finalScalex, finalScaley, finalScalez);
+				// scale the root transform
 				double oX = rootTransform.get(0, 3);
 				double oY = rootTransform.get(1, 3);
 				double oZ = rootTransform.get(2, 3);
@@ -326,6 +353,87 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		}
 	}
 
+
+
+	/**
+	 * Use QuPath pixelCalibration to retrieve the size of an image voxel in the specified unit.
+	 * @param pixelCalibrations
+	 * @param unit
+	 * @return
+	 */
+	public VoxelDimensions getVoxelDimensions(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String unit)
+	{
+		// Always 3 to allow for big stitcher compatibility
+		int numDimensions = 3;
+
+		// get voxel size with the original unit
+		Length[] voxSize = new Length[]{
+				new Length(pixelCalibrations.pixelWidth.value, convertStringToUnit(pixelCalibrations.pixelWidth.unit)),
+				new Length(pixelCalibrations.pixelHeight.value, convertStringToUnit(pixelCalibrations.pixelHeight.unit)),
+				new Length(pixelCalibrations.zSpacing.value, convertStringToUnit(pixelCalibrations.zSpacing.unit))
+		};
+		double[] d = new double[3];
+		Unit<Length> u = BioFormatsTools.getUnitFromString(unit);
+		Length voxSizeReferenceFrameLength = new Length(1, UNITS.MICROMETER);
+
+		// fill the array with the dimension value converted into the specified unit u
+		for (int iDimension = 0; iDimension < 3; iDimension++) { // X:0; Y:1; Z:2
+			if ((voxSize[iDimension].unit() != null) && (voxSize[iDimension].unit()
+					.isConvertible(u)))
+			{
+				d[iDimension] = voxSize[iDimension].value(u).doubleValue();
+			}
+			else if (voxSize[iDimension].unit().getSymbol().equals(
+					"reference frame"))
+			{
+				Length l = new Length(voxSize[iDimension].value().doubleValue() *
+						voxSizeReferenceFrameLength.value().doubleValue(),
+						voxSizeReferenceFrameLength.unit());
+				d[iDimension] = l.value(u).doubleValue();
+			}
+			else {
+				d[iDimension] = 1;
+			}
+		}
+
+		// create the Voxel dimension object
+		VoxelDimensions voxelDimensions;
+
+		{
+			assert numDimensions == 3;
+			voxelDimensions = new VoxelDimensions() {
+
+				final Unit<Length> targetUnit = u;
+
+				final double[] dims = { d[0], d[1], d[2] };
+
+				@Override
+				public String unit() {
+					return targetUnit.getSymbol();
+				}
+
+				@Override
+				public void dimensions(double[] doubles) {
+					doubles[0] = dims[0];
+					doubles[1] = dims[1];
+					doubles[2] = dims[2];
+				}
+
+				@Override
+				public double dimension(int i) {
+					return dims[i];
+				}
+
+				@Override
+				public int numDimensions() {
+					return numDimensions;
+				}
+			};
+		}
+		return voxelDimensions;
+	}
+
+	// OVERRIDDEN METHODS
 	@Override
 	public int[] getCellDimensions(int level) {
 		return this.opener.getCellDimensions(level);
@@ -435,73 +543,5 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	@Override
 	public void close() throws IOException {
 		this.opener.close();
-	}
-
-	public VoxelDimensions getVoxelDimensions(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String unit)
-	{
-		// Always 3 to allow for big stitcher compatibility
-		int numDimensions = 3;
-		Length[] voxSize = new Length[]{
-				new Length(pixelCalibrations.pixelWidth.value, convertStringToUnit(pixelCalibrations.pixelWidth.unit)),
-				new Length(pixelCalibrations.pixelHeight.value, convertStringToUnit(pixelCalibrations.pixelHeight.unit)),
-				new Length(pixelCalibrations.zSpacing.value, convertStringToUnit(pixelCalibrations.zSpacing.unit))
-		};
-		double[] d = new double[3];
-		Unit<Length> u = BioFormatsTools.getUnitFromString(unit);
-		Length voxSizeReferenceFrameLength = new Length(1, UNITS.MICROMETER);
-
-		for (int iDimension = 0; iDimension < 3; iDimension++) { // X:0; Y:1; Z:2
-			if ((voxSize[iDimension].unit() != null) && (voxSize[iDimension].unit()
-					.isConvertible(u)))
-			{
-				d[iDimension] = voxSize[iDimension].value(u).doubleValue();
-			}
-			else if (voxSize[iDimension].unit().getSymbol().equals(
-					"reference frame"))
-			{
-				Length l = new Length(voxSize[iDimension].value().doubleValue() *
-						voxSizeReferenceFrameLength.value().doubleValue(),
-						voxSizeReferenceFrameLength.unit());
-				d[iDimension] = l.value(u).doubleValue();
-			}
-			else {
-				d[iDimension] = 1;
-			}
-		}
-
-		VoxelDimensions voxelDimensions;
-
-		{
-			assert numDimensions == 3;
-			voxelDimensions = new VoxelDimensions() {
-
-				final Unit<Length> targetUnit = u;
-
-				final double[] dims = { d[0], d[1], d[2] };
-
-				@Override
-				public String unit() {
-					return targetUnit.getSymbol();
-				}
-
-				@Override
-				public void dimensions(double[] doubles) {
-					doubles[0] = dims[0];
-					doubles[1] = dims[1];
-					doubles[2] = dims[2];
-				}
-
-				@Override
-				public double dimension(int i) {
-					return dims[i];
-				}
-
-				@Override
-				public int numDimensions() {
-					return numDimensions;
-				}
-			};
-		}
-		return voxelDimensions;
 	}
 }

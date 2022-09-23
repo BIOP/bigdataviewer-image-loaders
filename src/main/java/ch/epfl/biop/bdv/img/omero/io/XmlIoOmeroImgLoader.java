@@ -92,8 +92,6 @@ public class XmlIoOmeroImgLoader implements
 					openerClassName + " not recognized.");
 			}
 
-
-
 			Gson gson = new Gson();
 			for (int i = 0; i < number_of_datasets; i++) {
 				// Opener de-serialization
@@ -102,11 +100,8 @@ public class XmlIoOmeroImgLoader implements
 						OpenerSettings.class);
 
 				if (!hostToGatewayCtx.containsKey(settings.getHost())) {
-					// TODO handle login to OMERO
 					// Get credentials
-					Boolean onlyCredentials = false;
-					String[] credentials = OmeroTools.getOmeroConnectionInputParameters(
-						onlyCredentials);
+					String[] credentials = OmeroTools.getOmeroConnectionInputParameters();
 					String host = credentials[0];
 					int port = Integer.parseInt(credentials[1]);
 					String username = credentials[2];

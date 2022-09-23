@@ -195,7 +195,7 @@ public class ChannelProperties {
 
 
     /**
-     * For OMERO
+     * Generic builder for channel color
      * @param colorIdx
      * @return
      */
@@ -239,7 +239,7 @@ public class ChannelProperties {
 
 
     /**
-     * Generic
+     * Generic builder for channel name
      * @param name
      * @return
      */
@@ -270,16 +270,31 @@ public class ChannelProperties {
         return this;
     }
 
+    /**
+     * Generic builder
+     * @param pixelType
+     * @return
+     */
     public ChannelProperties setPixelType(Type<? extends  NumericType> pixelType){
         this.pixelType = pixelType;
         return this;
     }
 
+    /**
+     * is the channel part of an RGB image
+     * @param RGB
+     * @return
+     */
     public ChannelProperties setRGB(Boolean RGB) {
         this.isRGB = RGB;
         return this;
     }
 
+    /**
+     * How many channels the image containing the current channel is made of.
+     * @param nChannels
+     * @return
+     */
     public ChannelProperties setNChannels(int nChannels) {
         this.nChannels = nChannels;
         return this;

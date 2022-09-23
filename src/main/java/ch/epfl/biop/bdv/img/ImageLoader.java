@@ -117,7 +117,6 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	}
 
 	/**
-	 *
 	 * @param setupId : viewsetup id
 	 * @return the setupLoader corresponding to the current viewsetup id
 	 */
@@ -130,7 +129,7 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 			else {
 				int iOpener = viewSetupToOpenerChannel.get(setupId).openerIndex;
 				int iC = viewSetupToOpenerChannel.get(setupId).channelIndex;
-				//logger.debug("loading file number = " + iF + " setupId = " + setupId);
+				logger.debug("loading file number = " + iOpener + " setupId = " + setupId);
 
 				// select the correct setup loader according to opener type
 				try {
@@ -166,6 +165,9 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	}
 
 
+	/**
+	 * Small class to save opener and channel index together
+	 */
 	public class OpenerAndChannelIndex {
 		final int openerIndex;
 		final int channelIndex;

@@ -36,6 +36,9 @@ import java.nio.ByteOrder;
 // Copied from N5 Array Loader
 public class BioFormatsArrayLoaders {
 
+	/**
+	 * Generic class with the necessary elements to read and load pixels
+	 */
 	abstract static class BioformatsArrayLoader {
 
 		final protected ResourcePool<IFormatReader> readerPool;
@@ -49,6 +52,9 @@ public class BioFormatsArrayLoaders {
 
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : Unsigned Byte (8 bits)
+	 */
 	public static class BioFormatsUnsignedByteArrayLoader extends
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
 	{
@@ -64,6 +70,7 @@ public class BioFormatsArrayLoaders {
 										   int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -76,12 +83,16 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
 							timepoint), minX, minY, w, h);
 					buffer.put(bytesCurrentPlane);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
 				return new VolatileByteArray(buffer.array(), true);
 			}
@@ -96,6 +107,9 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : unsigned short (16 bits)
+	 */
 	public static class BioFormatsUnsignedShortArrayLoader extends
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileShortArray>
 	{
@@ -119,6 +133,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -131,13 +146,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// unsigned short specific transform
 				short[] shorts = new short[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asShortBuffer().get(shorts);
@@ -154,6 +175,9 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : float (32 bits)
+	 */
 	public static class BioFormatsFloatArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileFloatArray>
 	{
@@ -177,6 +201,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -189,13 +214,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// float specific transform
 				float[] floats = new float[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asFloatBuffer().get(floats);
@@ -212,6 +243,9 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : RGB (3 * 8 bits)
+	 */
 	public static class BioFormatsRGBArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
@@ -229,6 +263,7 @@ public class BioFormatsArrayLoaders {
 										  int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -241,8 +276,9 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				byte[] bytes;
 
+				// read pixels
+				byte[] bytes;
 				if (d == 1) {
 					bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
 							w, h);
@@ -260,7 +296,11 @@ public class BioFormatsArrayLoaders {
 					}
 				}
 				boolean interleaved = reader.isInterleaved();
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// RGB specific transform
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				if (interleaved) {
@@ -289,6 +329,9 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : int (16 bits)
+	 */
 	public static class BioFormatsIntArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
@@ -312,6 +355,7 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -324,13 +368,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
 					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// int specific transform
 				int[] ints = new int[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asIntBuffer().get(ints);
@@ -346,5 +396,4 @@ public class BioFormatsArrayLoaders {
 			return 4;
 		}
 	}
-
 }
