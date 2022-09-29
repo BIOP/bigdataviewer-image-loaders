@@ -60,6 +60,7 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimdata;
 
+
     public void run() {
         List<BioFormatsBdvOpener> openers = new ArrayList<>();
         for (File f : files) {

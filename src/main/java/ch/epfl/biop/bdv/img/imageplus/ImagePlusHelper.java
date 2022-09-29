@@ -400,12 +400,14 @@ public class ImagePlusHelper {
 
 				luts[sacs.indexOf(sac)] = lut;
 				imp.setC(sacs.indexOf(sac) + 1);
-				imp.getProcessor().setLut(lut);
 
 				if (sac.getConverter() instanceof LinearRange) {
 					LinearRange converter = (LinearRange) sac.getConverter();
-					imp.setDisplayRange(converter.getMin(), converter.getMax());
+					//imp.setDisplayRange(converter.getMin(), converter.getMax());
+					lut.min = converter.getMin();
+					lut.max = converter.getMax();
 				}
+				imp.getProcessor().setLut(lut);
 			}
 		}
 
