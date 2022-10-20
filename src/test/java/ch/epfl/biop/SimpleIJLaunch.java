@@ -32,7 +32,7 @@ public class SimpleIJLaunch {
 		// create the ImageJ application context with all available services
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
-		// DebugTools.enableLogging("DEBUG");
-		DebugTools.enableLogging("OFF");
+		DebugTools.enableLogging("DEBUG");
+		// DebugTools.enableLogging("OFF");
 	}
 }

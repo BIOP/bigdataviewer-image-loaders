@@ -43,6 +43,7 @@ import net.imglib2.type.numeric.NumericType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -66,7 +67,7 @@ import java.util.stream.IntStream;
 
 @Deprecated
 public class QuPathImageLoader implements ViewerImgLoader,
-	MultiResolutionImgLoader
+	MultiResolutionImgLoader, Closeable
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
@@ -287,6 +288,22 @@ public class QuPathImageLoader implements ViewerImgLoader,
 
 	public BioFormatsBdvOpener getModelOpener() {
 		return openerModel;
+	}
+
+	@Override
+	public void close() throws IOException {
+		openerMap.values().forEach(opener -> {
+			opener.getReaderPool().shutDown(reader -> {
+				try {
+					reader.close();
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
+		});
+		cache.clearCache();
+		sq.shutdown();
 	}
 
 	public static class QuPathBioFormatsSourceIdentifier {
