@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -100,10 +100,10 @@ public class ImagePlusHelper {
 	 * Regex matching the toString function of AffineTransform3D
 	 */
 	final public static String regexAffineTransform3D =
-		"(3d-affine: \\()(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.*)\\)";
+			"(3d-affine: \\()(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.*)\\)";
 
 	public static void storeExtendedCalibrationToImagePlus(ImagePlus imp,
-		AffineTransform3D at3D, String unit, int timePointBegin)
+														   AffineTransform3D at3D, String unit, int timePointBegin)
 	{
 		storeMatrixToImagePlus(imp, at3D);
 		setTimeOriginToImagePlus(imp, timePointBegin);
@@ -117,7 +117,7 @@ public class ImagePlusHelper {
 		double[] voxelSizes = new double[3];
 		for (int d = 0; d < 3; d++) {
 			voxelSizes[d] = Math.sqrt(m[d] * m[d] + m[d + 4] * m[d + 4] + m[d + 8] *
-				m[d + 8]);
+					m[d + 8]);
 		}
 
 		double[] voxelSigns = new double[3];
@@ -189,11 +189,11 @@ public class ImagePlusHelper {
 			AffineTransform3D at3D = new AffineTransform3D();
 			// Matrix built from calibration
 			at3D.scale(imp.getCalibration().pixelWidth, imp
-				.getCalibration().pixelHeight, imp.getCalibration().pixelDepth);
+					.getCalibration().pixelHeight, imp.getCalibration().pixelDepth);
 			at3D.translate(imp.getCalibration().xOrigin * imp
-				.getCalibration().pixelWidth, imp.getCalibration().yOrigin * imp
+					.getCalibration().pixelWidth, imp.getCalibration().yOrigin * imp
 					.getCalibration().pixelHeight, imp.getCalibration().zOrigin * imp
-						.getCalibration().pixelDepth);
+					.getCalibration().pixelDepth);
 			return at3D;
 		}
 
@@ -230,8 +230,7 @@ public class ImagePlusHelper {
 			Matcher matcher = pattern.matcher(imp.getInfoProperty());
 			if (matcher.find()) {
 				// Looks good, we have something that looks like an affine transform
-				int timeOrigin = Integer.parseInt(matcher.group(2));
-				return timeOrigin;
+				return Integer.parseInt(matcher.group(2));
 			}
 		}
 		return 0;
@@ -246,16 +245,16 @@ public class ImagePlusHelper {
 	 * @return wrapped ImagePlus
 	 */
 	public static <T extends NativeType<T> & NumericType<T>> ImagePlus wrap(
-		SourceAndConverter<T> sac, int mipmapLevel, int beginTimePoint,
-		int nTimePoints, int timeStep)
+			SourceAndConverter<T> sac, int mipmapLevel, int beginTimePoint,
+			int nTimePoints, int timeStep)
 	{
 
 		// Avoids no mip map exception
 		mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource()
-			.getNumMipmapLevels() - 1);
+				.getNumMipmapLevels() - 1);
 
 		RandomAccessibleInterval<T>[] rais =
-			new RandomAccessibleInterval[nTimePoints];
+				new RandomAccessibleInterval[nTimePoints];
 		int endTimePoint = beginTimePoint + timeStep * nTimePoints;
 		long xSize = 1, ySize = 1, zSize = 1;
 		int i = 0;
@@ -276,7 +275,7 @@ public class ImagePlusHelper {
 			}
 			else {
 				rais[i] = new ZerosRAI<>(sac.getSpimSource().getType(), new long[] {
-					xSize, ySize, zSize });
+						xSize, ySize, zSize });
 			}
 			i++;
 		}
@@ -285,20 +284,20 @@ public class ImagePlusHelper {
 		ImagePlus imp;
 
 		Img<T> img = (Img<T>) (wrapAsVolatileCachedCellImg(Views.stack(rais),
-			new int[] { (int) rais[0].dimension(0), (int) rais[0].dimension(1), 1,
-				1 }));
+				new int[] { (int) rais[0].dimension(0), (int) rais[0].dimension(1), 1,
+						1 }));
 
 		imgPlus = new ImgPlus<>(img, sac.getSpimSource().getName(), new AxisType[] {
-			Axes.X, Axes.Y, Axes.Z, Axes.TIME });
+				Axes.X, Axes.Y, Axes.Z, Axes.TIME });
 		imp = ImageJFunctions.wrap(imgPlus, "");
 
 		imp.setTitle(sac.getSpimSource().getName());
 
 		imp.setDimensions(1, (int) rais[0].dimension(2), nTimePoints); // Set 3
-																																		// dimension
-																																		// as Z, not
-																																		// as
-																																		// Channel
+		// dimension
+		// as Z, not
+		// as
+		// Channel
 
 		// Simple Color LUT
 		if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
@@ -306,7 +305,7 @@ public class ImagePlusHelper {
 				ColorConverter converter = (ColorConverter) sac.getConverter();
 				ARGBType c = converter.getColor();
 				imp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()),
-					ARGBType.green(c.get()), ARGBType.blue(c.get()))));
+						ARGBType.green(c.get()), ARGBType.blue(c.get()))));
 			}
 			if (sac.getConverter() instanceof LinearRange) {
 				LinearRange converter = (LinearRange) sac.getConverter();
@@ -326,26 +325,26 @@ public class ImagePlusHelper {
 	 * @return wrapped sources as a multichannel ImagePlus
 	 */
 	public static <T extends NumericType<T> & NativeType<T>> ImagePlus wrap(
-		List<SourceAndConverter<T>> sacs,
-		Map<SourceAndConverter<T>, Integer> mipmapMap, int beginTimePoint,
-		int nTimePoints, int timeStep)
+			List<SourceAndConverter<T>> sacs,
+			Map<SourceAndConverter<T>, Integer> mipmapMap, int beginTimePoint,
+			int nTimePoints, int timeStep)
 	{
 
 		if (sacs.size() == 1) {
 			return wrap(sacs.get(0), mipmapMap.get(sacs.get(0)), beginTimePoint,
-				nTimePoints, timeStep);
+					nTimePoints, timeStep);
 		}
 
 		int endTimePoint = beginTimePoint + timeStep * nTimePoints;
 		RandomAccessibleInterval<T>[] raisList = new RandomAccessibleInterval[sacs
-			.size()];
+				.size()];
 
 		for (int c = 0; c < sacs.size(); c++) {
 			SourceAndConverter<T> sac = sacs.get(c);
 			RandomAccessibleInterval<T>[] rais =
-				new RandomAccessibleInterval[nTimePoints];
+					new RandomAccessibleInterval[nTimePoints];
 			int mipmapLevel = Math.min(mipmapMap.get(sac), sac.getSpimSource()
-				.getNumMipmapLevels() - 1); // mipmap level should exist
+					.getNumMipmapLevels() - 1); // mipmap level should exist
 			long xSize = 1, ySize = 1, zSize = 1;
 
 			int i = 0;
@@ -366,23 +365,23 @@ public class ImagePlusHelper {
 				}
 				else {
 					rais[i] = new ZerosRAI<>(sac.getSpimSource().getType(), new long[] {
-						xSize, ySize, zSize });
+							xSize, ySize, zSize });
 				}
 				i++;
 			}
 			raisList[c] = Views.stack(rais); // Very inefficient TODO : better perf
-																				// for time stack
+			// for time stack
 		}
 
 		Img<T> img = (Img<T>) (wrapAsVolatileCachedCellImg(Views.stack(raisList),
-			new int[] { (int) raisList[0].dimension(0), (int) raisList[0].dimension(
-				1), 1, 1, 1 }));
+				new int[] { (int) raisList[0].dimension(0), (int) raisList[0].dimension(
+						1), 1, 1, 1 }));
 
 		ImgPlus<T> imgPlus = new ImgPlus<>(img, // cacheRAI(Views.stack(raisList)),
-			"", new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL });
+				"", new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL });
 		ImagePlus imp = HyperStackConverter.toHyperStack(ImgToVirtualStack.wrap(
-			imgPlus), sacs.size(), (int) raisList[0].dimension(2), nTimePoints,
-			"composite");
+						imgPlus), sacs.size(), (int) raisList[0].dimension(2), nTimePoints,
+				"composite");
 
 		LUT[] luts = new LUT[sacs.size()];
 		for (SourceAndConverter<T> sac : sacs) {
@@ -392,21 +391,23 @@ public class ImagePlusHelper {
 					ColorConverter converter = (ColorConverter) sac.getConverter();
 					ARGBType c = converter.getColor();
 					lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType
-						.green(c.get()), ARGBType.blue(c.get())));
+							.green(c.get()), ARGBType.blue(c.get())));
 				}
 				else {
 					lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType
-						.green(255), ARGBType.blue(255)));
+							.green(255), ARGBType.blue(255)));
 				}
 
 				luts[sacs.indexOf(sac)] = lut;
 				imp.setC(sacs.indexOf(sac) + 1);
-				imp.getProcessor().setLut(lut);
 
 				if (sac.getConverter() instanceof LinearRange) {
 					LinearRange converter = (LinearRange) sac.getConverter();
-					imp.setDisplayRange(converter.getMin(), converter.getMax());
+					//imp.setDisplayRange(converter.getMin(), converter.getMax());
+					lut.min = converter.getMin();
+					lut.max = converter.getMax();
 				}
+				imp.getProcessor().setLut(lut);
 			}
 		}
 
@@ -424,8 +425,8 @@ public class ImagePlusHelper {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T extends NativeType<T>> RandomAccessibleInterval<T>
-		wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<T> source,
-			final int[] blockSize)
+	wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<T> source,
+								final int[] blockSize)
 	{
 
 		final long[] dimensions = Intervals.dimensionsAsLongArray(source);
@@ -433,46 +434,46 @@ public class ImagePlusHelper {
 		final CellGrid grid = new CellGrid(dimensions, blockSize);
 
 		final Caches.RandomAccessibleLoader<T> loader =
-			new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
+				new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
 		final T type = Util.getTypeFromInterval(source);
 
 		final CachedCellImg<T, ?> img;
 		final Cache<Long, Cell<?>> cache = new SoftRefLoaderCache().withLoader(
-			LoadedCellCacheLoader.get(grid, loader, type, AccessFlags.setOf(
-				VOLATILE)));
+				LoadedCellCacheLoader.get(grid, loader, type, AccessFlags.setOf(
+						VOLATILE)));
 
 		if (GenericByteType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-				BYTE, AccessFlags.setOf(VOLATILE)));
+					BYTE, AccessFlags.setOf(VOLATILE)));
 		}
 		else if (GenericShortType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-				SHORT, AccessFlags.setOf(VOLATILE)));
+					SHORT, AccessFlags.setOf(VOLATILE)));
 		}
 		else if (GenericIntType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
-				AccessFlags.setOf(VOLATILE)));
+					AccessFlags.setOf(VOLATILE)));
 		}
 		else if (GenericLongType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-				LONG, AccessFlags.setOf(VOLATILE)));
+					LONG, AccessFlags.setOf(VOLATILE)));
 		}
 		else if (FloatType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-				FLOAT, AccessFlags.setOf(VOLATILE)));
+					FLOAT, AccessFlags.setOf(VOLATILE)));
 		}
 		else if (DoubleType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-				DOUBLE, AccessFlags.setOf(VOLATILE)));
+					DOUBLE, AccessFlags.setOf(VOLATILE)));
 		}
 		else if (ARGBType.class.isInstance(type)) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
-				AccessFlags.setOf(VOLATILE)));
+					AccessFlags.setOf(VOLATILE)));
 		}
 		else {
 			System.err.println("Unsupported caching of type " + type.getClass()
-				.getSimpleName());
+					.getSimpleName());
 			img = null;
 		}
 
