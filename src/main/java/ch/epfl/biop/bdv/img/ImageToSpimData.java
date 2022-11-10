@@ -136,6 +136,7 @@ public class ImageToSpimData {
                 fi.setName(dataLocation);
 
                 IntStream channels = IntStream.range(0, opener.getNChannels());
+                logger.debug("There are "+opener.getNChannels()+" channels.");
                 channels.forEach(iCh -> {
                     // get channel properties
                     ChannelProperties ch = opener.getChannel(iCh);

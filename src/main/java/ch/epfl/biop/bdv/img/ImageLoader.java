@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,11 +158,15 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 
 	@Override
 	public void close() {
-		synchronized (this) {
-			openers.forEach(opener -> close());
-			cache.clearCache();
-			sq.shutdown();
-		}
+		openers.forEach(opener -> {
+			try {
+				opener.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		cache.clearCache();
+		sq.shutdown();
 	}
 
 

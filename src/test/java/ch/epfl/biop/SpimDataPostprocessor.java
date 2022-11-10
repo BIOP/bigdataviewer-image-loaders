@@ -44,7 +44,7 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 	@Override
 	public void process(Module module) {
 
-		module.getOutputs().forEach((name, object) -> {
+		/*module.getOutputs().forEach((name, object) -> {
 			// log.accept("input:\t"+name+"\tclass:\t"+object.getClass().getSimpleName());
 			if (object instanceof AbstractSpimData) {
 				AbstractSpimData<?> asd = (AbstractSpimData<?>) object;
@@ -63,6 +63,6 @@ public class SpimDataPostprocessor extends AbstractPostprocessorPlugin {
 					}
 				}
 			}
-		});
+		});*/
 	}
 }

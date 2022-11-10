@@ -20,23 +20,32 @@
  * #L%
  */
 
-package ch.epfl.biop;
+package ch.epfl.biop.bdv.img.legacy.bioformats;
 
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
+import ch.epfl.biop.bdv.img.ResourcePool;
+import loci.formats.IFormatReader;
 
-import javax.swing.SwingUtilities;
+import java.util.function.Supplier;
 
-public class SimpleIJLaunch {
+/**
+ * Created with IntelliJ IDEA. User: dbtsai Date: 2/24/13 Time: 1:21 PM
+ */
+@Deprecated
+public class ReaderPool extends ResourcePool<IFormatReader> {
 
-	static public void main(String... args) throws Exception {
-		// Arrange
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
-		//SwingUtilities.invokeAndWait(() ->);
-		ij.ui().showUI();
-		//DebugTools.enableLogging("INFO");
+	final Supplier<IFormatReader> readerSupplier;
+
+	public ReaderPool(int size, Boolean dynamicCreation,
+		Supplier<IFormatReader> readerSupplier)
+	{
+		super(size, dynamicCreation);
+		createPool();
+		this.readerSupplier = readerSupplier;
 	}
+
+	@Override
+	public IFormatReader createObject() {
+		return readerSupplier.get();
+	}
+
 }

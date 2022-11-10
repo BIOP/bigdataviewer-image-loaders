@@ -102,13 +102,15 @@ public abstract class ResourcePool<Resource> {
 
 	protected abstract Resource createObject();
 
-	boolean isClosed = false;
+	volatile boolean isClosed = false;
 
 	public void shutDown(Consumer<Resource> closer) {
-		isClosed = true;
-		ArrayList<Resource> resources = new ArrayList<>(size);
-		pool.drainTo(resources);
-		resources.forEach(closer::accept);
+		if (isClosed == false) {
+			isClosed = true;
+			ArrayList<Resource> resources = new ArrayList<>(size);
+			pool.drainTo(resources);
+			resources.forEach(closer::accept);
+		}
 	}
 
 }

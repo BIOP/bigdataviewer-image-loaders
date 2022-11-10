@@ -34,6 +34,7 @@ import net.imglib2.Dimensions;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
@@ -441,13 +442,23 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public ChannelProperties getChannel(int iChannel) {
-		if(this.image.serverBuilder != null &&
+		if (this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
+
+			if (this.image.serverBuilder.metadata.isRGB) {
+				if (opener.getPixelType() instanceof ARGBType) {
+					// No split RGB
+					return this.opener.getChannel(iChannel).setChannelName("RGB");
+				} else {
+					MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
+					return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
+				}
+			}
+
 			MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
 			return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
-		}
-		else return this.opener.getChannel(iChannel);
+		} else return this.opener.getChannel(iChannel);
 	}
 
 	@Override
@@ -479,12 +490,13 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public int getNChannels() {
-		if(this.image.serverBuilder != null &&
+		/*if(this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.channels != null){
 			return this.image.serverBuilder.metadata.channels.size();
 		}
-		else {
+		else */
+		{
 			return this.opener.getNChannels();
 		}
 	}

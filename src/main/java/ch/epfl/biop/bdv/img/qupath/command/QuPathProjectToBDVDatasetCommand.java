@@ -31,6 +31,7 @@ import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
@@ -157,6 +158,7 @@ public class QuPathProjectToBDVDatasetCommand extends
 						//.cornerPositionConvention()
 						;
 				openerSettingsList.add(openerSettings);
+
 			});
 
 			spimData = ImageToSpimData.getSpimData(openerSettingsList);

@@ -20,23 +20,29 @@
  * #L%
  */
 
-package ch.epfl.biop;
+package ch.epfl.biop.bdv.img.legacy.bioformats.io;
 
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
+import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
+import org.jdom2.Element;
 
-import javax.swing.SwingUtilities;
+@Deprecated
+@ViewSetupAttributeIo(name = "fileindex", type = FileIndex.class)
+public class XmlIoFileIndex extends XmlIoNamedEntity<FileIndex> {
 
-public class SimpleIJLaunch {
+	public XmlIoFileIndex() {
+		super("fileindex", FileIndex.class);
+	}
 
-	static public void main(String... args) throws Exception {
-		// Arrange
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
-		//SwingUtilities.invokeAndWait(() ->);
-		ij.ui().showUI();
-		//DebugTools.enableLogging("INFO");
+	@Override
+	public Element toXml(final FileIndex fi) {
+		return super.toXml(fi);
+	}
+
+	@Override
+	public FileIndex fromXml(final Element elem) throws SpimDataException {
+		return super.fromXml(elem);
 	}
 }

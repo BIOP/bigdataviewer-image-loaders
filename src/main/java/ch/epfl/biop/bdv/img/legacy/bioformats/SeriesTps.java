@@ -20,23 +20,16 @@
  * #L%
  */
 
-package ch.epfl.biop;
+package ch.epfl.biop.bdv.img.legacy.bioformats;
 
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
+@Deprecated
+public class SeriesTps {
 
-import javax.swing.SwingUtilities;
+	final public int nSeries;
+	final public int nTps;
 
-public class SimpleIJLaunch {
-
-	static public void main(String... args) throws Exception {
-		// Arrange
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
-		//SwingUtilities.invokeAndWait(() ->);
-		ij.ui().showUI();
-		//DebugTools.enableLogging("INFO");
+	public SeriesTps(int nSeries, int nTps) {
+		this.nSeries = nSeries;
+		this.nTps = nTps;
 	}
 }

@@ -20,23 +20,18 @@
  * #L%
  */
 
-package ch.epfl.biop;
+package ch.epfl.biop.bdv.img.legacy.bioformats;
 
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
+@Deprecated
+public class BioFormatsBdvOpenerFix {
 
-import javax.swing.SwingUtilities;
+	static public BioFormatsBdvOpener fixNikonND2(BioFormatsBdvOpener opener) {
+		return opener.centerPositionConvention().flipPositionX().flipPositionY();
+	}
 
-public class SimpleIJLaunch {
-
-	static public void main(String... args) throws Exception {
-		// Arrange
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
-		//SwingUtilities.invokeAndWait(() ->);
-		ij.ui().showUI();
-		//DebugTools.enableLogging("INFO");
+	public static BioFormatsBdvOpener fixLif(
+		BioFormatsBdvOpener bioFormatsBdvOpener)
+	{
+		return bioFormatsBdvOpener.centerPositionConvention();
 	}
 }

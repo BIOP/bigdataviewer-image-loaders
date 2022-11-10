@@ -20,23 +20,38 @@
  * #L%
  */
 
-package ch.epfl.biop;
+package ch.epfl.biop.bdv.img.legacy.bioformats.entity;
 
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
+import mpicbg.spim.data.generic.base.NamedEntity;
 
-import javax.swing.SwingUtilities;
+@Deprecated
+public class SeriesNumber extends NamedEntity implements
+	Comparable<SeriesNumber>
+{
 
-public class SimpleIJLaunch {
-
-	static public void main(String... args) throws Exception {
-		// Arrange
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
-		//SwingUtilities.invokeAndWait(() ->);
-		ij.ui().showUI();
-		//DebugTools.enableLogging("INFO");
+	public SeriesNumber(final int id, final String name) {
+		super(id, name);
 	}
+
+	public SeriesNumber(final int id) {
+		this(id, Integer.toString(id));
+	}
+
+	/**
+	 * Set the name of this tile.
+	 */
+	@Override
+	public void setName(final String name) {
+		super.setName(name);
+	}
+
+	/**
+	 * Compares the {@link #getId() ids}.
+	 */
+	@Override
+	public int compareTo(final SeriesNumber o) {
+		return getId() - o.getId();
+	}
+
+	protected SeriesNumber() {}
 }

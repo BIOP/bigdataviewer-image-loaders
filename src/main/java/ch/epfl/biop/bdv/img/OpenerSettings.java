@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.img;
 
 import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
+import com.google.gson.Gson;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
@@ -399,6 +400,11 @@ public class OpenerSettings {
             case OPENSLIDE:; return new OpenerSettings().openSlideBuilder().location(location);
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 
 }

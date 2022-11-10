@@ -251,15 +251,28 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			// positions are the same in all planes and therefore take the 1st plane
 			PlaneInfo planeinfo = (PlaneInfo) (objectinfos.get(0));
 			// Convert the offsets in the unit given in the builder
-			Length lengthPosX;
-			Length lengthPosY;
-			if (!planeinfo.getPositionX().getUnit().equals(
-				UnitsLength.REFERENCEFRAME))
-			{
-				lengthPosX = new LengthI(planeinfo.getPositionX(), unit);
-				lengthPosY = new LengthI(planeinfo.getPositionY(), unit);
-			}
-			else {
+
+			if (planeinfo == null) {
+				logger.warn("The planeinfo is not set for the image " +
+						this.imageName + " ; plane position set at origin ");
+				this.stagePosX = 0;
+				this.stagePosY = 0;
+			} else if (planeinfo.getPositionX() == null) {
+				logger.warn("The planeinfo position is not set for the image " +
+						this.imageName + " ; plane position set at origin ");
+				this.stagePosX = 0;
+				this.stagePosY = 0;
+			} else  if (planeinfo.getPositionX().getUnit() == null) {
+				logger.warn("The planeinfo position unit is not set for the image " +
+						this.imageName + " ; plane position set at origin ");
+				this.stagePosX = 0;
+				this.stagePosY = 0;
+			} else if (!planeinfo.getPositionX().getUnit().equals(UnitsLength.REFERENCEFRAME)) {
+				this.stagePosX = new LengthI(planeinfo.getPositionX(), unit).getValue();
+				this.stagePosY = new LengthI(planeinfo.getPositionY(), unit).getValue();
+			} else {
+				Length lengthPosX;
+				Length lengthPosY;
 				logger.warn("The pixel unit is not set for the image " +
 					this.imageName + " ; a default unit " + unit + " has been set");
 				Length l1 = planeinfo.getPositionX();
@@ -268,10 +281,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 				l2.setUnit(OmeroTools.getUnitsLengthFromString(unit));
 				lengthPosX = new LengthI(l1, unit);
 				lengthPosY = new LengthI(l2, unit);
+				this.stagePosX = lengthPosX.getValue();
+				this.stagePosY = lengthPosY.getValue();
 			}
-
-			this.stagePosX = lengthPosX.getValue();
-			this.stagePosY = lengthPosY.getValue();
 		}
 		else {
 			this.stagePosX = 0;

@@ -20,15 +20,15 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats;
+package ch.epfl.biop.bdv.img.legacy.bioformats;
 
+import bdv.AbstractViewerSetupImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.BiopSetupLoader;
-import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
+import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
+import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
@@ -47,67 +47,68 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends BiopSetupLoader<T,V,A>{
+	extends AbstractViewerSetupImgLoader<T, V> implements
+	MultiResolutionSetupImgLoader<T>
+{
 
-	private static final Logger logger = LoggerFactory.getLogger(BioFormatsSetupLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(
+		BioFormatsSetupLoader.class);
 
-	// -------- How to load an image
 	final Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
+
 	final Converter<T, FloatType> cvt;
-	final private ResourcePool<IFormatReader> readerPool;
-	final Supplier<VolatileGlobalCellCache> cacheSupplier;
-	final CacheArrayLoader<A> loader;
 
-
-
-	// -------- Resoluion levels
-	final double[][] mmResolutions;
-	final int[] cellDimensions;
-	final int numMipmapLevels;
-
-
-	// Channels
-	final int iChannel;
-
-
-	// -------- ViewSetup
-	final int setup;
-
-
-	// -------- Timepoints
-	final int NTimePoints;
-
-
-	// Image dimension
-	final Dimensions[] dimensions;
-
-
-	// Opener
 	final BioFormatsBdvOpener opener;
 
+	final private ReaderPool readerPool;
 
-	// pixel dimensions
+	final int iSerie, iChannel;
+
+	final Supplier<VolatileGlobalCellCache> cacheSupplier;
+
+	final int[] cellDimensions;
+
+	final int numberOfTimePoints;
+
+	final boolean switchZandC;
+
+	final Unit<Length> targetUnit;
+
+	final Dimensions[] dimensions;
+
+	final int numMipmapLevels;
+
 	final VoxelDimensions voxelsDimensions;
 
+	final double[][] mmResolutions;
+
+	final CacheArrayLoader<A> loader;
+
+	final int setup;
 
 	@SuppressWarnings("unchecked")
-	public BioFormatsSetupLoader(BioFormatsBdvOpener opener,
+	public BioFormatsSetupLoader(BioFormatsBdvOpener opener, int sourceIndex,
 		int channelIndex, int setup, T t, V v,
-		Supplier<VolatileGlobalCellCache> cacheSupplier) {
+		Supplier<VolatileGlobalCellCache> cacheSupplier) throws Exception
+	{
 		super(t, v);
 		this.setup = setup;
 		this.cacheSupplier = cacheSupplier;
 		this.opener = opener;
-		this.readerPool = opener.getPixelReader();
+		this.readerPool = opener.getReaderPool();
+		iSerie = sourceIndex;
+		iChannel = channelIndex;
 
-		// set RandomAccessibleInterval
 		if (t instanceof FloatType) {
 			cvt = null;
 			cvtRaiToFloatRai = null; // rai -> (RandomAccessibleInterval<FloatType>)
@@ -138,76 +139,102 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			};
 		}
 
-		// channel options
-		iChannel = channelIndex;
+		this.targetUnit = opener.u;
+		this.switchZandC = opener.swZC;
 
-		// pixels characteristics
-		boolean isLittleEndian = opener.isLittleEndian();
-		voxelsDimensions = opener.getVoxelDimensions();
+		boolean isLittleEndian;
 
-		// timepoints
-		NTimePoints = opener.getNTimePoints();
+		IFormatReader reader = null;
+		try {
+			reader = readerPool.acquire();
+			reader.setSeries(iSerie);
+			numMipmapLevels = reader.getResolutionCount();
+			reader.setResolution(0);
+			isLittleEndian = reader.isLittleEndian();
 
-		// image dimensions
-		dimensions = opener.getDimensions();
+			// MetaData
+			final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
 
-		// resolution levels and dimensions
-		numMipmapLevels = opener.getNumMipmapLevels();
-		cellDimensions = opener.getCellDimensions(0);
-		mmResolutions = new double[numMipmapLevels][3];
-		mmResolutions[0][0] = 1;
-		mmResolutions[0][1] = 1;
-		mmResolutions[0][2] = 1;
+			boolean is3D;
 
-		// compute mipmap levels
-		// Fix vsi issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
-		if (opener.getReaderFormat().equals("CellSens VSI")) {
-			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
-				double downscalingFactor = Math.pow(2, iLevel);
-				mmResolutions[iLevel][0] = downscalingFactor;
-				mmResolutions[iLevel][1] = downscalingFactor;
-				mmResolutions[iLevel][2] = 1;
+			is3D = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue() > 1;
+
+			numberOfTimePoints = reader.getSizeT();
+			cellDimensions = new int[] { opener.useBioFormatsXYBlockSize ? reader
+				.getOptimalTileWidth() : (int) opener.cacheBlockSize.dimension(0),
+				opener.useBioFormatsXYBlockSize ? reader.getOptimalTileHeight()
+					: (int) opener.cacheBlockSize.dimension(1), (!is3D) ? 1
+						: (int) opener.cacheBlockSize.dimension(2) };
+
+			voxelsDimensions = BioFormatsTools.getSeriesVoxelDimensions(omeMeta,
+				iSerie, opener.u, opener.voxSizeReferenceFrameLength);
+
+			dimensions = new Dimensions[numMipmapLevels];
+			for (int level = 0; level < numMipmapLevels; level++) {
+				reader.setResolution(level);
+				dimensions[level] = getDimensions(reader.getSizeX(), reader.getSizeY(),
+					(!is3D) ? 1 : reader.getSizeZ());
 			}
-		}
-		else {
-			int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
-										  (int) dimensions[0].dimension(1),
-										  (int) dimensions[0].dimension(2) };
-			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
-				int[] srcLidims = new int[] { (int) dimensions[iLevel].dimension(0),
-											  (int) dimensions[iLevel].dimension(1),
-						                      (int) dimensions[iLevel].dimension(2) };
-				mmResolutions[iLevel][0] = (double) srcL0dims[0] / (double) srcLidims[0];
-				mmResolutions[iLevel][1] = (double) srcL0dims[1] / (double) srcLidims[1];
-				mmResolutions[iLevel][2] = (double) srcL0dims[2] / (double) srcLidims[2];
-			}
-		}
 
-		// get the ArrayLoader corresponding to the pixelType
+			// Needs to compute mipmap resolutions... pfou
+			mmResolutions = new double[numMipmapLevels][3];
+			mmResolutions[0][0] = 1;
+			mmResolutions[0][1] = 1;
+			mmResolutions[0][2] = 1;
+
+			if (reader.getFormat().equals("CellSens VSI")) { // Fix vsi issue see
+																												// https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
+				for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
+					double downscalingFactor = Math.pow(2, iLevel);
+					mmResolutions[iLevel][0] = downscalingFactor;
+					mmResolutions[iLevel][1] = downscalingFactor;
+					mmResolutions[iLevel][2] = 1;
+				}
+			}
+			else {
+				int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
+					(int) dimensions[0].dimension(1), (int) dimensions[0].dimension(2) };
+				for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
+					int[] srcLidims = new int[] { (int) dimensions[iLevel].dimension(0),
+						(int) dimensions[iLevel].dimension(1), (int) dimensions[iLevel]
+							.dimension(2) };
+					mmResolutions[iLevel][0] = (double) srcL0dims[0] /
+						(double) srcLidims[0];
+					mmResolutions[iLevel][1] = (double) srcL0dims[1] /
+						(double) srcLidims[1];
+					mmResolutions[iLevel][2] = (double) srcL0dims[2] /
+						(double) srcLidims[2];
+				}
+			}
+
+		}
+		finally {
+			readerPool.recycle(reader);
+		}
 		if (t instanceof UnsignedByteType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
-					readerPool, iChannel);
+					readerPool, iSerie, iChannel, switchZandC);
 		}
 		else if (t instanceof UnsignedShortType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-					readerPool, iChannel, isLittleEndian);
+					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
-					readerPool, iChannel, isLittleEndian);
+					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof IntType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-					readerPool, iChannel, isLittleEndian);
+					readerPool, iSerie, iChannel, switchZandC, isLittleEndian);
 		}
 		else if (t instanceof ARGBType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
-					readerPool, iChannel);
+					readerPool, iSerie, iChannel, switchZandC);
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()
@@ -216,8 +243,23 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 	}
 
+	static Dimensions getDimensions(long sizeX, long sizeY, long sizeZ) {
+		return new Dimensions() {
 
-	// OVERRIDDEN METHODS
+			@Override
+			public long dimension(int d) {
+				if (d == 0) return sizeX;
+				if (d == 1) return sizeY;
+				return sizeZ;
+			}
+
+			@Override
+			public int numDimensions() {
+				return 3;
+			}
+		};
+	}
+
 	@Override
 	public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId,
 		int level, boolean normalize, ImgLoaderHint... hints)
@@ -303,7 +345,12 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		return voxelsDimensions;
 	}
 
-	public ResourcePool<IFormatReader> getReaderPool() {
+	public ReaderPool getReaderPool() {
 		return readerPool;
 	}
+
+	public BioFormatsBdvOpener getOpener() {
+		return opener;
+	}
+
 }
