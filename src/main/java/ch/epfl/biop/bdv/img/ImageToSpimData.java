@@ -210,7 +210,7 @@ public class ImageToSpimData {
 
             // create spimdata
             SequenceDescription sd = new SequenceDescription(new TimePoints(timePoints), viewSetups, null, new MissingViews(missingViews));
-            sd.setImgLoader(new ImageLoader(openers, openerSettings, sd));
+            sd.setImgLoader(new BiopImageLoader(openers, openerSettings, sd));
 
             return new SpimData(null, sd, new ViewRegistrations(registrations));
         }

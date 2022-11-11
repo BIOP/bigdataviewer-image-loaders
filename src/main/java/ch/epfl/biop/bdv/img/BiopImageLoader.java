@@ -41,10 +41,10 @@ import java.util.stream.IntStream;
  * Generic class implementing how to load an image on BDV.
  * Only setup loaders depend on the opener type (BioFormats, OMERO, OpenSlide, and other)
  */
-public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
+public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
 {
 
-	final protected static Logger logger = LoggerFactory.getLogger(ImageLoader.class);
+	final protected static Logger logger = LoggerFactory.getLogger(BiopImageLoader.class);
 
 
 	// -------- ViewSetups core infos (pixel type, channels)
@@ -80,9 +80,9 @@ public class ImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, C
 	 * @param openerSettings
 	 * @param sequenceDescription
 	 */
-	public ImageLoader(List<Opener<?>> openers,
-                       List<OpenerSettings> openerSettings,
-                       final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public BiopImageLoader(List<Opener<?>> openers,
+						   List<OpenerSettings> openerSettings,
+						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		this.openerSettings = openerSettings;
 		this.openers = openers;

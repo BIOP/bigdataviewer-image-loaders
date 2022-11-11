@@ -22,7 +22,7 @@
 
 package ch.epfl.biop.bdv.img.bioformats.io;
 
-import ch.epfl.biop.bdv.img.ImageLoader;
+import ch.epfl.biop.bdv.img.BiopImageLoader;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import com.google.gson.Gson;
@@ -39,9 +39,9 @@ import java.util.List;
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
 @ImgLoaderIo(format = "spimreconstruction.biop_BioFormatsImageloader_v1",
-	type = ImageLoader.class)
+	type = BiopImageLoader.class)
 public class XmlIoBioFormatsImgLoader implements
-	XmlIoBasicImgLoader<ImageLoader>
+	XmlIoBasicImgLoader<BiopImageLoader>
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
@@ -49,7 +49,7 @@ public class XmlIoBioFormatsImgLoader implements
 	public static final String DATASET_NUMBER_TAG = "dataset_number";
 
 	@Override
-	public Element toXml(ImageLoader imgLoader, File basePath) {
+	public Element toXml(BiopImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
@@ -68,8 +68,8 @@ public class XmlIoBioFormatsImgLoader implements
 	}
 
 	@Override
-	public ImageLoader fromXml(Element elem, File basePath,
-							 AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public BiopImageLoader fromXml(Element elem, File basePath,
+                                   AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
@@ -94,7 +94,7 @@ public class XmlIoBioFormatsImgLoader implements
 				openers.add(settings.bioFormatsBuilder().create());
 			}
 
-			return new ImageLoader(openers, openersSettings, sequenceDescription);
+			return new BiopImageLoader(openers, openersSettings, sequenceDescription);
 		}
 		catch (final Exception e) {
 			throw new RuntimeException(e);

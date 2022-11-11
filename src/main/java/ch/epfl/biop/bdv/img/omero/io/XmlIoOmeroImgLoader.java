@@ -22,7 +22,7 @@
 
 package ch.epfl.biop.bdv.img.omero.io;
 
-import ch.epfl.biop.bdv.img.ImageLoader;
+import ch.epfl.biop.bdv.img.BiopImageLoader;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
@@ -44,9 +44,9 @@ import java.util.Map;
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
 @ImgLoaderIo(format = "spimreconstruction.biop_OmeroImageLoader-v1",
-	type = ImageLoader.class)
+	type = BiopImageLoader.class)
 public class XmlIoOmeroImgLoader implements
-	XmlIoBasicImgLoader<ImageLoader>
+	XmlIoBasicImgLoader<BiopImageLoader>
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
@@ -56,7 +56,7 @@ public class XmlIoOmeroImgLoader implements
 	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
 
 	@Override
-	public Element toXml(ImageLoader imgLoader, File basePath) {
+	public Element toXml(BiopImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
@@ -76,8 +76,8 @@ public class XmlIoOmeroImgLoader implements
 	}
 
 	@Override
-	public ImageLoader fromXml(Element elem, File basePath,
-		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public BiopImageLoader fromXml(Element elem, File basePath,
+                                   AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
@@ -126,7 +126,7 @@ public class XmlIoOmeroImgLoader implements
 				openers.add(settings.omeroBuilder().create());
 			}
 
-			return new ImageLoader(openers, openersSettings, sequenceDescription);
+			return new BiopImageLoader(openers, openersSettings, sequenceDescription);
 		}
 		catch (final Exception e) {
 			throw new RuntimeException(e);

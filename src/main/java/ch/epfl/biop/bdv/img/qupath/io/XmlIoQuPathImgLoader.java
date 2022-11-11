@@ -22,11 +22,10 @@
 
 package ch.epfl.biop.bdv.img.qupath.io;
 
-import ch.epfl.biop.bdv.img.ImageLoader;
+import ch.epfl.biop.bdv.img.BiopImageLoader;
 import ch.epfl.biop.bdv.img.Opener;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
-//import ch.epfl.biop.bdv.img.qupath.QuPathImageLoader;
 import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
@@ -35,7 +34,6 @@ import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
-import omero.gateway.ServerInformation;
 import org.jdom2.Element;
 
 import java.io.File;
@@ -47,10 +45,10 @@ import java.util.Map;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader_v3",
-	type = ImageLoader.class)
+@ImgLoaderIo(format = "spimreconstruction.biop_qupathimageloader_v2",
+	type = BiopImageLoader.class)
 public class XmlIoQuPathImgLoader implements
-	XmlIoBasicImgLoader<ImageLoader>
+	XmlIoBasicImgLoader<BiopImageLoader>
 {
 
 	public static final String OPENER_CLASS_TAG = "opener_class";
@@ -68,7 +66,7 @@ public class XmlIoQuPathImgLoader implements
 	 * @return
 	 */
 	@Override
-	public Element toXml(ImageLoader imgLoader, File basePath) {
+	public Element toXml(BiopImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
@@ -101,8 +99,8 @@ public class XmlIoQuPathImgLoader implements
 	 * @return
 	 */
 	@Override
-	public ImageLoader fromXml(Element elem, File basePath,
-		AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public BiopImageLoader fromXml(Element elem, File basePath,
+                                   AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			final int number_of_datasets = XmlHelpers.getInt(elem,
@@ -167,7 +165,7 @@ public class XmlIoQuPathImgLoader implements
 			// disconnect all gateway
 			//hostToGatewayCtx.values().forEach(e -> e.gateway.disconnect());
 
-			return new ImageLoader(openers, openerSettingsList, sequenceDescription);
+			return new BiopImageLoader(openers, openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {
 			e.printStackTrace();
