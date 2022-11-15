@@ -94,6 +94,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	String imageName;
 	Map<Integer, int[]> imageSize;
 	Map<Integer, int[]> tileSize;
+	String format;
 
 
 	// Miscroscope stage
@@ -233,7 +234,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.nTimePoints = pixels.getSizeT();
 		this.nChannels = pixels.getSizeC();
 
-		this.imageName = getImageData(imageID, gateway, ctx).getName();
+		ImageData image = getImageData(imageID, gateway, ctx);
+		this.imageName = image.getName();
+		this.format = image.asImage().getFormat().getValue().getValue();
 		this.channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(ctx, imageID);
 		this.renderingDef = gateway.getRenderingSettingsService(ctx).getRenderingSettings(pixelsID);
 
@@ -476,6 +479,11 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	@Override
 	public String getImageName() {
 		return (this.imageName + "--OMERO ID:" + this.omeroImageID);
+	}
+
+	@Override
+	public String getImageFormat() {
+		return this.format;
 	}
 
 	@Override

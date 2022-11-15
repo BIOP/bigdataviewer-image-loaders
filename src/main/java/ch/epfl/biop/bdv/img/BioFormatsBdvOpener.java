@@ -325,13 +325,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 				image_index + ": " + pt);
 	}
 
-
-	// GETTERS
-	public String getReaderFormat() {
-		return this.format;
-	}
-
-
 	/**
 	 *
 	 * @param sizeX
@@ -357,6 +350,9 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	// OVERRIDDEN METHODS
+	@Override
+	public String getImageFormat() {return this.format;}
+
 	@Override
 	public int getNumMipmapLevels() {
 		return this.nMipMapLevels;

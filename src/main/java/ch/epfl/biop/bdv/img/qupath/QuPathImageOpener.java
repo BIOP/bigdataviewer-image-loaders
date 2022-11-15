@@ -467,7 +467,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
 
 		newEntities.add(qpentry);
-		newEntities.forEach(e->System.out.println(e));
 		return newEntities;
 
 	}
@@ -476,6 +475,9 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	public String getImageName() {
 		return this.image.imageName;
 	}
+
+	@Override
+	public String getImageFormat() {return this.opener.getImageFormat();}
 
 	@Override
 	public int getNChannels() {

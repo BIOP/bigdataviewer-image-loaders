@@ -161,7 +161,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 		// compute mipmap levels
 		// Fix vsi issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
-		if (opener.getReaderFormat().equals("CellSens VSI")) {
+		if (opener.getImageFormat().equals("CellSens VSI")) {
 			System.out.println("detect CellSens VSI");
 			System.out.println("numMipmapLevels : "+numMipmapLevels);
 			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {

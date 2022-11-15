@@ -57,6 +57,11 @@ public interface Opener<T> extends Closeable {
      */
     String getImageName();
 
+    /**
+     * @return the image format
+     */
+    String getImageFormat();
+
 
     /**
      * @return the number of channels of the image
