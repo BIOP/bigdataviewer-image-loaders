@@ -43,11 +43,13 @@ public class BioFormatsArrayLoaders {
 
 		final protected ResourcePool<IFormatReader> readerPool;
 		final protected int channel;
+		final protected int iSeries;
 
-		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel)
+		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel, int iSeries)
 		{
 			this.readerPool = readerPool;
 			this.channel = channel;
+			this.iSeries = iSeries;
 		}
 
 	}
@@ -60,9 +62,9 @@ public class BioFormatsArrayLoaders {
 	{
 
 		public BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel)
+			int channel, int iSeries)
 		{
-			super(readerPool, channel);
+			super(readerPool, channel, iSeries);
 		}
 
 		@Override
@@ -72,6 +74,7 @@ public class BioFormatsArrayLoaders {
 			try {
 				// get the reader
 				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -117,9 +120,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel,boolean littleEndian)
+			int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, channel);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -135,6 +138,7 @@ public class BioFormatsArrayLoaders {
 			try {
 				// get the reader
 				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -185,9 +189,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool,
-										  int channel, boolean littleEndian)
+										  int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, channel);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -203,6 +207,7 @@ public class BioFormatsArrayLoaders {
 			try {
 				// get the reader
 				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -251,9 +256,9 @@ public class BioFormatsArrayLoaders {
 	{
 
 		public BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel)
+			int channel, int iSeries)
 		{
-			super(readerPool, channel);
+			super(readerPool, channel, iSeries);
 		}
 
 		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
@@ -265,6 +270,7 @@ public class BioFormatsArrayLoaders {
 			try {
 				// get the reader
 				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -339,9 +345,9 @@ public class BioFormatsArrayLoaders {
 		final ByteOrder byteOrder;
 
 		public BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool,
-										int channel, boolean littleEndian)
+										int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, channel);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -357,6 +363,7 @@ public class BioFormatsArrayLoaders {
 			try {
 				// get the reader
 				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];

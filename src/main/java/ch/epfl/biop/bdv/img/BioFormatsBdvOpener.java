@@ -154,7 +154,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
 		this.swZC = swZC;
-		this.pool = memoize("opener.bioformats."+iSerie+"."+splitRGBChannels+"."+swZC+"."+dataLocation,
+		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+swZC+"."+dataLocation,
 				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
 
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
@@ -268,15 +268,11 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		}
 		Memoizer memo = new Memoizer(reader);
 
-		final IMetadata omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
-		memo.setMetadataStore(omeMetaIdxOmeXml);
-		//readerModifier.accept(memo); // Specific modifications of the generated readers
 		try {
 			logger.info("setId for reader " + dataLocation);
 			StopWatch watch = new StopWatch();
 			watch.start();
 			memo.setId(dataLocation); // take some time
-			memo.setSeries(iSerie); // because one opener per serie
 			watch.stop();
 			logger.info("id set in " + (int) (watch.getTime() / 1000) + " s");
 		}
@@ -331,7 +327,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 
 	/**
-	 *
 	 * @param sizeX
 	 * @param sizeY
 	 * @param sizeZ
@@ -388,7 +383,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new BioFormatsSetupLoader(this,
-				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
+				channelIdx, this.iSerie, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
 
 	@Override

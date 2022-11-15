@@ -127,7 +127,7 @@ public abstract class ResourcePool<Resource> {
 
 	volatile boolean isClosed = false;
 
-	public void shutDown(Consumer<Resource> closer) {
+	public synchronized void shutDown(Consumer<Resource> closer) {
 		if (isClosed == false) {
 			isClosed = true;
 			ArrayList<Resource> resources = new ArrayList<>(size);
