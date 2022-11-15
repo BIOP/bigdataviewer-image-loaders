@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -128,7 +129,9 @@ public class QuPathImageOpener<T> implements Opener<T> {
 						 	SecurityContext ctx,
 						 	long imageID,
 						 	MinimalQuPathProject.ImageEntry image,
-						 	URI qpPathProject)
+						 	URI qpPathProject,
+							// Optimisation : reuse existing openers
+							Map<String, Object> cachedObjects)
 	{
 
 		// get the rotation angle if the image has been loaded in qupath with the
@@ -168,7 +171,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							cacheBlockSize,
 							// Channel options
 							swZC,
-							splitRGBChannels);
+							splitRGBChannels,
+							cachedObjects);
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
 				}
@@ -182,7 +186,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							imageID,
 							poolSize,
 							unit,
-							dataLocation);
+							dataLocation,
+							cachedObjects);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					}

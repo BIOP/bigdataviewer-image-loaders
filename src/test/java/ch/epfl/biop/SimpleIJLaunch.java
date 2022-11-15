@@ -29,12 +29,12 @@ import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
 import javax.swing.SwingUtilities;
 
 public class SimpleIJLaunch {
-
+	// -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
 	static public void main(String... args) throws Exception {
 		// Arrange
 		// create the ImageJ application context with all available services
 		final ImageJ ij = new ImageJ();
-		DebugTools.enableLogging("DEBUG");
+		//DebugTools.enableLogging("DEBUG");
 		//SwingUtilities.invokeAndWait(() ->);
 		ij.ui().showUI();
 		//DebugTools.enableLogging("INFO");

@@ -48,7 +48,7 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 {
 
 	final private static Logger logger = LoggerFactory.getLogger(
-		BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class);
+			BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class);
 
 	@Parameter(label = "Name of this dataset")
 	public String datasetname = "dataset";

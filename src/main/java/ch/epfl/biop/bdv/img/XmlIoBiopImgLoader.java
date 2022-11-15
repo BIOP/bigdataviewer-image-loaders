@@ -20,11 +20,8 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats.io;
+package ch.epfl.biop.bdv.img;
 
-import ch.epfl.biop.bdv.img.BiopImageLoader;
-import ch.epfl.biop.bdv.img.Opener;
-import ch.epfl.biop.bdv.img.OpenerSettings;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -33,70 +30,56 @@ import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
 import org.jdom2.Element;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_BioFormatsImageloader_v1",
+@ImgLoaderIo(format = "spimreconstruction.biop_imageloader_v2",
 	type = BiopImageLoader.class)
-public class XmlIoBioFormatsImgLoader implements
+public class XmlIoBiopImgLoader implements
 	XmlIoBasicImgLoader<BiopImageLoader>
 {
 
-	public static final String OPENER_CLASS_TAG = "opener_class";
-	public static final String OPENER_TAG = "opener";
-	public static final String DATASET_NUMBER_TAG = "dataset_number";
+	public static final String OPENERS_TAG = "openers";
 
+	/**
+	 * Write QuPathImageOpener class in a xml file
+	 * 
+	 * @param imgLoader
+	 * @param basePath
+	 * @return
+	 */
 	@Override
 	public Element toXml(BiopImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
-		elem.addContent(XmlHelpers.textElement(OPENER_CLASS_TAG,
-				OpenerSettings.class.getName()));
-		elem.addContent(XmlHelpers.intElement(DATASET_NUMBER_TAG, imgLoader
-				.getOpenerSettings().size()));
-
-		Gson gson = new Gson();
-		for (int i = 0; i < imgLoader.getOpenerSettings().size(); i++) {
-			// Opener serialization
-			elem.addContent(XmlHelpers.textElement(OPENER_TAG+"_"+i, gson.toJson(imgLoader.getOpenerSettings().get(i))));
-		}
-
+		String allOpeners = new Gson().toJson(imgLoader.getOpenerSettings().toArray(new OpenerSettings[0]));
+		elem.addContent(XmlHelpers.textElement(OPENERS_TAG, allOpeners));
 		return elem;
 	}
 
+	/**
+	 * Read the xml file, fill OpenerSettings class, create each opener and
+	 * write the corresponding QuPathImageLoader
+	 * 
+	 * @param elem
+	 * @param basePath
+	 * @param sequenceDescription
+	 * @return
+	 */
 	@Override
 	public BiopImageLoader fromXml(Element elem, File basePath,
                                    AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
-			String openerClassName = XmlHelpers.getText(elem, OPENER_CLASS_TAG);
-
-			if (!openerClassName.equals(OpenerSettings.class.getName())) {
-				throw new UnsupportedOperationException("Error class " +
-						openerClassName + " not recognized.");
-			}
-
-			Gson gson = new Gson();
-			List<Opener<?>> openers = new ArrayList<>();
-			List<OpenerSettings> openersSettings = new ArrayList<>();
-			final int number_of_datasets = XmlHelpers.getInt(elem, DATASET_NUMBER_TAG);
-
-			for (int i = 0; i < number_of_datasets; i++) {
-				// Opener de-serialization
-				String jsonInString = XmlHelpers.getText(elem, OPENER_TAG + "_" + i);
-				OpenerSettings settings = gson.fromJson(jsonInString,
-						OpenerSettings.class);
-
-				openersSettings.add(settings);
-				openers.add(settings.bioFormatsBuilder().create());
-			}
-
-			return new BiopImageLoader(openers, openersSettings, sequenceDescription);
+			String allOpeners = XmlHelpers.getText(elem, OPENERS_TAG);
+			List<OpenerSettings> openerSettingsList = Arrays.asList(new Gson().fromJson(allOpeners, OpenerSettings[].class));
+			return new BiopImageLoader(openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

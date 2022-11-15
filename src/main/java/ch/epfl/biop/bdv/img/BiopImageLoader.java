@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,16 +77,14 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 	/**
 	 * Constructor
-	 * @param openers
 	 * @param openerSettings
 	 * @param sequenceDescription
 	 */
-	public BiopImageLoader(List<Opener<?>> openers,
-						   List<OpenerSettings> openerSettings,
+	public BiopImageLoader(List<OpenerSettings> openerSettings,
 						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		this.openerSettings = openerSettings;
-		this.openers = openers;
+		this.openers = createOpeners(openerSettings);//openers;
 		this.sequenceDescription = sequenceDescription;
 		this.sq = new SharedQueue(numFetcherThreads, numPriorities);
 
@@ -115,6 +114,20 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 			});
 		}
 		cache = new VolatileGlobalCellCache(sq);
+	}
+
+	public static List<Opener<?>> createOpeners(List<OpenerSettings> openerSettings) {
+		List<Opener<?>> openers = new ArrayList<>();
+		Map<String, Object> cachedObjects = new HashMap<>();
+		openerSettings.forEach(settings -> {
+			try {
+				Opener<?> opener = settings.create(cachedObjects);
+				openers.add(opener);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		return openers;
 	}
 
 	/**

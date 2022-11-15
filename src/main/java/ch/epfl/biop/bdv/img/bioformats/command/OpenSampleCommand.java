@@ -25,7 +25,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.samples.DatasetHelper;
+import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.UNITS;
 import ome.units.quantity.Length;

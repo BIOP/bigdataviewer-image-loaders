@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.img;
 
-
 import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import com.google.gson.Gson;
@@ -17,6 +16,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Equivalent to a Builder class, serializable, which can create an {@link Opener}
@@ -34,50 +34,29 @@ import java.nio.file.Paths;
  * */
 public class OpenerSettings {
 
-    //------ Modifications on the location of the dataset ( pixel size, origin, flip)
-    protected double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    protected double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    protected boolean positionIsImageCenter = true; // Top left corner otherwise
+    //---- Modifications on the location of the dataset ( pixel size, origin, flip)
+    double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
+    double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
+    boolean positionIsImageCenter = true; // Top left corner otherwise
 
+    //---- Target unit : the unit in which the image will be opened
+    Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
+    Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
+    String unit = UnitsLength.MICROMETER.toString();
 
-    //---- Target unit
-    protected Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
-    protected Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
+    //---- How to open the dataset (block size, number of readers per image)
+    int poolSize = 10;
+    boolean useDefaultXYBlockSize = true; // The block size chosen is let to be defined by the opener implementation itself
+    FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
+            0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
 
-    protected String unit = UnitsLength.MICROMETER.toString();
-
-
-    //-------- How to open the dataset (block size, number of threads per image)
-    protected int poolSize = 10;
-    protected boolean useDefaultXYBlockSize = true; // Block size
-    protected FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
-            0 }, new long[] { 512, 512, 1 }); // needs a default size for z
-
-
-    // Channels options
-    protected boolean swZC = false; // Switch Z and Channels
-    protected boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI
-
+    //-------- Channels options
+    boolean swZC = false; // Switch Z and Channels, old metadata fix, might be retired
+    boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
 
     // ---- Opener core options
-    protected OpenerType currentBuilder;
-    protected String dataLocation = "";
-
-
-    // ---- BioFormats specific
-    protected int iSerie = 0;
-
-
-    // ---- OMERO specific
-    transient protected Gateway gateway;
-    transient protected SecurityContext ctx;
-    transient protected String host;
-    protected long imageID;
-
-
-    // --------- QuPath specific
-    URI qpProject;
-    MinimalQuPathProject.ImageEntry qpImage = null;
+    OpenerType currentBuilder;
+    String dataLocation = "";
 
     public enum OpenerType {
         BIOFORMATS,
@@ -87,13 +66,24 @@ public class OpenerSettings {
         QUPATH
     };
 
+    // ---- BioFormats specific opener options
+    int iSerie = 0;
+
+    // ---- OMERO specific opener options
+    transient Gateway gateway;
+    transient SecurityContext ctx;
+    transient String host; // TODO : remove, it should be contained in datalocation
+    long imageID;
+
+    // --------- QuPath specific
+    URI qpProject;
+    MinimalQuPathProject.ImageEntry qpImage = null; // Todo : replace by entry index only
 
     // GETTERS
-    public MinimalQuPathProject.ImageEntry getQpImage(){return this.qpImage;}
+    /*public MinimalQuPathProject.ImageEntry getQpImage(){return this.qpImage;}
     public URI getQpProject(){return this.qpProject;}
     public String getHost(){return this.host;}
-    public String getDataLocation(){return this.dataLocation;}
-
+    public String getDataLocation(){return this.dataLocation;}*/
 
     // ---- cache and readers
     public OpenerSettings poolSize(int pSize){
@@ -331,7 +321,7 @@ public class OpenerSettings {
     }
 
 
-    public Opener<?> create() throws Exception {
+    public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
         switch (this.currentBuilder) {
             case OMERO:
                 return new OmeroBdvOpener(
@@ -340,7 +330,8 @@ public class OpenerSettings {
                         imageID,
                         poolSize,
                         unit,
-                        dataLocation
+                        dataLocation,
+                        cachedObjects
                 );
             case QUPATH: return new QuPathImageOpener().create(
                     dataLocation,
@@ -363,7 +354,8 @@ public class OpenerSettings {
                     ctx,
                     imageID,
                     qpImage,
-                    qpProject
+                    qpProject,
+                    cachedObjects
             );
             case BIOFORMATS:
                 return new BioFormatsBdvOpener(
@@ -382,12 +374,18 @@ public class OpenerSettings {
                         cacheBlockSize,
                         // Channel options
                         swZC,
-                        splitRGBChannels
+                        splitRGBChannels,
+                        cachedObjects
                 );
-            case IMAGEJ: break;
-            case OPENSLIDE: break;
+            case IMAGEJ:
+                throw new UnsupportedOperationException("ImageJ opener not supported");
+
+            case OPENSLIDE:
+                throw new UnsupportedOperationException("OPENSLIDE opener not supported");
+
+            default:
+                throw new UnsupportedOperationException(this.currentBuilder+" opener not supported");
         }
-        return null;
 
     }
 

@@ -23,8 +23,6 @@ package ch.epfl.biop.bdv.img;
  */
 
 
-import ch.epfl.biop.bdv.img.bioformats.FileChannel;
-import ch.epfl.biop.bdv.img.bioformats.entity.FileIndex;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.registration.ViewRegistration;
@@ -70,7 +68,7 @@ public class ImageToSpimData {
     // -------- ViewSetups map and counters
     int viewSetupCounter = 0;
     int nTileCounter = 0;
-    final Map<Integer, FileChannel> viewSetupToFileChannel = new HashMap<>();
+    final Map<Integer, OpenerChannel> viewSetupToFileChannel = new HashMap<>();
 
 
     // Channel registration to Ids
@@ -82,9 +80,8 @@ public class ImageToSpimData {
     // TimePoints
     int maxTimepoints = -1;
 
-
     // openers registration
-    final ArrayList<Opener<?>> openers = new ArrayList<>();
+    //List<Opener<?>> openers = new ArrayList<>();
 
     /**
      * Build a SpimData object from a list of OpenerSettings
@@ -103,17 +100,14 @@ public class ImageToSpimData {
         // Many View Setups
         List<ViewSetup> viewSetups = new ArrayList<>();
 
+        List<Opener<?>> openers = BiopImageLoader.createOpeners(openerSettings);
+
         try {
-            for (int iF = 0; iF < openerSettings.size(); iF++) {
-                final int iFile = iF;
+            for (int iOpener = 0; iOpener < openerSettings.size(); iOpener++) {
+                final int iOpener_final = iOpener;
 
                 // get the opener
-                Opener<?> opener = openerSettings.get(iF).create();
-                this.openers.add(opener);
-
-                // get image location
-                String dataLocation = openerSettings.get(iF).getDataLocation();
-                logger.debug("Data located at " + dataLocation);
+                Opener<?> opener = openers.get(iOpener);
 
                 // TODO see if it is necessary to keep the tile with nTileCounter
                 Tile tile = new Tile(nTileCounter);
@@ -132,8 +126,6 @@ public class ImageToSpimData {
                 VoxelDimensions voxDims = opener.getVoxelDimensions();
 
                 // create fileIndex entity
-                FileIndex fi = new FileIndex(iF);
-                fi.setName(dataLocation);
 
                 IntStream channels = IntStream.range(0, opener.getNChannels());
                 logger.debug("There are "+opener.getNChannels()+" channels.");
@@ -165,12 +157,11 @@ public class ImageToSpimData {
 
                     // set viewsetup attributes
                     opener.getEntities(iCh).forEach(vs::setAttribute);
-                    vs.setAttribute(fi);
                     vs.setAttribute(ds);
 
                     // add viewsetup to the list
                     viewSetups.add(vs);
-                    viewSetupToFileChannel.put(viewSetupCounter, new FileChannel(iFile, iCh));
+                    viewSetupToFileChannel.put(viewSetupCounter, new OpenerChannel(iOpener_final, iCh));
                     viewSetupCounter++;
 
                 });
@@ -185,17 +176,17 @@ public class ImageToSpimData {
             final ArrayList<ViewRegistration> registrations = new ArrayList<>();
             List<ViewId> missingViews = new ArrayList<>();
 
-            for (int iF = 0; iF < this.openers.size(); iF++) {
+            for (int iF = 0; iF < openers.size(); iF++) {
                 int iFile = iF;
 
-                Opener<?> opener = this.openers.get(iF);
+                Opener<?> opener = openers.get(iF);
                 final int nTimePoints = opener.getNTimePoints();
                 AffineTransform3D rootTransform = opener.getTransform();
 
                 // create views
                 timePoints.forEach(iTp -> {
                     viewSetupToFileChannel.keySet().stream()
-                            .filter(viewSetupId -> (viewSetupToFileChannel.get(viewSetupId).iFile == iFile))
+                            .filter(viewSetupId -> (viewSetupToFileChannel.get(viewSetupId).iOpener == iFile))
                             .forEach(viewSetupId -> {
                                 if (iTp.getId() < nTimePoints) {
                                     registrations.add(new ViewRegistration(iTp.getId(), viewSetupId, rootTransform)); // do not need to keep the root transform per setupID
@@ -210,8 +201,7 @@ public class ImageToSpimData {
 
             // create spimdata
             SequenceDescription sd = new SequenceDescription(new TimePoints(timePoints), viewSetups, null, new MissingViews(missingViews));
-            sd.setImgLoader(new BiopImageLoader(openers, openerSettings, sd));
-
+            sd.setImgLoader(new BiopImageLoader(openerSettings, sd));
             return new SpimData(null, sd, new ViewRegistrations(registrations));
         }
         catch (Exception e) {

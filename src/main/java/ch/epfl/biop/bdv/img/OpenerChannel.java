@@ -20,15 +20,15 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats;
+package ch.epfl.biop.bdv.img;
 
-public class FileChannel {
+public class OpenerChannel {
 
-	public final int iFile;
+	public final int iOpener;
 	public final int iChannel;
 
-	public FileChannel(int iF, int iC) {
-		iFile = iF;
+	public OpenerChannel(int iF, int iC) {
+		iOpener = iF;
 		iChannel = iC;
 	}
 }

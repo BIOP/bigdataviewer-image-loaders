@@ -173,7 +173,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			long imageID,
 			int poolSize,
 			String unit,
-			String datalocation
+			String datalocation,
+			// Optimisation : reuse from existing openers
+			Map<String, Object> cachedObjects
 
 	) throws Exception {
 		// get pixels

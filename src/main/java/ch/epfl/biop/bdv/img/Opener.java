@@ -109,4 +109,6 @@ public interface Opener<T> extends Closeable {
      */
     BiopSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
                                           Supplier<VolatileGlobalCellCache> cacheSupplier);
+
+
 }

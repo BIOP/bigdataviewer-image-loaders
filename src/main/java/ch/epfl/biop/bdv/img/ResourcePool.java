@@ -68,6 +68,29 @@ public abstract class ResourcePool<Resource> {
 		}
 	}
 
+	/**
+	 * @return a resource from the existing pool if one is available, instead of creating a new one
+	 * @throws Exception if the resource can't be created
+	 */
+	public Resource takeOrCreate() throws Exception {
+		if (isClosed) throw new IllegalStateException("The pool has been closed");
+		if (createdObjects>0) {
+			return pool.take();
+		}
+		if (!lock.isLocked()) {
+			if (lock.tryLock()) {
+				try {
+					++createdObjects;
+					return createObject();
+				}
+				finally {
+					if (createdObjects < size) lock.unlock();
+				}
+			}
+		}
+		return pool.take();
+	}
+
 	public Resource acquire() throws Exception {
 		if (isClosed) throw new IllegalStateException("The pool has been closed");
 		if (!lock.isLocked()) {

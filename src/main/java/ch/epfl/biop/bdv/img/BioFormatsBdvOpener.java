@@ -61,8 +61,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static ch.epfl.biop.bdv.img.OpenerHelper.memoize;
 
 /**
  * Contains all BioFormats-specific methods and fields necessary to open an image.
@@ -73,10 +76,9 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		BioFormatsBdvOpener.class);
 
 	// -------- How to open the dataset (reader pool, transforms)
-	protected Consumer<IFormatReader> readerModifier = (e) -> {};
+	//protected Consumer<IFormatReader> readerModifier = (e) -> {};
 	private final ReaderPool pool;
 	private AffineTransform3D rootTransform;
-
 
 	// -------- Opener core options
 	private int nTimePoints;
@@ -85,29 +87,24 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	private IMetadata omeMeta;
 	private final String dataLocation;
 
-
 	// -------- Pixels characteristics
 	private boolean isLittleEndian;
 	private boolean isRGB;
 	private VoxelDimensions voxelDimensions;
 	Type<? extends NumericType> t;
 
-
 	// -------- Resolutions options
 	private int[] cellDimensions;
 	private int nMipMapLevels;
 
-
 	// -------- Image dimensions
 	private Dimensions[] dimensions;
-
 
 	// -------- Channel options and properties
 	private List<ChannelProperties> channelPropertiesList;
 	private final boolean splitRGBChannels;
 	private final boolean swZC;
 	int nChannels;
-
 
 	// -------- Series
 	private int iSerie;
@@ -148,17 +145,21 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			FinalInterval cacheBlockSize,
 			// channel options
 			boolean swZC,
-			boolean splitRGBChannels
-	) throws URISyntaxException {
+			boolean splitRGBChannels,
+			// Optimisation : reuse from existing openers
+			Map<String, Object> cachedObjects
+	) throws Exception {
 
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
 		this.swZC = swZC;
-		this.pool = new ReaderPool(poolSize, true, this::getNewReader);
+		this.pool = memoize("opener.bioformats."+iSerie+"."+splitRGBChannels+"."+swZC+"."+dataLocation,
+				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
 
-		// open the reader and get all necessary information
-		try (IFormatReader reader = getNewReader()) {
+		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
+			IFormatReader reader = pool.takeOrCreate();
+			reader.setSeries(iSerie);
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
 			this.nChannels = this.omeMeta.getChannelCount(iSerie);
 			this.nMipMapLevels = reader.getResolutionCount();
@@ -179,8 +180,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 				reader.setResolution(level);
 				this.dimensions[level] = getDimension(reader.getSizeX(), reader.getSizeY(), reader.getSizeZ());
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			pool.recycle(reader);
 		}
 
 		this.rootTransform = BioFormatsTools.getSeriesRootTransform(
@@ -270,9 +270,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 		final IMetadata omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
 		memo.setMetadataStore(omeMetaIdxOmeXml);
-		readerModifier.accept(memo); // Specific modifications of the genrated
-																	// readers
-
+		//readerModifier.accept(memo); // Specific modifications of the generated readers
 		try {
 			logger.info("setId for reader " + dataLocation);
 			StopWatch watch = new StopWatch();
