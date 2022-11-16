@@ -32,6 +32,7 @@ import omero.gateway.SecurityContext;
 import omero.gateway.ServerInformation;
 import omero.model.enums.UnitsLength;
 import org.apache.commons.lang.time.StopWatch;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -51,26 +52,17 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 	final private static Logger logger = LoggerFactory.getLogger(
 		OpenWithBigDataViewerOmeroBridgeCommand.class);
 
+	@Parameter
+	Context context;
+
 	@Parameter(label = "Name of this dataset")
 	public String datasetname = "dataset";
 
-	@Parameter(label = "OMERO IDs")
+	@Parameter(label = "OMERO URLs", style = "text area")
 	public String omeroIDs;
 
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimdata;
-
-	@Parameter(label = "OMERO host")
-	String host;
-
-	@Parameter(label = "Enter your gaspar username")
-	String username;
-
-	@Parameter(label = "Enter your gaspar password", style = "password",
-		persist = false)
-	String password;
-
-	static int port = 4064;
 
 	// Parameter for dataset creation
 	@Parameter(required = false, label = "Physical units of the dataset",
@@ -93,22 +85,14 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 			List<OpenerSettings> openersSettings = new ArrayList<>();
 			String[] omeroIDstrings = omeroIDs.split(",");
 
-			Gateway gateway = OmeroTools.omeroConnect(host, port, username, password);
-			System.out.println("Session active : " + gateway.isConnected());
-
-			SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
-			ctx.setServerInformation(new ServerInformation(host));
-
 			for (String s : omeroIDstrings) {
-				int ID = Integer.parseInt(s.trim());
-				logger.debug("Getting settings for omero ID " + ID);
+				logger.debug("Getting settings for omero url " + s);
 
 				// create a new settings and modify it
 				OpenerSettings settings = new OpenerSettings()
-						.setImageID(ID)
+						.context(context)
+						.location(s)
 						.unit(unit)
-						.setGateway(gateway)
-						.setContext(ctx)
 						.omeroBuilder();
 
 				openersSettings.add(settings);

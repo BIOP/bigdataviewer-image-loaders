@@ -27,6 +27,7 @@ import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.apache.commons.lang.time.StopWatch;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -66,6 +67,9 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimdata;
 
+	@Parameter
+	Context ctx;
+
 	public void run() {
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 
@@ -77,7 +81,7 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 		// map file reader
 		for (File f : files) {
 			for (int i = 0; i< BioFormatsTools.getNSeries(f); i++) {
-				openerSettings.add(settings.getSettings(f).setSerie(i).cornerPositionConvention());
+				openerSettings.add(settings.getSettings(f).setSerie(i).cornerPositionConvention().context(ctx));
 			}
 		}
 

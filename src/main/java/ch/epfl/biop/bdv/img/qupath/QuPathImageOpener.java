@@ -41,6 +41,7 @@ import ome.units.quantity.Length;
 import ome.units.unit.Unit;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
+import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +109,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	 * @return
 	 */
 	public Opener<?> create(// opener core option
+							Context context,
 						 	String dataLocation,
 						 	int iSerie,
 						 	// Location of the image
@@ -156,6 +158,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 					"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder"))
 				{
 					this.opener = (Opener<T>) new BioFormatsBdvOpener(
+							context,
 							dataLocation,
 							iSerie,
 							// Location of the image
@@ -181,12 +184,10 @@ public class QuPathImageOpener<T> implements Opener<T> {
 						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
 					{
 						this.opener = (Opener<T>) new OmeroBdvOpener(
-							gateway,
-							ctx,
-							imageID,
+								context,
+								dataLocation,
 							poolSize,
 							unit,
-							dataLocation,
 							cachedObjects);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);

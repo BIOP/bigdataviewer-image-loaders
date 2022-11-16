@@ -56,15 +56,18 @@ import omero.gateway.model.ImageData;
 import omero.gateway.model.PixelsData;
 import omero.model.*;
 import omero.model.enums.UnitsLength;
+import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static ch.epfl.biop.bdv.img.OpenerHelper.memoize;
 import static omero.gateway.model.PixelsData.FLOAT_TYPE;
 import static omero.gateway.model.PixelsData.UINT16_TYPE;
 import static omero.gateway.model.PixelsData.UINT32_TYPE;
@@ -159,6 +162,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		return this.stagePosY;
 	}
 
+	Exception exception = null;
 
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
@@ -168,31 +172,59 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	 * @throws Exception
 	 */
 	public OmeroBdvOpener (
-			Gateway gateway,
-			SecurityContext ctx,
-			long imageID,
+			Context context,
+			String datalocation,
 			int poolSize,
 			String unit,
-			String datalocation,
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects
 
 	) throws Exception {
+		URL url = new URL(datalocation);
+		String host = url.getHost();
+		OmeroTools.GatewayAndSecurityContext gasc = memoize("opener.omero.gateway."+host, cachedObjects, () ->
+		{
+			try {
+				return OmeroTools.getGatewayAndSecurityContext(context, host);
+			} catch (DSOutOfServiceException e) {
+				exception = e;
+				return null;
+			}
+		});
+		if (exception != null) throw exception;
+
+		this.gateway = gasc.gateway;
+		this.securityContext = gasc.securityContext;
+
+		List<Long> imageIDs = OmeroTools.getImageIDs(datalocation, gateway, securityContext);
+
+		if (imageIDs.size()==0) throw new IllegalStateException("Could not found an image ID in url "+datalocation);
+		if (imageIDs.size()>1) throw new UnsupportedOperationException("Could not open multiple Omero IDs in a single URL, split them.");
+
+		long imageID = imageIDs.get(0);
+
 		// get pixels
-		PixelsData pixels = getPixelsDataFromOmeroID(imageID, gateway, ctx);
+		PixelsData pixels = memoize("opener.omero.pixels."+host+"."+imageID, cachedObjects, () -> {
+			try {
+				return getPixelsDataFromOmeroID(imageID, gateway, securityContext);
+			} catch (Exception e) {
+				exception = e;
+				return null;
+			}
+		});
+		if (exception != null) throw exception;
+
 		this.pixelsID = pixels.getId();
 		logger.debug("Opener :" +this+" pixel.getID : "+this.pixelsID);
-		this.gateway = gateway;
-		this.securityContext = ctx;
 		this.omeroImageID = imageID;
 		this.unit = unit;
 		this.datalocation = datalocation;
 
 		// create a new reader pool
-		this.pool = new RawPixelsStorePool(poolSize, true, this::getNewStore);
+		this.pool = memoize("opener.omero.pool."+host+"."+imageID, cachedObjects, () -> new RawPixelsStorePool(poolSize, true, this::getNewStore));
 
 		// get the current pixel store
-		RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(ctx);
+		RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(securityContext);
 		rawPixStore.setPixelsId(this.pixelsID, false);
 
 		// populate information on image dimensions and resolution levels
@@ -235,13 +267,13 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.nTimePoints = pixels.getSizeT();
 		this.nChannels = pixels.getSizeC();
 
-		this.imageName = getImageData(imageID, gateway, ctx).getName();
-		this.channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(ctx, imageID);
-		this.renderingDef = gateway.getRenderingSettingsService(ctx).getRenderingSettings(pixelsID);
+		this.imageName = getImageData(imageID, gateway, securityContext).getName();
+		this.channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, imageID);
+		this.renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
 
 		// --X and Y stage positions--
 		logger.debug("Begin SQL request for OMERO image with ID : " + imageID);
-		List<IObject> objectinfos = gateway.getQueryService(ctx)
+		List<IObject> objectinfos = gateway.getQueryService(securityContext)
 			.findAllByQuery("select info from PlaneInfo as info " +
 				"join fetch info.deltaT as dt " +
 				"join fetch info.exposureTime as et " + "where info.pixels.id=" + pixels
@@ -359,7 +391,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	{
 		ImageData image = getImageData(imageID, gateway, ctx);
 		return image.getDefaultPixels();
-
 	}
 
 	/**

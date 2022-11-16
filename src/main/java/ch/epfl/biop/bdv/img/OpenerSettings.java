@@ -1,16 +1,13 @@
 package ch.epfl.biop.bdv.img;
 
-import ch.epfl.biop.bdv.img.qupath.QuPathImageOpener;
-import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import com.google.gson.Gson;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import omero.gateway.Gateway;
-import omero.gateway.SecurityContext;
 import omero.model.enums.UnitsLength;
+import org.scijava.Context;
 
 import java.io.File;
 import java.net.URI;
@@ -33,6 +30,8 @@ import java.util.Map;
  *
  * */
 public class OpenerSettings {
+
+    transient Context scijavaContext;
 
     //---- Modifications on the location of the dataset ( pixel size, origin, flip)
     double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
@@ -69,21 +68,13 @@ public class OpenerSettings {
     // ---- BioFormats specific opener options
     int iSerie = 0;
 
-    // ---- OMERO specific opener options
-    transient Gateway gateway;
-    transient SecurityContext ctx;
-    transient String host; // TODO : remove, it should be contained in datalocation
-    long imageID;
-
     // --------- QuPath specific
-    URI qpProject;
-    MinimalQuPathProject.ImageEntry qpImage = null; // Todo : replace by entry index only
+    int entryID;
 
-    // GETTERS
-    /*public MinimalQuPathProject.ImageEntry getQpImage(){return this.qpImage;}
-    public URI getQpProject(){return this.qpProject;}
-    public String getHost(){return this.host;}
-    public String getDataLocation(){return this.dataLocation;}*/
+    public OpenerSettings context(Context context) {
+        this.scijavaContext = context;
+        return this;
+    }
 
     // ---- cache and readers
     public OpenerSettings poolSize(int pSize){
@@ -213,7 +204,6 @@ public class OpenerSettings {
         return this;
     }
 
-
     public OpenerSettings switchZandC(boolean flag) {
         this.swZC = flag;
         return this;
@@ -283,82 +273,26 @@ public class OpenerSettings {
         return this;
     }
 
-
-
-    // OMERO specific
-    public OpenerSettings setGateway(Gateway gateway){
-        this.gateway = gateway;
-        return this;
-    }
-
-    public OpenerSettings setContext(SecurityContext ctx){
-        this.ctx = ctx;
-        this.host = ctx.getServerInformation().getHost();
-        return this;
-    }
-
-    public OpenerSettings setImageID(long id){
-        this.imageID = id;
-        return this;
-    }
-
-
     // BioFormats specific
     public OpenerSettings setSerie(int iSerie){
         this.iSerie = iSerie;
         return this;
     }
 
-
-    // QuPath specific
-    public OpenerSettings setQpImage(MinimalQuPathProject.ImageEntry qpImage) {
-        this.qpImage = qpImage;
-        return this;
-    }
-    public OpenerSettings setQpProject(URI qpproj) {
-        this.qpProject = qpproj;
-        return this;
-    }
-
-
     public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
         switch (this.currentBuilder) {
             case OMERO:
                 return new OmeroBdvOpener(
-                        gateway,
-                        ctx,
-                        imageID,
+                        scijavaContext,
+                        dataLocation,
                         poolSize,
                         unit,
-                        dataLocation,
                         cachedObjects
                 );
-            case QUPATH: return new QuPathImageOpener().create(
-                    dataLocation,
-                    iSerie,
-                    // Location of the image
-                    positionPreTransformMatrixArray,
-                    positionPostTransformMatrixArray,
-                    positionIsImageCenter,
-                    defaultSpaceUnit,
-                    defaultVoxelUnit,
-                    unit,
-                    // How to stream it
-                    poolSize,
-                    useDefaultXYBlockSize,
-                    cacheBlockSize,
-                    // Channel options
-                    swZC,
-                    splitRGBChannels,
-                    gateway,
-                    ctx,
-                    imageID,
-                    qpImage,
-                    qpProject,
-                    cachedObjects
-            );
+            case QUPATH: throw new UnsupportedOperationException("QuPath opener not supported");
             case BIOFORMATS:
                 return new BioFormatsBdvOpener(
+                        scijavaContext,
                         dataLocation,
                         iSerie,
                         // Location of the image

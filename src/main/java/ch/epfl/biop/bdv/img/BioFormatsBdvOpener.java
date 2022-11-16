@@ -53,6 +53,7 @@ import ome.units.quantity.Length;
 import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.time.StopWatch;
+import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,6 +129,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	 * @throws URISyntaxException
 	 */
 	public BioFormatsBdvOpener(
+			Context context, // not used
 			// opener core option
 			String dataLocation,
 			int iSerie,

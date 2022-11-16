@@ -100,8 +100,8 @@ public class QuPathProjectToBDVDatasetCommand extends
 				image.indexInQuPathProject = project.images.indexOf(image);
 
 				OpenerSettings openerSettings = settings.getSettings()
-						.setQpImage(image)
-						.setQpProject(project.uri)
+						//.setQpImage(image)
+						//.setQpProject(project.uri)
 						.quPathBuilder();
 				try {
 					openerSettings.location(image.serverBuilder.uri);
@@ -138,10 +138,10 @@ public class QuPathProjectToBDVDatasetCommand extends
 						String[] omeroId = imageString[1].split("-");
 
 						// populate the openerSettings
-						openerSettings
-								.setGateway(gtCtx.gateway)
-								.setContext(gtCtx.ctx)
-								.setImageID(Long.parseLong(omeroId[1]));
+						//openerSettings
+								//.setGateway(gtCtx.gateway)
+								//.setContext(gtCtx.ctx)
+								//.setImageID(Long.parseLong(omeroId[1]));
 					}
 				}catch (Exception e) {
 					throw new RuntimeException(e);
