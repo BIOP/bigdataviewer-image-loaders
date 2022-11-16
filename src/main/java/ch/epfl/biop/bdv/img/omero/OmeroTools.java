@@ -23,6 +23,11 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.omero.command.OmeroLoginCommand;
+import ij.IJ;
+import net.imagej.omero.OMEROException;
+import net.imagej.omero.OMEROServer;
+import net.imagej.omero.OMEROService;
+import net.imagej.omero.OMEROSession;
 import omero.gateway.Gateway;
 import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
@@ -188,29 +193,31 @@ public class OmeroTools {
 		return null;
 	}
 
-	public static GatewayAndSecurityContext getGatewayAndSecurityContext(Context context, String host) throws DSOutOfServiceException {
-		CommandService command = context.getService(CommandService.class);
-		int nAttempt = 0;
-		boolean success = false;
-		GatewayAndSecurityContext gasc = new GatewayAndSecurityContext();
-		gasc.gateway = null;
-		gasc.securityContext = null;
-		DSOutOfServiceException error = null;
-		//while ((!success) || (nAttempt<2)) {
+	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws DSOutOfServiceException {
+		OMEROService omeroService = context.getService(OMEROService.class);
+
+		OMEROServer server = new OMEROServer(host, 4064);
+
+		OMEROSession omeroSession;
+		try {
+			omeroSession = omeroService.session(server);
+		} catch (Exception e) {
+			IJ.log("The OMERO session needs to be initialized");
+			CommandService command = context.getService(CommandService.class);
+			boolean success = false;
+			DSOutOfServiceException error = null;
 			try {
 				CommandModule module = command.run(OmeroLoginCommand.class, true, "host", host).get();
 				success = (Boolean) module.getOutput("success");
-				gasc = (OmeroTools.GatewayAndSecurityContext) module.getOutput("gasc");
+				omeroSession = (OMEROSession) module.getOutput("omeroSession");
 				error = (DSOutOfServiceException) module.getOutput("error");
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
+			} catch (Exception commandException) {
+				commandException.printStackTrace();
+				omeroSession = null;
 			}
-			nAttempt++;
-		//}
-		if ((!success)&&(error!=null)) throw error;
-		return gasc;
+			if ((!success)&&(error!=null)) throw error;
+		}
+		return omeroSession;
 	}
 
 	/**
@@ -231,12 +238,6 @@ public class OmeroTools {
 			this.host = host;
 			this.port = port;
 		}
-	}
-
-	// TODO : fuse with class above
-	public static class GatewayAndSecurityContext {
-		public Gateway gateway;
-		public SecurityContext securityContext;
 	}
 
 	/**

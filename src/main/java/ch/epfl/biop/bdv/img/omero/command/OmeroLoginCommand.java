@@ -1,6 +1,12 @@
 package ch.epfl.biop.bdv.img.omero.command;
 
+import IceInternal.Ex;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
+import net.imagej.omero.OMEROCredentials;
+import net.imagej.omero.OMEROException;
+import net.imagej.omero.OMEROServer;
+import net.imagej.omero.OMEROService;
+import net.imagej.omero.OMEROSession;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.ServerInformation;
@@ -19,7 +25,10 @@ import org.slf4j.LoggerFactory;
 public class OmeroLoginCommand implements Command {
 
     final private static Logger logger = LoggerFactory.getLogger(
-            OpenWithBigDataViewerOmeroBridgeCommand.class);
+            OmeroLoginCommand.class);
+
+    @Parameter
+    OMEROService omeroService;
 
     @Parameter(label = "OMERO host")
     String host;
@@ -31,28 +40,25 @@ public class OmeroLoginCommand implements Command {
             persist = false)
     String password;
 
-    @Parameter(label = "OMERO port")
     int port = 4064;
 
     @Parameter(type = ItemIO.OUTPUT)
-    OmeroTools.GatewayAndSecurityContext gasc;
+    OMEROSession omeroSession;
 
     @Parameter(type = ItemIO.OUTPUT)
     Boolean success;
 
     @Parameter(type = ItemIO.OUTPUT)
-    DSOutOfServiceException error;
+    Exception error;
 
     public void run() {
-        gasc = new OmeroTools.GatewayAndSecurityContext();
         try {
-            gasc.gateway = OmeroTools.omeroConnect(host, port, username, password);
+            omeroSession = omeroService.session(new OMEROServer(host,port), new OMEROCredentials(username, password));
             password = "";
-            logger.info("Session active : " + gasc.gateway.isConnected());
-            gasc.securityContext = OmeroTools.getSecurityContext(gasc.gateway);
-            gasc.securityContext.setServerInformation(new ServerInformation(host));
+            logger.info("Session active : " + omeroSession.getGateway().isConnected());
+            omeroSession.getSecurityContext().setServerInformation(new ServerInformation(host));
             success = true;
-        } catch (DSOutOfServiceException e) {
+        } catch (Exception e) {
             error = e;
             logger.error(e.getMessage());
             success = false;

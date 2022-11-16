@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img.omero.command;
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
+import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import omero.gateway.Gateway;
@@ -86,7 +87,7 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 			String[] omeroIDstrings = omeroIDs.split(",");
 
 			for (String s : omeroIDstrings) {
-				logger.debug("Getting settings for omero url " + s);
+				IJ.log("Getting settings for omero url " + s);
 
 				// create a new settings and modify it
 				OpenerSettings settings = new OpenerSettings()

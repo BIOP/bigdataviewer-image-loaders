@@ -30,6 +30,7 @@ import ch.epfl.biop.bdv.img.omero.RawPixelsStorePool;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imagej.omero.OMEROSession;
 import net.imglib2.Dimensions;
 import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -182,19 +183,12 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	) throws Exception {
 		URL url = new URL(datalocation);
 		String host = url.getHost();
-		OmeroTools.GatewayAndSecurityContext gasc = memoize("opener.omero.gateway."+host, cachedObjects, () ->
-		{
-			try {
-				return OmeroTools.getGatewayAndSecurityContext(context, host);
-			} catch (DSOutOfServiceException e) {
-				exception = e;
-				return null;
-			}
-		});
+		OMEROSession session = OmeroTools.getGatewayAndSecurityContext(context, host);
+
 		if (exception != null) throw exception;
 
-		this.gateway = gasc.gateway;
-		this.securityContext = gasc.securityContext;
+		this.gateway = session.getGateway();
+		this.securityContext = session.getSecurityContext();
 
 		List<Long> imageIDs = OmeroTools.getImageIDs(datalocation, gateway, securityContext);
 
