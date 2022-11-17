@@ -83,9 +83,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	protected static final Logger logger = LoggerFactory.getLogger(OmeroBdvOpener.class);
 
 	// -------- How to open the dataset (reader pool, transforms)
-	RawPixelsStorePool pool = new RawPixelsStorePool(10, true,
-			this::getNewStore);
-
+	RawPixelsStorePool pool;
 
 	// -------- handle OMERO connection
 	 Gateway gateway;

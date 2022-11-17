@@ -455,7 +455,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		});
 	}
 
-
 	/**
 	 *
 	 * @param t
