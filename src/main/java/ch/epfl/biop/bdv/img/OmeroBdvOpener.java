@@ -124,11 +124,12 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 
 	// -------- Channel options and characteristics
 	List<ChannelData> channelMetadata;
-	boolean displayInSpace;
 	RenderingDef renderingDef;
 	private List<ChannelProperties> channelPropertiesList;
 	int nChannels;
 
+	// -------
+	final String rawPixelDataKey;
 
 	// GETTERS
 	public int getSizeX(int level) {
@@ -179,7 +180,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			String unit,
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects
-
 	) throws Exception {
 		URL url = new URL(datalocation);
 		String host = url.getHost();
@@ -213,6 +213,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.omeroImageID = imageID;
 		this.unit = unit;
 		this.datalocation = datalocation;
+
+		rawPixelDataKey = "opener.omero."+host+"."+omeroImageID;
 
 		// create a new reader pool
 		this.pool = memoize("opener.omero.pool."+host+"."+imageID, cachedObjects, () -> new RawPixelsStorePool(poolSize, true, this::getNewStore));
@@ -599,6 +601,11 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new OmeroSetupLoader(this,
 				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
+	}
+
+	@Override
+	public String getRawPixelDataKey() {
+		return rawPixelDataKey;
 	}
 
 	@Override

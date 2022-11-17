@@ -110,5 +110,14 @@ public interface Opener<T> extends Closeable {
     BiopSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
                                           Supplier<VolatileGlobalCellCache> cacheSupplier);
 
+    /**
+     * @return A string that identifies uniquely the raw pixel data of this
+     * opener, and the way the raw data are opened
+     *
+     * This is used to avoid loading several times the same data. If rawDataKeys
+     * are equals, and given the fact that the data is read only, the setup loaders
+     * from duplicated data will be redirected to a single one.
+     */
+    String getRawPixelDataKey();
 
 }

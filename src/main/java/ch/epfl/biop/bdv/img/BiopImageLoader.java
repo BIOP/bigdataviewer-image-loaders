@@ -55,13 +55,16 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 
 	// -------- setupLoader registration
-	final HashMap<Integer, BiopSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
+	final Map<Integer, BiopSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
 
+	// -------- setupLoader optimisation
+	Map<String, Opener> rawPixelDataChannelToOpener = new HashMap<>();
+	Map<String, BiopSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
 
 	// -------- How to open image (threads, cache)
 	protected final VolatileGlobalCellCache cache;
 	protected final SharedQueue sq;
-	public final int numFetcherThreads = 2;
+	public final int numFetcherThreads = 10;
 	public final int numPriorities = 4;
 
 
@@ -83,8 +86,20 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 	public BiopImageLoader(List<OpenerSettings> openerSettings,
 						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
-		this.openerSettings = openerSettings;
-		this.openers = createOpeners(openerSettings);//openers;
+		this(openerSettings, createOpeners(openerSettings), sequenceDescription);
+	}
+
+	/**
+	 * Constructor
+	 * @param openerSettings
+	 * @param sequenceDescription
+	 */
+	public BiopImageLoader(List<OpenerSettings> openerSettings,
+						   List<Opener<?>> openers,
+						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	{
+		this.openerSettings = openerSettings; // Need to keep a ref for serialization
+		this.openers = openers;
 		this.sequenceDescription = sequenceDescription;
 		this.sq = new SharedQueue(numFetcherThreads, numPriorities);
 
@@ -103,6 +118,7 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 					// Register Setups (one per channel and one per timepoint)
 					IntStream channels = IntStream.range(0, opener.getNChannels());
 					channels.forEach(iCh -> {
+						rawPixelDataChannelToOpener.put(iCh+"."+opener.getRawPixelDataKey(), opener);
 						OpenerAndChannelIndex oci = new OpenerAndChannelIndex(iFile, iCh);
 						viewSetupToOpenerChannel.put(viewSetupCounter, oci);
 						viewSetupCounter++;
@@ -140,15 +156,30 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 			if (setupLoaders.containsKey(setupId)) {
 				return setupLoaders.get(setupId);
 			}
+
+			int iOpener = viewSetupToOpenerChannel.get(setupId).openerIndex;
+			int iC = viewSetupToOpenerChannel.get(setupId).channelIndex;
+
+			String keySetup = iC+"."+openers.get(viewSetupToOpenerChannel.get(setupId).openerIndex).getRawPixelDataKey();
+
+			if (rawPixelDataChannelToSetupLoader.containsKey(keySetup)) {
+				System.out.println("Reuse "+keySetup);
+				BiopSetupLoader<?,?,?> loader = rawPixelDataChannelToSetupLoader.get(keySetup);
+				setupLoaders.put(setupId, loader);
+				return loader;
+				//rawPixelDataChannelToSetupLoader.get(keySetup);.get(openers.get(viewSetupToOpenerChannel.get(setupId).openerIndex).getRawPixelDataKey());
+				//problem : couleur et a mettre dans setupLoader
+				//		faire la fonction synchronized peut etre
+			}
 			else {
-				int iOpener = viewSetupToOpenerChannel.get(setupId).openerIndex;
-				int iC = viewSetupToOpenerChannel.get(setupId).channelIndex;
+
 				logger.debug("loading file number = " + iOpener + " setupId = " + setupId);
 
 				// select the correct setup loader according to opener type
 				try {
 					BiopSetupLoader<?,?,?> imgL = openers.get(iOpener).getSetupLoader(iC, setupId, this::getCacheControl);
 					setupLoaders.put(setupId, imgL);
+					rawPixelDataChannelToSetupLoader.put(keySetup, imgL);
 					return imgL;
 				}catch(Exception e){
 					e.printStackTrace();

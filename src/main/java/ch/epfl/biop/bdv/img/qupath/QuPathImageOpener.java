@@ -558,6 +558,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	}
 
 	@Override
+	public String getRawPixelDataKey() {
+		return null;
+	}
+
+	@Override
 	public void close() throws IOException {
 		this.opener.close();
 	}

@@ -33,7 +33,6 @@ import loci.formats.FormatException;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
-import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
@@ -63,7 +62,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static ch.epfl.biop.bdv.img.OpenerHelper.memoize;
@@ -109,6 +107,9 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	// -------- Series
 	private int iSerie;
 
+	// --------
+	final String rawPixelDataKey;
+
 	/**
 	 * Class constructor : sets all fields
 	 *
@@ -148,10 +149,22 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects
 	) throws Exception {
-
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
+
+		// Should be unique to raw pixel data, we don't care if the units are different
+		String buildRawPixelDataKey = "opener.bioformats"
+						+"."+splitRGBChannels
+						+"."+dataLocation
+						+"."+iSerie;
+
+		if (!useDefaultXYBlockSize) {
+			buildRawPixelDataKey += "."+cacheBlockSize.toString();
+		}
+
+		this.rawPixelDataKey = buildRawPixelDataKey;
+
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
 				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
 
@@ -199,7 +212,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
 		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
 	}
-
 
 	/**
 	 * Build a channelProperties object for each image channel.
@@ -317,12 +329,10 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 				image_index + ": " + pt);
 	}
 
-
 	// GETTERS
 	public String getReaderFormat() {
 		return this.format;
 	}
-
 
 	/**
 	 * @param sizeX
@@ -385,6 +395,11 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
+	public String getRawPixelDataKey() {
+		return rawPixelDataKey;
+	}
+
+	@Override
 	public int[] getCellDimensions(int level) {
 		return cellDimensions;
 	}
@@ -428,7 +443,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	public String getImageName() {
 		return this.imageName;
 	}
-
 
 	@Override
 	public void close() {

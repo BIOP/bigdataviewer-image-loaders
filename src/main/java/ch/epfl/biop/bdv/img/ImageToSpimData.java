@@ -53,8 +53,10 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
- * Converting generic image structure (BioFormats, Omero, OpenSlide or other) into an Xml Dataset, compatible for
- * BigDataViewer and FIJI BIG Plugins Limitation Series are considered as Tiles,
+ * Converting generic image structure (BioFormats, Omero, QuPath entries, OpenSlide or other)
+ * into an Xml Dataset, compatible for
+ * BigDataViewer and Fiji BIG Plugins
+ * Limitation: Series are considered as Tiles,
  * no Illumination or Angle is considered
  *
  * @author nicolas.chiaruttini@epfl.ch, BIOP, EPFL 2020
@@ -201,7 +203,7 @@ public class ImageToSpimData {
 
             // create spimdata
             SequenceDescription sd = new SequenceDescription(new TimePoints(timePoints), viewSetups, null, new MissingViews(missingViews));
-            sd.setImgLoader(new BiopImageLoader(openerSettings, sd));
+            sd.setImgLoader(new BiopImageLoader(openerSettings, openers, sd));
             return new SpimData(null, sd, new ViewRegistrations(registrations));
         }
         catch (Exception e) {
