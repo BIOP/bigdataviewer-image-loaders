@@ -104,7 +104,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	// -------- Channel options and properties
 	private List<ChannelProperties> channelPropertiesList;
 	private final boolean splitRGBChannels;
-	private final boolean swZC;
 	int nChannels;
 
 	// -------- Series
@@ -124,7 +123,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	 * @param poolSize
 	 * @param useDefaultXYBlockSize
 	 * @param cacheBlockSize
-	 * @param swZC
 	 * @param splitRGBChannels
 	 * @throws URISyntaxException
 	 */
@@ -146,7 +144,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			boolean useDefaultXYBlockSize,
 			FinalInterval cacheBlockSize,
 			// channel options
-			boolean swZC,
 			boolean splitRGBChannels,
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects
@@ -155,8 +152,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
-		this.swZC = swZC;
-		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+swZC+"."+dataLocation,
+		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
 				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
 
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader

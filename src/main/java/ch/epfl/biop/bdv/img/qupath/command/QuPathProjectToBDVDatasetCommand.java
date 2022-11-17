@@ -24,14 +24,13 @@ package ch.epfl.biop.bdv.img.qupath.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.BdvOpenBioformatsBaseCommand;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 //import ch.epfl.biop.bdv.img.qupath.QuPathToSpimData;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
@@ -44,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +58,7 @@ import java.util.Map;
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project]")
 public class QuPathProjectToBDVDatasetCommand extends
-	BioformatsBigdataviewerBridgeDatasetCommand
+		BdvOpenBioformatsBaseCommand
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
@@ -84,8 +82,8 @@ public class QuPathProjectToBDVDatasetCommand extends
 	public void run() {
 
 		try {
-			BioformatsBigdataviewerBridgeDatasetCommand settings =
-					new BioformatsBigdataviewerBridgeDatasetCommand();
+			BdvOpenBioformatsBaseCommand settings =
+					new BdvOpenBioformatsBaseCommand();
 
 			// Deserialize the QuPath project
 			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject.toURI()));

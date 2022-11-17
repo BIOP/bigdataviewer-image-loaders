@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
-public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
+public class BdvOpenBioformatsBaseCommand implements Command {
 
 	static public Map<String, Object> getDefaultParameters() {
 		Map<String, Object> def = new HashMap<>();
@@ -65,9 +65,6 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 
 	@Parameter(required = false, choices = { "AUTO", "TRUE", "FALSE" })
 	public String positioniscenter = "AUTO";
-
-	@Parameter(required = false, choices = { "AUTO", "TRUE", "FALSE" })
-	public String switchzandc = "AUTO";
 
 	@Parameter(required = false, choices = { "AUTO", "TRUE", "FALSE" })
 	public String flippositionx = "AUTO";
@@ -102,10 +99,6 @@ public class BioformatsBigdataviewerBridgeDatasetCommand implements Command {
 		Length voxSizeReferenceFrameLength = new Length(refframesizeinunitvoxsize, bfUnit);
 
 		OpenerSettings settings = new OpenerSettings().unit(unit).bioFormatsBuilder();
-
-		if (!switchzandc.equals("AUTO")) {
-			settings = settings.switchZandC(switchzandc.equals("TRUE"));
-		}
 
 		if (!usebioformatscacheblocksize) {
 			settings = settings.cacheBlockSize(cachesizex, cachesizey, cachesizez);

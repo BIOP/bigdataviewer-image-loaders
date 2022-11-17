@@ -50,7 +50,6 @@ public class OpenerSettings {
             0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
 
     //-------- Channels options
-    boolean swZC = false; // Switch Z and Channels, old metadata fix, might be retired
     boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
 
     // ---- Opener core options
@@ -204,12 +203,6 @@ public class OpenerSettings {
         return this;
     }
 
-    public OpenerSettings switchZandC(boolean flag) {
-        this.swZC = flag;
-        return this;
-    }
-
-
     // define unit
     public OpenerSettings unit(UnitsLength u) {
         this.unit = u.toString();
@@ -307,7 +300,6 @@ public class OpenerSettings {
                         useDefaultXYBlockSize,
                         cacheBlockSize,
                         // Channel options
-                        swZC,
                         splitRGBChannels,
                         cachedObjects
                 );

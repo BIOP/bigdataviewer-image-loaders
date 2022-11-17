@@ -173,7 +173,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							useDefaultXYBlockSize,
 							cacheBlockSize,
 							// Channel options
-							swZC,
 							splitRGBChannels,
 							cachedObjects);
 
