@@ -27,6 +27,9 @@ import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.entity.ChannelName;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
+import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -38,12 +41,11 @@ import net.imglib2.type.numeric.NumericType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import omero.gateway.Gateway;
-import omero.gateway.SecurityContext;
 import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -67,105 +69,79 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	protected static Logger logger = LoggerFactory.getLogger(
 			QuPathImageOpener.class);
-	private Opener<T> opener;
-	private MinimalQuPathProject.ImageEntry image;
-	private String unit;
-	private URI qpProj;
-	private int iSerie;
+	Opener<T> opener;
+	final MinimalQuPathProject.ImageEntry image;
+	final String unit;
+	final int entryId;
 
-
-	public MinimalQuPathProject.ImageEntry getImage() {
-		return this.image;
-	}
-
-
-	/**
-	 * Void constructor
-	 */
-	public QuPathImageOpener(){
-	}
 
 	/**
 	 * Create an OMERO or BioFormats opener depending on the providerClassName of QuPath
 	 * @param dataLocation
-	 * @param iSerie
-	 * @param positionPreTransformMatrixArray
-	 * @param positionPostTransformMatrixArray
-	 * @param positionIsImageCenter
-	 * @param defaultSpaceUnit
-	 * @param defaultVoxelUnit
-	 * @param unit
 	 * @param poolSize
 	 * @param useDefaultXYBlockSize
 	 * @param cacheBlockSize
-	 * @param swZC
 	 * @param splitRGBChannels
-	 * @param gateway
-	 * @param ctx
-	 * @param imageID
-	 * @param image
-	 * @param qpPathProject
 	 * @return
 	 */
-	public Opener<?> create(// opener core option
-							Context context,
-						 	String dataLocation,
-						 	int iSerie,
-						 	// Location of the image
-						 	double[] positionPreTransformMatrixArray,
-						 	double[] positionPostTransformMatrixArray,
-						 	boolean positionIsImageCenter,
-						 	// units
-						 	Length defaultSpaceUnit,
-						 	Length defaultVoxelUnit,
-						 	String unit,
-						 	// How to stream it
-						 	int poolSize,
-						 	boolean useDefaultXYBlockSize,
-						 	FinalInterval cacheBlockSize,
-						 	// channel options
-						 	boolean swZC,
-						 	boolean splitRGBChannels,
-						 	Gateway gateway,
-						 	SecurityContext ctx,
-						 	long imageID,
-						 	MinimalQuPathProject.ImageEntry image,
-						 	URI qpPathProject,
-							// Optimisation : reuse existing openers
-							Map<String, Object> cachedObjects)
-	{
+	public QuPathImageOpener(// opener core option
+							 Context context,
+							 String dataLocation,
+							 int entryId,
+							 String unit,
+							 boolean positionIsImageCenter,
+							 // How to stream it
+							 int poolSize,
+							 boolean useDefaultXYBlockSize,
+							 FinalInterval cacheBlockSize,
+							 // channel options
+							 boolean splitRGBChannels,
+							 // Optimisation : reuse existing openers
+							 Map<String, Object> cachedObjects) throws Exception {
 
+		MinimalQuPathProject project = OpenerHelper.memoize("opener.qupath.project."+dataLocation,
+				cachedObjects,
+				() -> getQuPathProject(context, dataLocation));
+
+
+		this.unit = unit;
+		this.entryId = entryId;
+		this.image = project.images.get(entryId);
+
+		MinimalQuPathProject.ServerBuilderEntry mostInnerBuilder = image.serverBuilder;
 		// get the rotation angle if the image has been loaded in qupath with the
 		// rotation command
-		if (image.serverBuilder.builderType.equals("rotated")) {
-			double angleRotationZAxis = getAngleRotationZAxis(image);
+		while ((mostInnerBuilder.builderType.equals("rotated")) || (mostInnerBuilder.builderType.equals("pyramidize"))) {
+			mostInnerBuilder = mostInnerBuilder.builder;
 		}
 
-		this.image = image;
-		this.unit = unit;
-		this.qpProj = qpPathProject;
-		this.iSerie = iSerie;
-
-		if (image.serverBuilder.builderType.equals("uri")) {
+		if (mostInnerBuilder.builderType.equals("uri")) {
 			logger.debug("URI image server");
-
 			try {
-
-				logger.debug("provided class name : "+image.serverBuilder.providerClassName);
+				logger.debug("provided class name : " + mostInnerBuilder.providerClassName);
 				// create openers
-				if (image.serverBuilder.providerClassName.equals(
-					"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder"))
-				{
+				if (mostInnerBuilder.providerClassName.equals(
+						"qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
+
+					URI uri = new URI(mostInnerBuilder.uri.getScheme(),
+							mostInnerBuilder.uri.getHost(), mostInnerBuilder.uri
+							.getPath(), null);
+
+					// This appears to work more reliably than converting to a File
+					String filePath = Paths.get(uri).toString();
+
+					int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series")+1;
+
 					this.opener = (Opener<T>) new BioFormatsBdvOpener(
 							context,
-							dataLocation,
-							iSerie,
+							filePath,
+							Integer.parseInt(mostInnerBuilder.args.get(indexOfSeriesId)),
 							// Location of the image
-							positionPreTransformMatrixArray,
-							positionPostTransformMatrixArray,
+							new AffineTransform3D().getRowPackedCopy(),
+							new AffineTransform3D().getRowPackedCopy(),
 							positionIsImageCenter,
-							defaultSpaceUnit,
-							defaultVoxelUnit,
+							new Length(1, UNITS.MICROMETER),
+							new Length(1, UNITS.MICROMETER),
 							unit,
 							// How to stream it
 							poolSize,
@@ -176,44 +152,50 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							cachedObjects);
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
-				}
-				else {
-					if (this.image.serverBuilder.providerClassName.equals(
-						"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder"))
-					{
+				} else {
+					if (mostInnerBuilder.providerClassName.equals(
+							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
 						this.opener = (Opener<T>) new OmeroBdvOpener(
 								context,
 								dataLocation,
-							poolSize,
-							unit,
-							cachedObjects);
+								poolSize,
+								unit,
+								cachedObjects);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
-					}
-					else {
+					} else {
+						this.opener = null;
 						logger.error("Unsupported " +
-							this.image.serverBuilder.providerClassName +
-							" provider Class Name");
+								mostInnerBuilder.providerClassName +
+								" provider Class Name");
 						System.out.println("Unsupported " +
-							this.image.serverBuilder.providerClassName +
-							" provider Class Name");
-						return this;
+								mostInnerBuilder.providerClassName +
+								" provider Class Name");
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				logger.error("URI Syntax error " + e.getMessage());
 				System.out.println("URI Syntax error " + e.getMessage());
 				e.printStackTrace();
 			}
-		}
-		else {
+		} else {
+			opener = null;
 			logger.error("Unsupported " + image.serverBuilder.builderType +
-				" server builder");
+					" server builder");
 		}
-		return this;
 	}
 
+	public static MinimalQuPathProject getQuPathProject(Context ctx, String dataLocation) {
+		try {
+			File quPathProject = new File(dataLocation);
+			// Deserialize the QuPath project
+			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject.toURI()));
+			return new Gson().fromJson(projectJson, MinimalQuPathProject.class);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			return null;
+		}
+	}
 
 	/**
 	 * get the rotation angle of the image if the image was imported in qupath
@@ -222,7 +204,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	 * @param image
 	 * @return
 	 */
-	private double getAngleRotationZAxis(MinimalQuPathProject.ImageEntry image) {
+	private static double getAngleRotationZAxis(MinimalQuPathProject.ImageEntry image) {
 		double angleRotationZAxis;
 
 		// "ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
@@ -253,7 +235,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	 * @param voxSizes
 	 * @return
 	 */
-	private AffineTransform3D getTransform(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String outputUnit,
+	private static AffineTransform3D getTransform(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String outputUnit,
 												 AffineTransform3D rootTransform, VoxelDimensions voxSizes) {
 
 		AffineTransform3D quPathRescaling = new AffineTransform3D();
@@ -343,7 +325,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	 * @param unitString
 	 * @return
 	 */
-	private Unit<Length> convertStringToUnit(String unitString) {
+	private static Unit<Length> convertStringToUnit(String unitString) {
 		switch (unitString) {
 			case "µm":
 				return UNITS.MICROMETER;
@@ -358,15 +340,13 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		}
 	}
 
-
-
 	/**
 	 * Use QuPath pixelCalibration to retrieve the size of an image voxel in the specified unit.
 	 * @param pixelCalibrations
 	 * @param unit
 	 * @return
 	 */
-	public VoxelDimensions getVoxelDimensions(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String unit)
+	public static VoxelDimensions getVoxelDimensions(MinimalQuPathProject.PixelCalibrations pixelCalibrations, String unit)
 	{
 		// Always 3 to allow for big stitcher compatibility
 		int numDimensions = 3;
@@ -477,11 +457,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 		newEntities.add(new ChannelName(0, getChannel(iChannel).getChannelName()));
 
 		// create a QuPath Entry
-		QuPathEntryEntity qpentry = new QuPathEntryEntity(this.image.entryID);
-		qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(this.image.serverBuilder.uri, this.iSerie));
-		qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
+		// QuPathEntryEntity qpentry = new QuPathEntryEntity(this.image.entryID);
+		// qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(this.image.serverBuilder.uri, this.iSerie));
+		//qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
 
-		newEntities.add(qpentry);
+		//newEntities.add(qpentry);
 		newEntities.forEach(e->System.out.println(e));
 		return newEntities;
 
@@ -494,15 +474,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public int getNChannels() {
-		/*if(this.image.serverBuilder != null &&
-				this.image.serverBuilder.metadata != null &&
-				this.image.serverBuilder.metadata.channels != null){
-			return this.image.serverBuilder.metadata.channels.size();
-		}
-		else */
-		{
-			return this.opener.getNChannels();
-		}
+		return this.opener.getNChannels();
 	}
 
 	@Override
@@ -532,8 +504,9 @@ public class QuPathImageOpener<T> implements Opener<T> {
 				this.image.serverBuilder.metadata.pixelCalibration != null){
 			return getTransform(this.image.serverBuilder.metadata.pixelCalibration,
 					this.unit, opener.getTransform(), getVoxelDimensions());
-		}else
+		} else {
 			return this.opener.getTransform();
+		}
 	}
 
 	@Override
@@ -558,11 +531,12 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public String getRawPixelDataKey() {
-		return null;
+		return opener.getRawPixelDataKey();
 	}
 
 	@Override
 	public void close() throws IOException {
 		this.opener.close();
 	}
+
 }

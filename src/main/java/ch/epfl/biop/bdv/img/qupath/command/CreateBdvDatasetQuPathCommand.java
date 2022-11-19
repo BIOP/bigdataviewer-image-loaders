@@ -57,15 +57,12 @@ import java.util.Map;
 
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath Bridge]")
-public class CreateBdvDatasetQuPathCommand extends
-		CreateBdvDatasetBioFormatsBaseCommand
+public class CreateBdvDatasetQuPathCommand implements Command
+		//CreateBdvDatasetBioFormatsBaseCommand
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
 		CreateBdvDatasetQuPathCommand.class);
-
-	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx =
-			new HashMap<>();
 
 	@Parameter
 	File quPathProject;
@@ -95,66 +92,14 @@ public class CreateBdvDatasetQuPathCommand extends
 
 			project.images.forEach(image -> {
 
-				image.indexInQuPathProject = project.images.indexOf(image);
+				image.indexInQuPathProject = project.images.indexOf(image); // TODO : put a normal index
 
-				OpenerSettings openerSettings = settings.getSettings()
-						//.setQpImage(image)
-						//.setQpProject(project.uri)
-						.quPathBuilder();
-				try {
-					openerSettings.location(image.serverBuilder.uri);
-				} catch (URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
+				OpenerSettings openerSettings =
+						settings.getSettings()
+								.location(quPathProject.getAbsolutePath())
+								.setSerie(image.indexInQuPathProject)
+								.quPathBuilder();
 
-				try {
-					if (image.serverBuilder.providerClassName.equals(
-							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
-						if (!hostToGatewayCtx.containsKey(image.serverBuilder.providerClassName)) {
-							// ask for user credentials
-							String[] credentials = OmeroTools.getOmeroConnectionInputParameters();
-							String host = credentials[0];
-							int port = Integer.parseInt(credentials[1]);
-							String username = credentials[2];
-							String password = credentials[3];
-							credentials = new String[]{};
-
-							// connect to omero
-							Gateway gateway = OmeroTools.omeroConnect(host, port, username, password);
-							SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
-							ctx.setServerInformation(new ServerInformation(host));
-
-							// add it in the channel hashmap
-							OmeroTools.GatewaySecurityContext gtCtx =
-									new OmeroTools.GatewaySecurityContext(host, port, gateway, ctx);
-							hostToGatewayCtx.put(image.serverBuilder.providerClassName, gtCtx);
-						}
-
-						OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(image.serverBuilder.providerClassName);
-						// get omero image ID
-						String[] imageString = image.serverBuilder.uri.toString().split("%3D");
-						String[] omeroId = imageString[1].split("-");
-
-						// populate the openerSettings
-						//openerSettings
-								//.setGateway(gtCtx.gateway)
-								//.setContext(gtCtx.ctx)
-								//.setImageID(Long.parseLong(omeroId[1]));
-					}
-				}catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-
-				int iSerie = image.serverBuilder.args.indexOf("--series");
-				int serie = 0;
-				if (iSerie > -1) {
-					serie = Integer.parseInt(image.serverBuilder.args.get(iSerie + 1));
-				}
-
-				openerSettings
-						.setSerie(serie)
-						//.cornerPositionConvention()
-						;
 				openerSettingsList.add(openerSettings);
 
 			});

@@ -288,7 +288,9 @@ public class OpenerSettings {
                         unit,
                         cachedObjects
                 );
-            case QUPATH: throw new UnsupportedOperationException("QuPath opener not supported");
+            case QUPATH:
+                return new QuPathImageOpener<>(scijavaContext,location,id,unit, positionIsImageCenter,
+                        nReader, defaultBlockSize,blockSize,splitRGB,cachedObjects);
             case BIOFORMATS:
                 return new BioFormatsBdvOpener(
                         scijavaContext,
