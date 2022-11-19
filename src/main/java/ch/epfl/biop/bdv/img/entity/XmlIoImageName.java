@@ -9,5 +9,4 @@ public class XmlIoImageName extends XmlIoNamedEntity<ImageName> {
     public XmlIoImageName() {
         super("imagename", ImageName.class);
     }
-
 }

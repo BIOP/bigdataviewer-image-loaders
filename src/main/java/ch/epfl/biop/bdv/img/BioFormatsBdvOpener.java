@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
@@ -107,7 +108,8 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 
 	// --------
 	final String rawPixelDataKey;
-
+	final String filename;
+	final int idxFilename;
 	/**
 	 * Class constructor : sets all fields
 	 *
@@ -162,6 +164,13 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		}
 
 		this.rawPixelDataKey = buildRawPixelDataKey;
+
+		this.filename = new File(dataLocation).getName();
+		Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
+		this.idxFilename = memoize("opener.bioformats.fileindex."+filename, cachedObjects, () -> {
+			cachedObjects.put("opener.bioformats.currentfileindex", currentIndexFilename + 1 );
+			return currentIndexFilename;
+		});
 
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
 				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
@@ -277,12 +286,12 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		Memoizer memo = new Memoizer(reader);
 
 		try {
-			logger.info("setId for reader " + dataLocation);
-			StopWatch watch = new StopWatch();
-			watch.start();
+			//logger.debug("setId for reader " + dataLocation);
+			//StopWatch watch = new StopWatch();
+			//watch.start();
 			memo.setId(dataLocation); // take some time
-			watch.stop();
-			logger.info("id set in " + (int) (watch.getTime() / 1000) + " s");
+			//watch.stop();
+			//logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
 		}
 		catch (FormatException | IOException e) {
 			e.printStackTrace();
@@ -429,6 +438,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public List<Entity> getEntities(int iChannel) {
 		ArrayList<Entity> entityList = new ArrayList<>();
+		entityList.add(new FileName(idxFilename, filename));
 		entityList.add(new SeriesIndex(iSerie));
 		return entityList;
 	}

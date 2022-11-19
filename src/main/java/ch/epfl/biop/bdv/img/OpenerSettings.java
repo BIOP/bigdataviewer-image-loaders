@@ -35,8 +35,8 @@ public class OpenerSettings {
     transient Context scijavaContext;
 
     // --------- Extensibility
-    String version = VersionUtils.getVersion(OpenerSettings.class);
-    String options = "";
+    String ver = VersionUtils.getVersion(OpenerSettings.class); // version
+    String opt = ""; // options
 
     //---- Modifications on the location of the dataset ( pixel size, origin, flip)
     // all transient because they are used only on first initialisation,
@@ -48,20 +48,24 @@ public class OpenerSettings {
     //---- Target unit : the unit in which the image will be opened
     transient Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
     transient Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
-    String unit = UnitsLength.MICROMETER.toString();
+    transient String unit = UnitsLength.MICROMETER.toString();
 
     //---- How to open the dataset (block size, number of readers per image)
-    int poolSize = 10;
-    boolean useDefaultXYBlockSize = true; // The block size chosen is let to be defined by the opener implementation itself
-    FinalInterval cacheBlockSize = new FinalInterval(new long[] { 0, 0,
+    int nReader = 10; // parallel reading : number of pixel readers allowed
+    boolean defaultBlockSize = true; // The block size chosen is let to be defined by the opener implementation itself
+    FinalInterval blockSize = new FinalInterval(new long[] { 0, 0,
             0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
 
     //-------- Channels options
-    boolean splitRGBChannels = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
+    boolean splitRGB = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
 
     // ---- Opener core options
-    OpenerType currentBuilder;
-    String dataLocation = "";
+    OpenerType type;
+    String location = "";
+
+    // ---- For BioFormats: series index
+    // ---- For QuPath: entryID
+    int id = -1;
 
     public enum OpenerType {
         BIOFORMATS,
@@ -69,13 +73,8 @@ public class OpenerSettings {
         IMAGEJ,
         OPENSLIDE,
         QUPATH
-    };
+    }
 
-    // ---- BioFormats specific opener options
-    int iSerie = -1;
-
-    // --------- QuPath specific
-    int entryID;
 
     public OpenerSettings context(Context context) {
         this.scijavaContext = context;
@@ -83,19 +82,19 @@ public class OpenerSettings {
     }
 
     // ---- cache and readers
-    public OpenerSettings poolSize(int pSize){
-        this.poolSize = pSize;
+    public OpenerSettings readerPoolSize(int pSize){
+        this.nReader = pSize;
         return this;
     }
 
     public OpenerSettings useDefaultCacheBlockSize(boolean flag) {
-        useDefaultXYBlockSize = flag;
+        defaultBlockSize = flag;
         return this;
     }
 
     public OpenerSettings cacheBlockSize(int sx, int sy, int sz) {
-        useDefaultXYBlockSize = false;
-        cacheBlockSize = new FinalInterval(sx, sy, sz);
+        defaultBlockSize = false;
+        blockSize = new FinalInterval(sx, sy, sz);
         return this;
     }
 
@@ -184,29 +183,29 @@ public class OpenerSettings {
 
     // data location
     public OpenerSettings location(String location) {
-        this.dataLocation = location;
+        this.location = location;
         return this;
     }
 
     public OpenerSettings location(URI uri) throws URISyntaxException {
         if(uri.getScheme().equals("https") || uri.getScheme().equals("http"))
-            this.dataLocation = uri.toString();
+            this.location = uri.toString();
         else {
             URI newuri = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), null);
-            this.dataLocation = Paths.get(newuri).toString();
+            this.location = Paths.get(newuri).toString();
         }
         return this;
     }
 
     public OpenerSettings location(File f) {
-        this.dataLocation = f.getAbsolutePath();
+        this.location = f.getAbsolutePath();
         return this;
     }
 
 
     // channels
     public OpenerSettings splitRGBChannels() {
-        splitRGBChannels = true;
+        splitRGB = true;
         return this;
     }
 
@@ -249,43 +248,43 @@ public class OpenerSettings {
 
     // define which kind of builder to deal with
     public OpenerSettings omeroBuilder(){
-        this.currentBuilder = OpenerType.OMERO;
+        this.type = OpenerType.OMERO;
         return this;
     }
 
     public OpenerSettings bioFormatsBuilder(){
-        this.currentBuilder = OpenerType.BIOFORMATS;
+        this.type = OpenerType.BIOFORMATS;
         return this;
     }
 
     public OpenerSettings imageJBuilder(){
-        this.currentBuilder = OpenerType.IMAGEJ;
+        this.type = OpenerType.IMAGEJ;
         return this;
     }
 
     public OpenerSettings openSlideBuilder(){
-        this.currentBuilder = OpenerType.OPENSLIDE;
+        this.type = OpenerType.OPENSLIDE;
         return this;
     }
 
     public OpenerSettings quPathBuilder(){
-        this.currentBuilder = OpenerType.QUPATH;
+        this.type = OpenerType.QUPATH;
         return this;
     }
 
     // BioFormats specific
     public OpenerSettings setSerie(int iSerie){
-        this.iSerie = iSerie;
+        this.id = iSerie;
         return this;
     }
 
     public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
-        switch (this.currentBuilder) {
+        switch (this.type) {
             case OMERO:
                 return new OmeroBdvOpener(
                         scijavaContext,
-                        dataLocation,
-                        poolSize,
+                        location,
+                        nReader,
                         unit,
                         cachedObjects
                 );
@@ -293,8 +292,8 @@ public class OpenerSettings {
             case BIOFORMATS:
                 return new BioFormatsBdvOpener(
                         scijavaContext,
-                        dataLocation,
-                        iSerie,
+                        location,
+                        id,
                         // Location of the image
                         positionPreTransformMatrixArray,
                         positionPostTransformMatrixArray,
@@ -303,11 +302,11 @@ public class OpenerSettings {
                         defaultVoxelUnit,
                         unit,
                         // How to stream it
-                        poolSize,
-                        useDefaultXYBlockSize,
-                        cacheBlockSize,
+                        nReader,
+                        defaultBlockSize,
+                        blockSize,
                         // Channel options
-                        splitRGBChannels,
+                        splitRGB,
                         cachedObjects
                 );
             case IMAGEJ:
@@ -317,7 +316,7 @@ public class OpenerSettings {
                 throw new UnsupportedOperationException("OPENSLIDE opener not supported");
 
             default:
-                throw new UnsupportedOperationException(this.currentBuilder+" opener not supported");
+                throw new UnsupportedOperationException(this.type +" opener not supported");
         }
 
     }
