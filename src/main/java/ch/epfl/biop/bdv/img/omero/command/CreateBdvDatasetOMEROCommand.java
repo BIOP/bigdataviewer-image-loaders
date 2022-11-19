@@ -24,13 +24,9 @@ package ch.epfl.biop.bdv.img.omero.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
-import omero.gateway.Gateway;
-import omero.gateway.SecurityContext;
-import omero.gateway.ServerInformation;
 import omero.model.enums.UnitsLength;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.Context;
@@ -45,13 +41,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BIOP>OMERO>Open [Omero Bdv Bridge]",
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO Bridge]",
 	description = "description")
 
-public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
+public class CreateBdvDatasetOMEROCommand implements Command {
 
 	final private static Logger logger = LoggerFactory.getLogger(
-		OpenWithBigDataViewerOmeroBridgeCommand.class);
+		CreateBdvDatasetOMEROCommand.class);
 
 	@Parameter
 	Context context;
@@ -124,7 +120,7 @@ public class OpenWithBigDataViewerOmeroBridgeCommand implements Command {
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		ij.command().run(OpenWithBigDataViewerOmeroBridgeCommand.class, true).get();
+		ij.command().run(CreateBdvDatasetOMEROCommand.class, true).get();
 
 	}
 

@@ -47,7 +47,7 @@ import java.io.File;
 @SuppressWarnings({ "unused", "CanBeFinal" })
 @Deprecated
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project (legacy)]")
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>(Legacy) Open [QuPath Project]")
 public class QuPathProjectToBDVDatasetLegacyCommand extends
 	BioformatsBigdataviewerBridgeDatasetCommand
 {

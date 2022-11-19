@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.qupath.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.command.BdvOpenBioformatsBaseCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsBaseCommand;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
 //import ch.epfl.biop.bdv.img.qupath.QuPathToSpimData;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
@@ -56,13 +56,13 @@ import java.util.Map;
  */
 
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project]")
-public class QuPathProjectToBDVDatasetCommand extends
-		BdvOpenBioformatsBaseCommand
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath Bridge]")
+public class CreateBdvDatasetQuPathCommand extends
+		CreateBdvDatasetBioFormatsBaseCommand
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
-		QuPathProjectToBDVDatasetCommand.class);
+		CreateBdvDatasetQuPathCommand.class);
 
 	Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx =
 			new HashMap<>();
@@ -82,8 +82,8 @@ public class QuPathProjectToBDVDatasetCommand extends
 	public void run() {
 
 		try {
-			BdvOpenBioformatsBaseCommand settings =
-					new BdvOpenBioformatsBaseCommand();
+			CreateBdvDatasetBioFormatsBaseCommand settings =
+					new CreateBdvDatasetBioFormatsBaseCommand();
 
 			// Deserialize the QuPath project
 			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject.toURI()));

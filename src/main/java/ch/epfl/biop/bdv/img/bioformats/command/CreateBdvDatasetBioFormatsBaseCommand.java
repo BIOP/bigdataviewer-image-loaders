@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
-public class BdvOpenBioformatsBaseCommand implements Command {
+public class CreateBdvDatasetBioFormatsBaseCommand implements Command {
 
 	static public Map<String, Object> getDefaultParameters() {
 		Map<String, Object> def = new HashMap<>();

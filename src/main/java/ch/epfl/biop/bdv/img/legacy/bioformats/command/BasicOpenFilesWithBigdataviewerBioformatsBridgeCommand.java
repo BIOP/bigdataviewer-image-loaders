@@ -39,7 +39,7 @@ import java.util.List;
 
 @Deprecated
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [BioFormats Bdv Bridge (Basic) (Legacy)]",
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>(Legacy) Open [BioFormats Bdv Bridge (Basic)]",
 	description = "Support bioformats multiresolution API. Attempts to set colors based " +
 		"on bioformats metadata. Do not attempt auto contrast.")
 @SuppressWarnings({ "CanBeFinal", "unused"})
