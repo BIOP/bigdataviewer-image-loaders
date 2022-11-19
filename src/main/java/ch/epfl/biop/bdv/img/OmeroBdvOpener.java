@@ -23,11 +23,9 @@
 package ch.epfl.biop.bdv.img;
 
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
 import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
 import ch.epfl.biop.bdv.img.omero.OmeroTools;
-import ch.epfl.biop.bdv.img.omero.RawPixelsStorePool;
-import ch.epfl.biop.bdv.img.omero.entity.OmeroUri;
+import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imagej.omero.OMEROSession;
@@ -163,6 +161,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}
 
 	Exception exception = null;
+	String host;
 
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
@@ -180,7 +179,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			Map<String, Object> cachedObjects
 	) throws Exception {
 		URL url = new URL(datalocation);
-		String host = url.getHost();
+		host = url.getHost();
 		OMEROSession session = OmeroTools.getGatewayAndSecurityContext(context, host);
 
 		if (exception != null) throw exception;
@@ -641,17 +640,42 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	@Override
 	public List<Entity> getEntities(int iChannel) {
 		ArrayList<Entity> entityList = new ArrayList<>();
-
-		entityList.add(new OmeroUri(0, this.datalocation));
-		entityList.add(new ChannelName(0, channelPropertiesList.get(iChannel).getChannelName()));
-
+		if (omeroImageID < Integer.MAX_VALUE) {
+			entityList.add(new OmeroHostId((int) omeroImageID,host+"/"+this.omeroImageID));
+		} else {
+			logger.error("Can't index the omeroid with an int, taking the modulo, and hoping for no overlap");
+			entityList.add(new OmeroHostId((int) (omeroImageID % Integer.MAX_VALUE),host+"/"+this.omeroImageID));
+		}
 		return entityList;
 	}
 
 	@Override
 	public void close() throws IOException {
-		/*System.out.println("Session active : " + this.gateway.isConnected());
-		this.gateway.disconnect();
-		System.out.println("Gateway disconnected");*/
+		pool.shutDown(store -> {
+			try {
+				store.close();
+			} catch (ServerError e) {
+				e.printStackTrace();
+			}
+		});
 	}
+
+	public static class RawPixelsStorePool extends ResourcePool<RawPixelsStorePrx> {
+
+		Supplier<RawPixelsStorePrx> rpsSupplier;
+
+		public RawPixelsStorePool(int size, Boolean dynamicCreation,
+								  Supplier<RawPixelsStorePrx> rawPixelStoreSupplier)
+		{
+			super(size, dynamicCreation);
+			createPool();
+			this.rpsSupplier = rawPixelStoreSupplier;
+		}
+
+		@Override
+		protected RawPixelsStorePrx createObject() {
+			return rpsSupplier.get();
+		}
+	}
+
 }

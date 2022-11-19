@@ -20,15 +20,31 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.omero.entity;
 
-public class OpenerChannel {
+import mpicbg.spim.data.generic.base.NamedEntity;
 
-	public final int iOpener;
-	public final int iChannel;
+public class OmeroHostId extends NamedEntity implements Comparable<OmeroHostId> {
 
-	public OpenerChannel(int iF, int iC) {
-		iOpener = iF;
-		iChannel = iC;
+	public OmeroHostId(final int id, final String name) {
+		super(id, name);
 	}
+
+	/**
+	 * Set the name of this tile.
+	 */
+	@Override
+	public void setName(final String name) {
+		super.setName(name);
+	}
+
+	/**
+	 * Compares the {@link #getId() ids}.
+	 */
+	@Override
+	public int compareTo(final OmeroHostId o) {
+		return getId() - o.getId();
+	}
+
+	protected OmeroHostId() {}
 }

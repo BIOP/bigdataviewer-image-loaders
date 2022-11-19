@@ -25,9 +25,7 @@ package ch.epfl.biop.bdv.img;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.bioformats.entity.BioFormatsUri;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -246,7 +244,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	 * @param dataLocation : path of the image
 	 * @return the name of the image with the serie ID and without extension.
 	 */
-	private String getImageName(IMetadata omeMeta, int iSerie, String dataLocation){
+	private static String getImageName(IMetadata omeMeta, int iSerie, String dataLocation){
 		String imageName = omeMeta.getImageName(iSerie);
 		String fileNameWithoutExtension = FilenameUtils.removeExtension(new File(dataLocation).getName());
 		fileNameWithoutExtension = fileNameWithoutExtension.replace(".ome", ""); // above only removes .tif
@@ -431,11 +429,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public List<Entity> getEntities(int iChannel) {
 		ArrayList<Entity> entityList = new ArrayList<>();
-
-		entityList.add(new SeriesNumber(iSerie, this.imageName));
-		entityList.add(new BioFormatsUri(0, dataLocation));
-		entityList.add(new ChannelName(0, channelPropertiesList.get(iChannel).getChannelName()));
-
+		entityList.add(new SeriesIndex(iSerie));
 		return entityList;
 	}
 

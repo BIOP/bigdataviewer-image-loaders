@@ -20,27 +20,27 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.omero;
+package ch.epfl.biop.bdv.img.omero.entity;
 
-import ch.epfl.biop.bdv.img.ResourcePool;
-import omero.api.RawPixelsStorePrx;
+import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
+import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
+import org.jdom2.Element;
 
-import java.util.function.Supplier;
+@ViewSetupAttributeIo(name = "omerohost", type = OmeroHostId.class)
+public class XmlIoOmeroHostId extends XmlIoNamedEntity<OmeroHostId> {
 
-public class RawPixelsStorePool extends ResourcePool<RawPixelsStorePrx> {
-
-	Supplier<RawPixelsStorePrx> rpsSupplier;
-
-	public RawPixelsStorePool(int size, Boolean dynamicCreation,
-		Supplier<RawPixelsStorePrx> rawPixelStoreSupplier)
-	{
-		super(size, dynamicCreation);
-		createPool();
-		this.rpsSupplier = rawPixelStoreSupplier;
+	public XmlIoOmeroHostId() {
+		super("omerohost", OmeroHostId.class);
 	}
 
 	@Override
-	protected RawPixelsStorePrx createObject() {
-		return rpsSupplier.get();
+	public Element toXml(final OmeroHostId ou) {
+		return super.toXml(ou);
+	}
+
+	@Override
+	public OmeroHostId fromXml(final Element elem) throws SpimDataException {
+		return super.fromXml(elem);
 	}
 }

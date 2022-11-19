@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -22,35 +22,27 @@
 
 package ch.epfl.biop.bdv.img.bioformats.entity;
 
-import mpicbg.spim.data.generic.base.NamedEntity;
+import mpicbg.spim.data.generic.base.Entity;
 
-public class BioFormatsUri extends NamedEntity implements
-        Comparable<BioFormatsUri>
+/**
+ * Just storing the index of the series within bioformats - does not store the name
+ * because it is not unique within a bdv dataset backed by a biopimageloader
+ * (you can have multiple files)
+ */
+
+public class SeriesIndex extends Entity implements
+	Comparable<SeriesIndex>
 {
+	public SeriesIndex(int indexSeries) {
+		super(indexSeries);
+	}
+	/**
+	 * Compares the {@link #getId() ids}.
+	 */
+	@Override
+	public int compareTo(final SeriesIndex o) {
+		return getId() - o.getId();
+	}
 
-    public BioFormatsUri(final int id, final String name) {
-        super(id, name);
-    }
-
-    public BioFormatsUri(final int id) {
-        this(id, Integer.toString(id));
-    }
-
-    /**
-     * Set the name of this tile.
-     */
-    @Override
-    public void setName(final String name) {
-        super.setName(name);
-    }
-
-    /**
-     * Compares the {@link #getId() ids}.
-     */
-    @Override
-    public int compareTo(final BioFormatsUri o) {
-        return getId() - o.getId();
-    }
-
-    protected BioFormatsUri() {}
+	protected SeriesIndex() {}
 }

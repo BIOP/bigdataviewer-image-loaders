@@ -22,35 +22,27 @@
 
 package ch.epfl.biop.bdv.img.bioformats.entity;
 
-import mpicbg.spim.data.generic.base.NamedEntity;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
+import mpicbg.spim.data.generic.base.XmlIoEntity;
+import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
+import org.jdom2.Element;
 
-public class SeriesNumber extends NamedEntity implements
-	Comparable<SeriesNumber>
-{
+@ViewSetupAttributeIo(name = "seriesindex", type = SeriesIndex.class)
+public class XmlIoSeriesIndex extends XmlIoEntity<SeriesIndex> {
 
-	public SeriesNumber(final int id, final String name) {
-		super(id, name);
+	public XmlIoSeriesIndex() {
+		super("seriesindex", SeriesIndex.class);
 	}
 
-	public SeriesNumber(final int id) {
-		this(id, Integer.toString(id));
-	}
-
-	/**
-	 * Set the name of this tile.
-	 */
 	@Override
-	public void setName(final String name) {
-		super.setName(name);
+	public Element toXml(final SeriesIndex fi) {
+		return super.toXml(fi);
 	}
 
-	/**
-	 * Compares the {@link #getId() ids}.
-	 */
 	@Override
-	public int compareTo(final SeriesNumber o) {
-		return getId() - o.getId();
+	public SeriesIndex fromXml(final Element elem) throws SpimDataException {
+		return super.fromXml(elem);
 	}
-
-	protected SeriesNumber() {}
 }

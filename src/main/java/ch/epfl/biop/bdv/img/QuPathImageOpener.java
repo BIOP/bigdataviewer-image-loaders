@@ -20,12 +20,11 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.qupath;
+package ch.epfl.biop.bdv.img;
 
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.*;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.bioformats.entity.ChannelName;
+import ch.epfl.biop.bdv.img.entity.ChannelName;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import mpicbg.spim.data.generic.base.Entity;

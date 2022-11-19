@@ -8,6 +8,7 @@ import ome.units.quantity.Length;
 import ome.units.unit.Unit;
 import omero.model.enums.UnitsLength;
 import org.scijava.Context;
+import org.scijava.util.VersionUtils;
 
 import java.io.File;
 import java.net.URI;
@@ -33,14 +34,20 @@ public class OpenerSettings {
 
     transient Context scijavaContext;
 
+    // --------- Extensibility
+    String version = VersionUtils.getVersion(OpenerSettings.class);
+    String options = "";
+
     //---- Modifications on the location of the dataset ( pixel size, origin, flip)
-    double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    boolean positionIsImageCenter = true; // Top left corner otherwise
+    // all transient because they are used only on first initialisation,
+    // after, all these modifications are stored and serialized in the view transforms
+    transient double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
+    transient double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
+    transient boolean positionIsImageCenter = true; // Top left corner otherwise
 
     //---- Target unit : the unit in which the image will be opened
-    Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
-    Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
+    transient Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
+    transient Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
     String unit = UnitsLength.MICROMETER.toString();
 
     //---- How to open the dataset (block size, number of readers per image)
@@ -65,7 +72,7 @@ public class OpenerSettings {
     };
 
     // ---- BioFormats specific opener options
-    int iSerie = 0;
+    int iSerie = -1;
 
     // --------- QuPath specific
     int entryID;

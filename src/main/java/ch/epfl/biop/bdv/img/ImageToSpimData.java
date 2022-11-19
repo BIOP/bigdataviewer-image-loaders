@@ -23,6 +23,7 @@ package ch.epfl.biop.bdv.img;
  */
 
 
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.registration.ViewRegistration;
@@ -78,7 +79,6 @@ public class ImageToSpimData {
     final Map<Integer, Channel> channelIdToChannel = new HashMap<>();
     final Map<ChannelProperties, Integer> channelToId = new HashMap<>();
 
-
     // TimePoints
     int maxTimepoints = -1;
 
@@ -131,25 +131,29 @@ public class ImageToSpimData {
 
                 IntStream channels = IntStream.range(0, opener.getNChannels());
                 logger.debug("There are "+opener.getNChannels()+" channels.");
+
+                ImageName imageName = new ImageName(iOpener, opener.getImageName());
+                System.out.println("ImageName ["+imageName.getId()+"] = "+imageName.getName());
+
                 channels.forEach(iCh -> {
                     // get channel properties
-                    ChannelProperties ch = opener.getChannel(iCh);
-                    int ch_id = getChannelId(iCh, ch);
+                    ChannelProperties channelProperties = opener.getChannel(iCh);
 
                     // build the viewsetup
-                    String setupName = opener.getImageName() + "-" + ch.getChannelName();
+                    String setupName = opener.getImageName() + "-" + channelProperties.getChannelName();
                     logger.debug("setup name : "+setupName);
                     ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims, voxDims, tile, // Tile is index of Serie
-                            channelIdToChannel.get(ch_id), dummy_ang, dummy_ill);
+                            getChannelEntity(iCh, channelProperties),
+                            dummy_ang, dummy_ill);
 
                     // Attempt to set color
                     Displaysettings ds = new Displaysettings(viewSetupCounter);
-                    ds.min = ch.getMinDynamicRange();
-                    ds.max = ch.getMaxDynamicRange();
+                    ds.min = channelProperties.getDisplayRangeMin();
+                    ds.max = channelProperties.getDisplayRangeMax();
                     ds.isSet = false;
 
                     // ----------- Color
-                    ARGBType color = ch.getColor();
+                    ARGBType color = channelProperties.getColor();
                     if (color != null) {
                         ds.isSet = true;
                         ds.color = new int[] { ARGBType.red(color.get()), ARGBType.green(
@@ -160,6 +164,7 @@ public class ImageToSpimData {
                     // set viewsetup attributes
                     opener.getEntities(iCh).forEach(vs::setAttribute);
                     vs.setAttribute(ds);
+                    vs.setAttribute(imageName);
 
                     // add viewsetup to the list
                     viewSetups.add(vs);
@@ -222,20 +227,20 @@ public class ImageToSpimData {
      * @param channelProperties
      * @return
      */
-    private int getChannelId(int iChannel, ChannelProperties channelProperties)
+    private Channel getChannelEntity(int iChannel, ChannelProperties channelProperties)
     {
         if (!channelToId.containsKey(channelProperties)) {
             // No : add it in the channel hashmap
             channelToId.put(channelProperties, channelCounter);
             logger.debug("New Channel " + iChannel + ", set as number " + channelCounter);
-            channelIdToChannel.put(channelCounter, new Channel(channelCounter));
+            channelIdToChannel.put(channelCounter, new Channel(channelCounter, channelProperties.getChannelName()));
             channelCounter++;
         }
         else {
             logger.debug("Channel " + iChannel + ", already known.");
         }
 
-        return channelIdToChannel.get(channelToId.get(channelProperties)).getId();
+        return channelIdToChannel.get(channelToId.get(channelProperties));
     }
 
     // CLASS BUILDERS
@@ -303,4 +308,16 @@ public class ImageToSpimData {
     public static OpenerSettings getOmeroDefaultSettings(String dataLocation) {
         return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO, dataLocation);
     }
+
+    static class OpenerChannel {
+
+        public final int iOpener;
+        public final int iChannel;
+
+        public OpenerChannel(int iF, int iC) {
+            iOpener = iF;
+            iChannel = iC;
+        }
+    }
+
 }

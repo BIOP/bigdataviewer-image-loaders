@@ -22,11 +22,7 @@
 
 package ch.epfl.biop;
 
-import loci.common.DebugTools;
 import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.command.source.SourcesRemoverCommand;
-
-import javax.swing.SwingUtilities;
 
 public class SimpleIJLaunch {
 	// -Dorg.slf4j.simpleLogger.defaultLogLevel=debug

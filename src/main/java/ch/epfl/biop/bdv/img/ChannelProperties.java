@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.img;
 
+import com.google.gson.Gson;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
@@ -34,12 +35,12 @@ public class ChannelProperties {
     // pixel infos
     double minDynamicRange = 0.0;
     double maxDynamicRange = 255.0;
-    Type<? extends  NumericType> pixelType;
+    transient Type<? extends  NumericType> pixelType;
     Boolean isRGB = false;
 
 
     // Wavelength and color
-    public ARGBType color;
+    transient public ARGBType color;
     int emissionWavelength = -1;
     int excitationWavelength = -1;
 
@@ -57,10 +58,10 @@ public class ChannelProperties {
     public String getChannelName() {
         return name;
     }
-    public double getMinDynamicRange() {
+    public double getDisplayRangeMin() {
         return minDynamicRange;
     }
-    public double getMaxDynamicRange() {
+    public double getDisplayRangeMax() {
         return maxDynamicRange;
     }
 
@@ -389,7 +390,7 @@ public class ChannelProperties {
 
     @Override
     public int hashCode() {
-        return this.name.hashCode() * this.pixelType.hashCode() * emissionWavelength * excitationWavelength *
+        return this.name.hashCode() * this.pixelType.getClass().hashCode() * emissionWavelength * excitationWavelength *
                 (iChannel + 1) * this.color.hashCode() * this.nChannels;
     }
 
@@ -397,14 +398,18 @@ public class ChannelProperties {
     public boolean equals(Object obj) {
         if (obj instanceof ChannelProperties) {
             ChannelProperties bc = (ChannelProperties) obj;
-            return (isRGB == bc.isRGB) && (name.equals(bc.name)) && (pixelType
-                    .equals(bc.pixelType)) && (iChannel == bc.iChannel) &&
+            return (isRGB == bc.isRGB) && (name.equals(bc.name)) && (pixelType.getClass()
+                    .equals(bc.pixelType.getClass())) && (iChannel == bc.iChannel) &&
                     (emissionWavelength == (bc.emissionWavelength)) &&
                     (excitationWavelength == (bc.excitationWavelength)) &&
-                    (nChannels == (bc.nChannels)) && (color == (bc.color));
+                    (nChannels == (bc.nChannels)) && (color.get() == (bc.color.get()));
         }
         else {
             return false;
         }
+    }
+
+    public String toString() {
+        return new Gson().toJson(this);
     }
 }

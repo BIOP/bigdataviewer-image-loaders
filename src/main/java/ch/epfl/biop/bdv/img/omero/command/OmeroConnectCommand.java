@@ -1,16 +1,10 @@
 package ch.epfl.biop.bdv.img.omero.command;
 
-import IceInternal.Ex;
-import ch.epfl.biop.bdv.img.omero.OmeroTools;
 import net.imagej.omero.OMEROCredentials;
-import net.imagej.omero.OMEROException;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
 import net.imagej.omero.OMEROSession;
-import omero.gateway.Gateway;
-import omero.gateway.SecurityContext;
 import omero.gateway.ServerInformation;
-import omero.gateway.exception.DSOutOfServiceException;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -19,13 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Plugin(type = Command.class,
-        menuPath = "Plugins>BIOP>OMERO>Omero - Login",
+        menuPath = "Plugins>BIOP>OMERO>Omero - Connect",
         description = "description")
 
-public class OmeroLoginCommand implements Command {
+public class OmeroConnectCommand implements Command {
 
     final private static Logger logger = LoggerFactory.getLogger(
-            OmeroLoginCommand.class);
+            OmeroConnectCommand.class);
 
     @Parameter
     OMEROService omeroService;

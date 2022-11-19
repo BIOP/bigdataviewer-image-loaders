@@ -22,9 +22,8 @@
 
 package ch.epfl.biop.bdv.img.omero;
 
-import ch.epfl.biop.bdv.img.omero.command.OmeroLoginCommand;
+import ch.epfl.biop.bdv.img.omero.command.OmeroConnectCommand;
 import ij.IJ;
-import net.imagej.omero.OMEROException;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
 import net.imagej.omero.OMEROSession;
@@ -207,7 +206,7 @@ public class OmeroTools {
 			boolean success = false;
 			DSOutOfServiceException error = null;
 			try {
-				CommandModule module = command.run(OmeroLoginCommand.class, true, "host", host).get();
+				CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
 				success = (Boolean) module.getOutput("success");
 				omeroSession = (OMEROSession) module.getOutput("omeroSession");
 				error = (DSOutOfServiceException) module.getOutput("error");

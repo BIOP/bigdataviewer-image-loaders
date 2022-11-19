@@ -20,37 +20,25 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats.entity;
+package ch.epfl.biop.bdv.img.entity;
 
 import mpicbg.spim.data.generic.base.NamedEntity;
 
-public class ChannelName extends NamedEntity implements
-        Comparable<ChannelName>
+public class ImageName extends NamedEntity implements
+        Comparable<ImageName>
 {
 
-    public ChannelName(final int id, final String name) {
+    public ImageName(final int id, final String name) {
         super(id, name);
-    }
-
-    public ChannelName(final int id) {
-        this(id, Integer.toString(id));
-    }
-
-    /**
-     * Set the name of this tile.
-     */
-    @Override
-    public void setName(final String name) {
-        super.setName(name);
     }
 
     /**
      * Compares the {@link #getId() ids}.
      */
     @Override
-    public int compareTo(final ChannelName o) {
+    public int compareTo(final ImageName o) {
         return getId() - o.getId();
     }
 
-    protected ChannelName() {}
+    protected ImageName() {}
 }

@@ -52,6 +52,7 @@ public class BioFormatsTools {
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsTools.class);
 
+	// TODO : avoid creating more than one reader on initialization
 	public static int getNSeries(File f){
 		logger.debug("Getting opener for file f " + f.getAbsolutePath());
 		IFormatReader reader = new ImageReader();

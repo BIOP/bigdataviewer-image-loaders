@@ -20,28 +20,41 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img.bioformats.io;
+package ch.epfl.biop.bdv.img.qupath.entity;
 
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesNumber;
+import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
 import org.jdom2.Element;
 
-@ViewSetupAttributeIo(name = "seriesnumber", type = SeriesNumber.class)
-public class XmlIoSeriesNumber extends XmlIoNamedEntity<SeriesNumber> {
+@ViewSetupAttributeIo(name = "qupathentryentity",
+	type = QuPathEntryEntity.class)
+public class XmlIoQuPathEntryEntity extends
+	XmlIoNamedEntity<QuPathEntryEntity>
+{
 
-	public XmlIoSeriesNumber() {
-		super("seriesnumber", SeriesNumber.class);
+	public XmlIoQuPathEntryEntity() {
+		super("qupathentryentity", QuPathEntryEntity.class);
 	}
 
 	@Override
-	public Element toXml(final SeriesNumber fi) {
-		return super.toXml(fi);
+	public Element toXml(final QuPathEntryEntity qpee) {
+		final Element elem = super.toXml(qpee);
+		elem.addContent(XmlHelpers.textElement("QuPathProjectLocation", qpee
+			.getQuPathProjectionLocation()));
+		return elem;
 	}
 
 	@Override
-	public SeriesNumber fromXml(final Element elem) throws SpimDataException {
-		return super.fromXml(elem);
+	public QuPathEntryEntity fromXml(final Element elem)
+		throws SpimDataException
+	{
+		final QuPathEntryEntity qupathEntry = super.fromXml(elem);
+
+		qupathEntry.setQuPathProjectionLocation(elem.getChildText(
+			"QuPathProjectLocation"));
+		return qupathEntry;
 	}
 }
