@@ -209,6 +209,12 @@ public class OpenerSettings {
         return this;
     }
 
+    // channels
+    public OpenerSettings splitRGBChannels(boolean flag) {
+        splitRGB = flag;
+        return this;
+    }
+
     // define unit
     public OpenerSettings unit(UnitsLength u) {
         this.unit = u.toString();

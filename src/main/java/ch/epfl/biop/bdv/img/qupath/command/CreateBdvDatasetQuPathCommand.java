@@ -25,16 +25,11 @@ package ch.epfl.biop.bdv.img.qupath.command;
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsBaseCommand;
-import ch.epfl.biop.bdv.img.omero.OmeroTools;
-//import ch.epfl.biop.bdv.img.qupath.QuPathToSpimData;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import omero.gateway.Gateway;
-import omero.gateway.SecurityContext;
-import omero.gateway.ServerInformation;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -43,11 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Warning : a QuPath project may have its source reordered and or removed : -
@@ -75,6 +67,10 @@ public class CreateBdvDatasetQuPathCommand implements Command
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimData;
 
+	@Parameter(label = "Split RGB channels")
+	boolean splitRGB = false;
+
+
 	@Override
 	public void run() {
 
@@ -96,6 +92,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 				OpenerSettings openerSettings =
 						settings.getSettings()
+								.splitRGBChannels(splitRGB)
 								.location(quPathProject.getAbsolutePath())
 								.setSerie(image.indexInQuPathProject)
 								.quPathBuilder();
@@ -107,8 +104,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 			spimData = ImageToSpimData.getSpimData(openerSettingsList);
 
 			if (datasetname.equals("")) {
-				datasetname = quPathProject.getParentFile().getName();// FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath()))
-				// + ".xml";
+				datasetname = quPathProject.getParentFile().getName();
 			}
 
 		} catch (Exception e) {
