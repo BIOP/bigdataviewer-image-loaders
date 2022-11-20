@@ -67,6 +67,10 @@ public class OpenerSettings {
     // ---- For QuPath: entryID
     int id = -1;
 
+    // In case the opener can't be opened, we need at least to know the number of channels in order
+    // to open a fake dataset on the next time
+    int nChannels = -1;
+
     public enum OpenerType {
         BIOFORMATS,
         OMERO,
@@ -74,7 +78,6 @@ public class OpenerSettings {
         OPENSLIDE,
         QUPATH
     }
-
 
     public OpenerSettings context(Context context) {
         this.scijavaContext = context;
@@ -90,6 +93,10 @@ public class OpenerSettings {
     public OpenerSettings useDefaultCacheBlockSize(boolean flag) {
         defaultBlockSize = flag;
         return this;
+    }
+
+    public void setNChannels(int nChannels) {
+        this.nChannels = nChannels;
     }
 
     public OpenerSettings cacheBlockSize(int sx, int sy, int sz) {
@@ -285,20 +292,34 @@ public class OpenerSettings {
     }
 
     public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
+        Opener<?> opener;
         switch (this.type) {
             case OMERO:
-                return new OmeroBdvOpener(
+                opener = new OmeroBdvOpener(
                         scijavaContext,
                         location,
                         nReader,
                         unit,
-                        cachedObjects
+                        cachedObjects,
+                        nChannels
                 );
+                break;
             case QUPATH:
-                return new QuPathImageOpener<>(scijavaContext,location,id,unit, positionIsImageCenter,
-                        nReader, defaultBlockSize,blockSize,splitRGB,cachedObjects);
+                opener = new QuPathImageOpener<>(
+                        scijavaContext,
+                        location,
+                        id,
+                        unit,
+                        positionIsImageCenter,
+                        nReader,
+                        defaultBlockSize,
+                        blockSize,
+                        splitRGB,
+                        cachedObjects,
+                        nChannels);
+                break;
             case BIOFORMATS:
-                return new BioFormatsBdvOpener(
+                opener = new BioFormatsBdvOpener(
                         scijavaContext,
                         location,
                         id,
@@ -315,8 +336,10 @@ public class OpenerSettings {
                         blockSize,
                         // Channel options
                         splitRGB,
-                        cachedObjects
+                        cachedObjects,
+                        nChannels
                 );
+                break;
             case IMAGEJ:
                 throw new UnsupportedOperationException("ImageJ opener not supported");
 
@@ -326,6 +349,12 @@ public class OpenerSettings {
             default:
                 throw new UnsupportedOperationException(this.type +" opener not supported");
         }
+
+        if (opener.getNChannels()!=-1) {
+            nChannels = opener.getNChannels();
+        }
+
+        return opener;
 
     }
 

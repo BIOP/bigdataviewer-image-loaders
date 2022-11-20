@@ -176,7 +176,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			int poolSize,
 			String unit,
 			// Optimisation : reuse from existing openers
-			Map<String, Object> cachedObjects
+			Map<String, Object> cachedObjects,
+			int defaultNumberOfChannels
 	) throws Exception {
 		URL url = new URL(datalocation);
 		host = url.getHost();

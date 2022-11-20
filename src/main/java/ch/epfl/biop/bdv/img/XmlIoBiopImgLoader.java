@@ -31,7 +31,12 @@ import org.jdom2.Element;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
@@ -76,11 +81,56 @@ public class XmlIoBiopImgLoader implements
 		try {
 			String allOpeners = XmlHelpers.getText(elem, OPENERS_TAG);
 			List<OpenerSettings> openerSettingsList = Arrays.asList(new Gson().fromJson(allOpeners, OpenerSettings[].class));
+			validateOpeners(openerSettingsList);
 			return new BiopImageLoader(openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void validateOpeners(List<OpenerSettings> openerSettingsList) {
+		// Check Bioformats opener
+		Map<String, List<OpenerSettings>> invalidLocations = openerSettingsList.stream()
+				.filter(openerSettings ->
+						(openerSettings.type.equals(OpenerSettings.OpenerType.BIOFORMATS)||(openerSettings.type.equals(OpenerSettings.OpenerType.QUPATH))))
+				.filter(openerSettings -> !new File(openerSettings.location).exists())
+				.collect(Collectors.groupingBy(o -> o.location, LinkedHashMap::new, Collectors.toList()));
+
+		if (!invalidLocations.isEmpty()) {
+			// Houston we have an issue
+			String[] in = invalidLocations.keySet().stream().toArray(String[]::new);
+			String message_in = "<html> Please enter updated file paths for  the following files:<br> ";
+			for (String path : in) {
+				message_in+=path+"<br>";
+			}
+			message_in+="</html>";
+			try {
+				FixFilePathsCommand.message_in = message_in;
+				File[] out = (File[]) Services.commandService.run(FixFilePathsCommand.class, true,
+						"invalidFilePaths", in).get().getOutput("fixedFilePaths");
+				if (out.length!=in.length) {
+					System.err.println("You did not enter the same number of files as requested");
+					return;
+				}
+				Map<String, String> oldToNew = new HashMap<>();
+				for (int i = 0;i<in.length;i++) {
+					oldToNew.put(in[i], out[i].getAbsolutePath());
+				}
+				invalidLocations.values().forEach(openerSettingsL -> {
+					openerSettingsL.forEach(openerSettings -> {
+						openerSettings.location(oldToNew.get(openerSettings.location));
+					});
+				});
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+
 	}
 }

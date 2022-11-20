@@ -97,7 +97,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							 // channel options
 							 boolean splitRGBChannels,
 							 // Optimisation : reuse existing openers
-							 Map<String, Object> cachedObjects) throws Exception {
+							 Map<String, Object> cachedObjects,
+							 int defaultNumberOfChannels) throws Exception {
 
 		MinimalQuPathProject project = OpenerHelper.memoize("opener.qupath.project."+dataLocation,
 				cachedObjects,
@@ -149,7 +150,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							cacheBlockSize,
 							// Channel options
 							splitRGBChannels,
-							cachedObjects);
+							cachedObjects,
+							defaultNumberOfChannels);
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
 				} else {
@@ -160,7 +162,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 								dataLocation,
 								poolSize,
 								unit,
-								cachedObjects);
+								cachedObjects,
+								defaultNumberOfChannels);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					} else {

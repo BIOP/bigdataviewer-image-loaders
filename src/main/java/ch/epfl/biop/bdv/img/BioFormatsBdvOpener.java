@@ -147,8 +147,10 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			// channel options
 			boolean splitRGBChannels,
 			// Optimisation : reuse from existing openers
-			Map<String, Object> cachedObjects
+			Map<String, Object> cachedObjects,
+			int defaultNumberOfChannels
 	) throws Exception {
+
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
