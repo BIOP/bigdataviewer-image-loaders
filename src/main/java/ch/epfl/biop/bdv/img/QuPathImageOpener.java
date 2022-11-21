@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -167,9 +168,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 				} else {
 					if (mostInnerBuilder.providerClassName.equals(
 							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
+
 						this.opener = (Opener<T>) new OmeroBdvOpener(
 								context,
-								dataLocation,
+								URLDecoder.decode(mostInnerBuilder.uri.toString(), "UTF-8"),
+								//mostInnerBuilder.uri.toString(),
 								poolSize,
 								unit,
 								positionIsImageCenter,

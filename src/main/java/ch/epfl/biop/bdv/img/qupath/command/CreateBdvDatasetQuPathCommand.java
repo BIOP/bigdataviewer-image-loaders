@@ -30,6 +30,7 @@ import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -58,6 +59,9 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 	@Parameter
 	File quPathProject;
+
+	@Parameter
+	Context context;
 
 	@Parameter(
 		label = "Dataset name (leave empty to name it like the QuPath project)",
@@ -97,8 +101,9 @@ public class CreateBdvDatasetQuPathCommand implements Command
 						settings.getSettings()
 								.splitRGBChannels(splitRGB)
 								.location(quPathProject.getAbsolutePath())
-								.setSerie(image.entryID)//.indexInQuPathProject)
+								.setSerie(image.entryID)
 								.positionConvention(position_convention)
+								.context(context)
 								.quPathBuilder();
 
 				openerSettingsList.add(openerSettings);

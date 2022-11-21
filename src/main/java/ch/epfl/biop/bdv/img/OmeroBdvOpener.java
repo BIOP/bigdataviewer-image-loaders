@@ -180,6 +180,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			Map<String, Object> cachedObjects,
 			int defaultNumberOfChannels
 	) throws Exception {
+		System.out.println(datalocation);
 		URL url = new URL(datalocation);
 		host = url.getHost();
 		OMEROSession session = OmeroTools.getGatewayAndSecurityContext(context, host);
