@@ -25,7 +25,6 @@ package ch.epfl.biop.bdv.img;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.entity.ChannelName;
-import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
@@ -49,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -107,7 +107,14 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 		this.unit = unit;
 		this.entryId = entryId;
-		this.image = project.images.get(entryId);
+		Map<Integer, MinimalQuPathProject.ImageEntry> idToImage = new HashMap<>();
+		project.images.forEach(server -> idToImage.put(server.entryID, server));
+		if (!idToImage.containsKey(entryId)) {
+			logger.error("Entry "+entryId+" not found! You've probably deleted an entry in the QuPath. Let's try to deal with it the best we can...");
+			this.image = new MinimalQuPathProject.EmptyImageEntry(entryId, defaultNumberOfChannels);
+		} else {
+			this.image = idToImage.get(entryId); //project.images.get(entryId);
+		}
 
 		MinimalQuPathProject.ServerBuilderEntry mostInnerBuilder = image.serverBuilder;
 		// get the rotation angle if the image has been loaded in qupath with the
@@ -116,7 +123,10 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			mostInnerBuilder = mostInnerBuilder.builder;
 		}
 
-		if (mostInnerBuilder.builderType.equals("uri")) {
+		if (mostInnerBuilder.builderType.equals("Empty")) {
+			logger.error("Empty image server!");
+			this.opener = (Opener<T>) new EmptyOpener("Entry "+entryId, defaultNumberOfChannels, "Error, entry "+entryId+" missing!");
+		} else if (mostInnerBuilder.builderType.equals("uri")) {
 			logger.debug("URI image server");
 			try {
 				logger.debug("provided class name : " + mostInnerBuilder.providerClassName);
@@ -162,6 +172,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 								dataLocation,
 								poolSize,
 								unit,
+								positionIsImageCenter,
 								cachedObjects,
 								defaultNumberOfChannels);
 
@@ -502,12 +513,13 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 	@Override
 	public AffineTransform3D getTransform() {
-		if(this.image.serverBuilder != null &&
+		/*if(this.image.serverBuilder != null &&
 				this.image.serverBuilder.metadata != null &&
 				this.image.serverBuilder.metadata.pixelCalibration != null){
 			return getTransform(this.image.serverBuilder.metadata.pixelCalibration,
 					this.unit, opener.getTransform(), getVoxelDimensions());
-		} else {
+		} else */
+		{
 			return this.opener.getTransform();
 		}
 	}

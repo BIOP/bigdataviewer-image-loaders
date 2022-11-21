@@ -66,6 +66,10 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
+	@Parameter(required = false,
+			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
+	String position_convention = "CENTER"; // Split rgb channels to allow for best
+
 	public UnitsLength unitsLength;
 
 	public void run() {
@@ -90,6 +94,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 						.context(context)
 						.location(s)
 						.unit(unit)
+						.positionConvention(position_convention)
 						.omeroBuilder();
 
 				openersSettings.add(settings);

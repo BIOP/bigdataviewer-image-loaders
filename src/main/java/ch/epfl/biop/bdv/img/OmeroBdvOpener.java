@@ -175,6 +175,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			String datalocation,
 			int poolSize,
 			String unit,
+			boolean positionIsImageCenter,
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects,
 			int defaultNumberOfChannels

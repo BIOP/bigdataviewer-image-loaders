@@ -55,6 +55,10 @@ public class BdvShowFileBioFormatsCommand
 		label = "Split RGB channels if you have 16 bits RGB images")
 	boolean splitrgbchannels = true; // Split rgb channels to allow for best
 																		// compatibility (RGB 16 bits)
+	@Parameter(required = false,
+			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
+	String position_convention = "CENTER"; // Split rgb channels to allow for best
+	// compatibility (RGB 16 bits)
 
 	public void run() {
 
@@ -65,7 +69,9 @@ public class BdvShowFileBioFormatsCommand
 
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (int i = 0; i< BioFormatsTools.getNSeries(file); i++) {
-			openerSettings.add(settings.getSettings(file).setSerie(i).cornerPositionConvention());
+			openerSettings.add(settings.getSettings(file).setSerie(i)
+							.positionConvention(position_convention));
+					//.cornerPositionConvention());
 		}
 
 		final AbstractSpimData spimData = ImageToSpimData.getSpimData(openerSettings);

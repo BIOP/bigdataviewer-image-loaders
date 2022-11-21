@@ -43,7 +43,7 @@ public class OpenerSettings {
     // after, all these modifications are stored and serialized in the view transforms
     transient double[] positionPreTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
     transient double[] positionPostTransformMatrixArray = new AffineTransform3D().getRowPackedCopy();
-    transient boolean positionIsImageCenter = true; // Top left corner otherwise
+    transient boolean positionIsImageCenter = false; // Top left corner otherwise
 
     //---- Target unit : the unit in which the image will be opened
     transient Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
@@ -70,6 +70,13 @@ public class OpenerSettings {
     // In case the opener can't be opened, we need at least to know the number of channels in order
     // to open a fake dataset on the next time
     int nChannels = -1;
+
+    public OpenerSettings positionConvention(String position_convention) {
+        if (position_convention.equals("CENTER")) {
+            return this.centerPositionConvention();
+        }
+        return this.cornerPositionConvention();
+    }
 
     public enum OpenerType {
         BIOFORMATS,
@@ -300,6 +307,7 @@ public class OpenerSettings {
                         location,
                         nReader,
                         unit,
+                        positionIsImageCenter,
                         cachedObjects,
                         nChannels
                 );

@@ -70,6 +70,9 @@ public class CreateBdvDatasetQuPathCommand implements Command
 	@Parameter(label = "Split RGB channels")
 	boolean splitRGB = false;
 
+	@Parameter(required = false,
+			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
+	String position_convention = "CENTER"; // Split rgb channels to allow for best
 
 	@Override
 	public void run() {
@@ -88,13 +91,14 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 			project.images.forEach(image -> {
 
-				image.indexInQuPathProject = project.images.indexOf(image); // TODO : put a normal index
+				//image.indexInQuPathProject = project.images.indexOf(image); // TODO : put a normal index
 
 				OpenerSettings openerSettings =
 						settings.getSettings()
 								.splitRGBChannels(splitRGB)
 								.location(quPathProject.getAbsolutePath())
-								.setSerie(image.indexInQuPathProject)
+								.setSerie(image.entryID)//.indexInQuPathProject)
+								.positionConvention(position_convention)
 								.quPathBuilder();
 
 				openerSettingsList.add(openerSettings);

@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.qupath.struct;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MinimalQuPathProject {
@@ -41,7 +42,7 @@ public class MinimalQuPathProject {
 		public int entryID;
 		public String randomizedName;
 		public String imageName;
-		public int indexInQuPathProject; // not in the initial QuPath project => should be added manually
+		//public int indexInQuPathProject; // not in the initial QuPath project => should be added manually
 	}
 
 	public static class ServerBuilderMetadata {
@@ -86,8 +87,38 @@ public class MinimalQuPathProject {
 
 	public static class PixelCalibration {
 
-		public double value;
-		public String unit;
+		public double value = 1.0;
+		public String unit = "µm";
 	}
 
+	public static class EmptyImageEntry extends ImageEntry {
+		public EmptyImageEntry(int entryID, int defaultNumberOfChannels) {
+			super();
+
+			imageName = "(deleted entry "+entryID+")";
+			randomizedName = "";
+			serverBuilder = new MinimalQuPathProject.ServerBuilderEntry();
+			serverBuilder.builderType = "Empty";
+			serverBuilder.metadata = new ServerBuilderMetadata();
+			serverBuilder.metadata.pixelType = "UINT8";
+			serverBuilder.metadata.isRGB = false;
+			serverBuilder.metadata.pixelCalibration = new PixelCalibrations();
+			serverBuilder.metadata.pixelCalibration.pixelHeight = new PixelCalibration();
+			serverBuilder.metadata.pixelCalibration.pixelWidth = new PixelCalibration();
+			serverBuilder.metadata.pixelCalibration.zSpacing = new PixelCalibration();
+			serverBuilder.metadata.channelType = "DEFAULT";
+			serverBuilder.metadata.height = 512;
+			serverBuilder.metadata.width = 512;
+			serverBuilder.metadata.name = imageName;
+			serverBuilder.metadata.sizeT = 1;
+			serverBuilder.metadata.sizeZ = 1;
+			serverBuilder.metadata.channels = new ArrayList<>(defaultNumberOfChannels);
+			for (int iCh = 0; iCh<defaultNumberOfChannels; iCh++) {
+				ChannelInfo chInfo = new ChannelInfo();
+				chInfo.name = "Channel "+iCh;
+				chInfo.color =  -16711936;
+				serverBuilder.metadata.channels.add(chInfo);
+			}
+		}
+	}
 }
