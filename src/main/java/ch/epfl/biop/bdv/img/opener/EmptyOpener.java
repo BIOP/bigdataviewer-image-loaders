@@ -1,7 +1,9 @@
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.opener;
 
 import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.util.volatiles.VolatileViews;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import ij.process.ByteProcessor;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
@@ -27,12 +29,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class EmptyOpener implements Opener<RawArrayReader>{
+public class EmptyOpener implements Opener<Object> {
 
     List<ChannelProperties> channelProperties = new ArrayList<>();
     String imageName;
     String message;
-    ResourcePool<RawArrayReader> pool;
+    ResourcePool<Object> pool;
 
     OpenerMeta meta;
 
@@ -40,18 +42,17 @@ public class EmptyOpener implements Opener<RawArrayReader>{
         this.message = message;
         for (int iCh = 0; iCh<nChannels; iCh++) {
             ChannelProperties channel = new ChannelProperties(iCh);
-            channel.nChannels = nChannels;
-            channel.color = new ARGBType(ARGBType.rgba(128, 64, 220,128));
-            channel.name = "Channel "+iCh;
-            channel.minDynamicRange = 0;
-            channel.maxDynamicRange = 255;
+            channel.setNChannels(nChannels)
+                .setChannelColor(new ARGBType(ARGBType.rgba(128, 64, 220,128)))
+                .setChannelName("Channel "+iCh)
+                .setDisplayRange(0,255);
             channelProperties.add(channel);
         }
 
-        pool = new ResourcePool<RawArrayReader>(2) {
+        pool = new ResourcePool<Object>(2) {
             @Override
-            protected RawArrayReader createObject() {
-                return new RawArrayReader();
+            protected Object createObject() {
+                return new Object();
             }
         };
         meta = new OpenerMeta() {
@@ -105,7 +106,7 @@ public class EmptyOpener implements Opener<RawArrayReader>{
     }
 
     @Override
-    public ResourcePool<RawArrayReader> getPixelReader() {
+    public ResourcePool<Object> getPixelReader() {
         return pool;
     }
 
@@ -125,7 +126,7 @@ public class EmptyOpener implements Opener<RawArrayReader>{
     }
 
     @Override
-    public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+    public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
         return new EmptySetupLoader<>(message);
     }
 
@@ -144,7 +145,7 @@ public class EmptyOpener implements Opener<RawArrayReader>{
         // Nothing to be done
     }
 
-    static class EmptySetupLoader<A> extends BiopSetupLoader<UnsignedByteType, VolatileUnsignedByteType, A> {
+    static class EmptySetupLoader<A> extends OpenerSetupLoader<UnsignedByteType, VolatileUnsignedByteType, A> {
 
         final AffineTransform3D transform3D = new AffineTransform3D();
         final VoxelDimensions voxelDimensions = new FinalVoxelDimensions("px",1,1,1);

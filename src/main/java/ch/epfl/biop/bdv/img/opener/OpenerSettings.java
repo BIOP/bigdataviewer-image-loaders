@@ -1,5 +1,8 @@
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.opener;
 
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
+import ch.epfl.biop.bdv.img.omero.OmeroOpener;
+import ch.epfl.biop.bdv.img.qupath.QuPathOpener;
 import com.google.gson.Gson;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -57,8 +60,9 @@ public class OpenerSettings {
     //---- How to open the dataset (block size, number of readers per image)
     int nReader = 10; // parallel reading : number of pixel readers allowed
     boolean defaultBlockSize = true; // The block size chosen is let to be defined by the opener implementation itself
-    FinalInterval blockSize = new FinalInterval(new long[] { 0, 0,
-            0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
+    //FinalInterval blockSize = new FinalInterval(new long[] { 0, 0,
+    //        0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
+    int[] blockSize = new int[]{512,512,1};
 
     //-------- Channels options
     boolean splitRGB = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
@@ -80,6 +84,14 @@ public class OpenerSettings {
             return this.centerPositionConvention();
         }
         return this.cornerPositionConvention();
+    }
+
+    public OpenerType getType() {
+        return type;
+    }
+
+    public String getLocation() {
+        return location;
     }
 
     public enum OpenerType {
@@ -113,7 +125,7 @@ public class OpenerSettings {
 
     public OpenerSettings cacheBlockSize(int sx, int sy, int sz) {
         defaultBlockSize = false;
-        blockSize = new FinalInterval(sx, sy, sz);
+        blockSize = new int[]{sx,sy,sz}; //new FinalInterval(sx, sy, sz);
         return this;
     }
 
@@ -314,7 +326,7 @@ public class OpenerSettings {
         Opener<?> opener;
         switch (this.type) {
             case OMERO:
-                opener = new OmeroBdvOpener(
+                opener = new OmeroOpener(
                         scijavaContext,
                         location,
                         nReader,
@@ -326,7 +338,7 @@ public class OpenerSettings {
                 );
                 break;
             case QUPATH:
-                opener = new QuPathImageOpener<>(
+                opener = new QuPathOpener<>(
                         scijavaContext,
                         location,
                         id,
@@ -340,7 +352,7 @@ public class OpenerSettings {
                         nChannels, skipMeta);
                 break;
             case BIOFORMATS:
-                opener = new BioFormatsBdvOpener(
+                opener = new BioFormatsOpener(
                         scijavaContext,
                         location,
                         id,

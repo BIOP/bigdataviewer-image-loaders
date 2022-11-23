@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.opener;
 
 import com.google.gson.Gson;
 import net.imglib2.type.Type;
@@ -33,11 +33,10 @@ public class ChannelProperties {
 
 
     // pixel infos
-    double minDynamicRange = 0.0;
-    double maxDynamicRange = 255.0;
+    double displayRangeMin = 0.0;
+    double displayRangeMax = 255.0;
     transient Type<? extends  NumericType> pixelType;
     Boolean isRGB = false;
-
 
     // Wavelength and color
     transient public ARGBType color;
@@ -59,10 +58,10 @@ public class ChannelProperties {
         return name;
     }
     public double getDisplayRangeMin() {
-        return minDynamicRange;
+        return displayRangeMin;
     }
     public double getDisplayRangeMax() {
-        return maxDynamicRange;
+        return displayRangeMax;
     }
 
     /**
@@ -207,6 +206,11 @@ public class ChannelProperties {
         return this;
     }
 
+    public ChannelProperties setChannelColor(ARGBType color){
+        this.color = color;
+        return this;
+    }
+
 
     /**
      * For BioFormats
@@ -255,8 +259,8 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setDynamicRange(RenderingDef rd){
-        this.minDynamicRange = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
-        this.maxDynamicRange = rd.getChannelBinding(this.iChannel).getInputEnd().getValue();
+        this.displayRangeMin = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
+        this.displayRangeMax = rd.getChannelBinding(this.iChannel).getInputEnd().getValue();
         return this;
     }
 
@@ -264,10 +268,9 @@ public class ChannelProperties {
      * Default Dynamic range
      * @return
      */
-    public ChannelProperties setDynamicRange(){
-        this.minDynamicRange = 0.0;
-        this.maxDynamicRange = 255.0;
-
+    public ChannelProperties setDisplayRange(double min, double max){
+        this.displayRangeMin = min;
+        this.displayRangeMax = max;
         return this;
     }
 

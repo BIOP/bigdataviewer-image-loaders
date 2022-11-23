@@ -13,10 +13,10 @@ import net.imglib2.type.numeric.NumericType;
  * @param <V>
  * @param <A>
  */
-abstract public class BiopSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
+abstract public class OpenerSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
         extends AbstractViewerSetupImgLoader<T, V> implements
         MultiResolutionSetupImgLoader<T> {
-    public BiopSetupLoader(T type, V volatileType) {
+    public OpenerSetupLoader(T type, V volatileType) {
         super(type, volatileType);
     }
 

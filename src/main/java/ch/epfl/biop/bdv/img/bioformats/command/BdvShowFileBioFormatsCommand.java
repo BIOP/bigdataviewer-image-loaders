@@ -23,8 +23,8 @@
 package ch.epfl.biop.bdv.img.bioformats.command;
 
 import bdv.util.BdvFunctions;
-import ch.epfl.biop.bdv.img.ImageToSpimData;
-import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
@@ -72,7 +72,7 @@ public class BdvShowFileBioFormatsCommand
 							.positionConvention(position_convention));
 		}
 
-		final AbstractSpimData spimData = ImageToSpimData.getSpimData(openerSettings);
+		final AbstractSpimData spimData = OpenersToSpimData.getSpimData(openerSettings);
 		BdvFunctions.show(spimData);
 	}
 

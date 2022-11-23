@@ -20,11 +20,18 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.qupath;
 
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.opener.ChannelProperties;
+import ch.epfl.biop.bdv.img.opener.EmptyOpener;
+import ch.epfl.biop.bdv.img.opener.Opener;
+import ch.epfl.biop.bdv.img.opener.OpenerHelper;
+import ch.epfl.biop.bdv.img.ResourcePool;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
-import ch.epfl.biop.bdv.img.entity.ChannelName;
+import ch.epfl.biop.bdv.img.omero.OmeroOpener;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
@@ -32,7 +39,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
-import net.imagej.ops.Ops;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -56,7 +62,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * QuPath Image Opener. This class builds a specific opener depending on the
@@ -69,10 +74,10 @@ import java.util.stream.Collectors;
  * @author Rémy Dornier, EPFL, BIOP, 2022
  * @author Nicolas Chiaruttini, EPFL, BIOP, 2021
  */
-public class QuPathImageOpener<T> implements Opener<T> {
+public class QuPathOpener<T> implements Opener<T> {
 
 	protected static Logger logger = LoggerFactory.getLogger(
-			QuPathImageOpener.class);
+			QuPathOpener.class);
 	Opener<T> opener;
 	final MinimalQuPathProject.ImageEntry image;
 	final String unit;
@@ -90,22 +95,22 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	 * @param splitRGBChannels
 	 * @return
 	 */
-	public QuPathImageOpener(// opener core option
-							 Context context,
-							 String dataLocation,
-							 int entryId,
-							 String unit,
-							 boolean positionIsImageCenter,
-							 // How to stream it
-							 int poolSize,
-							 boolean useDefaultXYBlockSize,
-							 FinalInterval cacheBlockSize,
-							 // channel options
-							 boolean splitRGBChannels,
-							 // Optimisation : reuse existing openers
-							 Map<String, Object> cachedObjects,
-							 int defaultNumberOfChannels,
-							 boolean skipMeta) throws Exception {
+	public QuPathOpener(// opener core option
+						Context context,
+						String dataLocation,
+						int entryId,
+						String unit,
+						boolean positionIsImageCenter,
+						// How to stream it
+						int poolSize,
+						boolean useDefaultXYBlockSize,
+						int[] cacheBlockSize,
+						// channel options
+						boolean splitRGBChannels,
+						// Optimisation : reuse existing openers
+						Map<String, Object> cachedObjects,
+						int defaultNumberOfChannels,
+						boolean skipMeta) throws Exception {
 
 		MinimalQuPathProject project = OpenerHelper.memoize("opener.qupath.project."+dataLocation,
 				cachedObjects,
@@ -150,7 +155,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 					int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series")+1;
 
-					this.opener = (Opener<T>) new BioFormatsBdvOpener(
+					this.opener = (Opener<T>) new BioFormatsOpener(
 							context,
 							filePath,
 							Integer.parseInt(mostInnerBuilder.args.get(indexOfSeriesId)),
@@ -176,7 +181,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 					if (mostInnerBuilder.providerClassName.equals(
 							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
 
-						this.opener = (Opener<T>) new OmeroBdvOpener(
+						this.opener = (Opener<T>) new OmeroOpener(
 								context,
 								URLDecoder.decode(mostInnerBuilder.uri.toString(), "UTF-8"),
 								//mostInnerBuilder.uri.toString(),
@@ -540,7 +545,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	}
 
 	@Override
-	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return this.opener.getSetupLoader(channelIdx, setupIdx, cacheSupplier);
 	}
 

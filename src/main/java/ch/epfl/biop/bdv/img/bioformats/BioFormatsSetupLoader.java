@@ -24,8 +24,7 @@ package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.BiopSetupLoader;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
@@ -54,7 +53,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends BiopSetupLoader<T,V,A>{
+	extends OpenerSetupLoader<T,V,A> {
 
 	private static final Logger logger = LoggerFactory.getLogger(BioFormatsSetupLoader.class);
 
@@ -90,7 +89,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 
 	// Opener
-	final BioFormatsBdvOpener opener;
+	final BioFormatsOpener opener;
 
 
 	// pixel dimensions
@@ -98,9 +97,9 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
 
 	@SuppressWarnings("unchecked")
-	public BioFormatsSetupLoader(BioFormatsBdvOpener opener,
-		int channelIndex, int iSeries, int setup, T t, V v,
-		Supplier<VolatileGlobalCellCache> cacheSupplier) {
+	public BioFormatsSetupLoader(BioFormatsOpener opener,
+								 int channelIndex, int iSeries, int setup, T t, V v,
+								 Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		super(t, v);
 		this.setup = setup;
 		this.cacheSupplier = cacheSupplier;

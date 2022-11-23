@@ -20,11 +20,13 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.omero.OmeroSetupLoader;
-import ch.epfl.biop.bdv.img.omero.OmeroTools;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.opener.ChannelProperties;
+import ch.epfl.biop.bdv.img.opener.Opener;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
@@ -70,7 +72,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static ch.epfl.biop.bdv.img.OpenerHelper.memoize;
+import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
 import static omero.gateway.model.PixelsData.FLOAT_TYPE;
 import static omero.gateway.model.PixelsData.UINT16_TYPE;
 import static omero.gateway.model.PixelsData.UINT32_TYPE;
@@ -80,9 +82,9 @@ import static omero.gateway.model.PixelsData.UINT8_TYPE;
  * Contains parameters that explain how to open all channel sources from an
  * Omero Image
  */
-public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
+public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
-	protected static final Logger logger = LoggerFactory.getLogger(OmeroBdvOpener.class);
+	protected static final Logger logger = LoggerFactory.getLogger(OmeroOpener.class);
 
 	// -------- How to open the dataset (reader pool, transforms)
 	final RawPixelsStorePool pool;
@@ -150,7 +152,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	 * @return
 	 * @throws Exception
 	 */
-	public OmeroBdvOpener (
+	public OmeroOpener(
 			Context context,
 			String datalocation,
 			int poolSize,
@@ -607,7 +609,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	}
 
 	@Override
-	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new OmeroSetupLoader(this,
 				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}

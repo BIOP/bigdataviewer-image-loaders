@@ -22,8 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.ImageToSpimData;
-import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -94,7 +94,7 @@ public class OpenSampleCommand implements Command {
 				settings.add(opener60);
 			}
 
-			spimData = ImageToSpimData.getSpimData(settings);
+			spimData = OpenersToSpimData.getSpimData(settings);
 
 			return;
 		}
@@ -110,7 +110,7 @@ public class OpenSampleCommand implements Command {
 
 					File file = DatasetHelper.getDataset(datasetName);
 
-					spimData = ImageToSpimData.getSpimData(new OpenerSettings().location(file).voxSizeReferenceFrameLength(
+					spimData = OpenersToSpimData.getSpimData(new OpenerSettings().location(file).voxSizeReferenceFrameLength(
 							new Length(1, UNITS.MILLIMETER)).positionReferenceFrameLength(
 								new Length(1, UNITS.MILLIMETER)).bioFormatsBuilder());
 

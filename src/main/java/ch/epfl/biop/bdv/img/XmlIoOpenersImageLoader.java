@@ -22,7 +22,9 @@
 
 package ch.epfl.biop.bdv.img;
 
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
@@ -40,10 +42,10 @@ import java.util.stream.Collectors;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.biop_imageloader_v2",
-	type = BiopImageLoader.class)
-public class XmlIoBiopImgLoader implements
-	XmlIoBasicImgLoader<BiopImageLoader>
+@ImgLoaderIo(format = "spimreconstruction.openersimageloader_v1",
+	type = OpenersImageLoader.class)
+public class XmlIoOpenersImageLoader implements
+	XmlIoBasicImgLoader<OpenersImageLoader>
 {
 
 	public static final String OPENERS_TAG = "openers";
@@ -56,11 +58,11 @@ public class XmlIoBiopImgLoader implements
 	 * @return
 	 */
 	@Override
-	public Element toXml(BiopImageLoader imgLoader, File basePath) {
+	public Element toXml(OpenersImageLoader imgLoader, File basePath) {
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
-		String allOpeners = new Gson().toJson(imgLoader.getOpenerSettings().toArray(new OpenerSettings[0]));
+		String allOpeners = new GsonBuilder().setPrettyPrinting().create().toJson(imgLoader.getOpenerSettings().toArray(new OpenerSettings[0]));
 		elem.addContent(XmlHelpers.textElement(OPENERS_TAG, allOpeners));
 		return elem;
 	}
@@ -75,8 +77,8 @@ public class XmlIoBiopImgLoader implements
 	 * @return
 	 */
 	@Override
-	public BiopImageLoader fromXml(Element elem, File basePath,
-                                   AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public OpenersImageLoader fromXml(Element elem, File basePath,
+									  AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		try {
 			String allOpeners = XmlHelpers.getText(elem, OPENERS_TAG);
@@ -85,7 +87,7 @@ public class XmlIoBiopImgLoader implements
 			openerSettingsList.forEach(opener ->
 					opener.context(Services.commandService.context())
 							.skipMeta());
-			return new BiopImageLoader(openerSettingsList, sequenceDescription);
+			return new OpenersImageLoader(openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {
 			e.printStackTrace();
@@ -97,9 +99,9 @@ public class XmlIoBiopImgLoader implements
 		// Check Bioformats opener
 		Map<String, List<OpenerSettings>> invalidLocations = openerSettingsList.stream()
 				.filter(openerSettings ->
-						(openerSettings.type.equals(OpenerSettings.OpenerType.BIOFORMATS)||(openerSettings.type.equals(OpenerSettings.OpenerType.QUPATH))))
-				.filter(openerSettings -> !new File(openerSettings.location).exists())
-				.collect(Collectors.groupingBy(o -> o.location, LinkedHashMap::new, Collectors.toList()));
+						(openerSettings.getType().equals(OpenerSettings.OpenerType.BIOFORMATS)||(openerSettings.getType().equals(OpenerSettings.OpenerType.QUPATH))))
+				.filter(openerSettings -> !new File(openerSettings.getLocation()).exists())
+				.collect(Collectors.groupingBy(o -> o.getLocation(), LinkedHashMap::new, Collectors.toList()));
 
 		if (!invalidLocations.isEmpty()) {
 			// Houston we have an issue
@@ -123,7 +125,7 @@ public class XmlIoBiopImgLoader implements
 				}
 				invalidLocations.values().forEach(openerSettingsL -> {
 					openerSettingsL.forEach(openerSettings -> {
-						openerSettings.location(oldToNew.get(openerSettings.location));
+						openerSettings.location(oldToNew.get(openerSettings.getLocation()));
 					});
 				});
 			} catch (InterruptedException e) {
@@ -131,9 +133,6 @@ public class XmlIoBiopImgLoader implements
 			} catch (ExecutionException e) {
 				e.printStackTrace();
 			}
-
 		}
-
-
 	}
 }

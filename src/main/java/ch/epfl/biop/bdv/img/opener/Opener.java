@@ -1,6 +1,8 @@
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.opener;
 
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -74,8 +76,8 @@ public interface Opener<T> extends Closeable {
     /**
      * @return opener's setup loader
      */
-    BiopSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
-                                          Supplier<VolatileGlobalCellCache> cacheSupplier);
+    OpenerSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
+                                            Supplier<VolatileGlobalCellCache> cacheSupplier);
 
     /**
      * @return A string that identifies uniquely the raw pixel data of this

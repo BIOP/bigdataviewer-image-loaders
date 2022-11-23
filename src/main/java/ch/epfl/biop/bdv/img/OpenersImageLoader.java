@@ -25,6 +25,8 @@ package ch.epfl.biop.bdv.img;
 import bdv.ViewerImgLoader;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.opener.Opener;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
 import org.slf4j.Logger;
@@ -42,10 +44,10 @@ import java.util.stream.IntStream;
  * Generic class implementing how to load an image on BDV.
  * Only setup loaders depend on the opener type (BioFormats, OMERO, OpenSlide, and other)
  */
-public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
+public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
 {
 
-	final protected static Logger logger = LoggerFactory.getLogger(BiopImageLoader.class);
+	final protected static Logger logger = LoggerFactory.getLogger(OpenersImageLoader.class);
 
 
 	// -------- ViewSetups core infos (pixel type, channels)
@@ -55,11 +57,11 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 
 	// -------- setupLoader registration
-	final Map<Integer, BiopSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
+	final Map<Integer, OpenerSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
 
 	// -------- setupLoader optimisation
 	Map<String, Opener> rawPixelDataChannelToOpener = new HashMap<>();
-	Map<String, BiopSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
+	Map<String, OpenerSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
 
 	// -------- How to open image (threads, cache)
 	protected final VolatileGlobalCellCache cache;
@@ -83,8 +85,8 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 	 * @param openerSettings
 	 * @param sequenceDescription
 	 */
-	public BiopImageLoader(List<OpenerSettings> openerSettings,
-						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public OpenersImageLoader(List<OpenerSettings> openerSettings,
+							  final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		this(openerSettings, createOpeners(openerSettings), sequenceDescription);
 	}
@@ -94,9 +96,9 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 	 * @param openerSettings
 	 * @param sequenceDescription
 	 */
-	public BiopImageLoader(List<OpenerSettings> openerSettings,
-						   List<Opener<?>> openers,
-						   final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
+	public OpenersImageLoader(List<OpenerSettings> openerSettings,
+							  List<Opener<?>> openers,
+							  final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
 	{
 		this.openerSettings = openerSettings; // Need to keep a ref for serialization
 		this.openers = openers;
@@ -150,7 +152,7 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 	 * @param setupId : viewsetup id
 	 * @return the setupLoader corresponding to the current viewsetup id
 	 */
-	public BiopSetupLoader getSetupImgLoader(int setupId) {
+	public OpenerSetupLoader getSetupImgLoader(int setupId) {
 		try {
 			// if already registered setup loader
 			if (setupLoaders.containsKey(setupId)) {
@@ -164,7 +166,7 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 			if (rawPixelDataChannelToSetupLoader.containsKey(keySetup)) {
 				System.out.println("Reuse "+keySetup);
-				BiopSetupLoader<?,?,?> loader = rawPixelDataChannelToSetupLoader.get(keySetup);
+				OpenerSetupLoader<?,?,?> loader = rawPixelDataChannelToSetupLoader.get(keySetup);
 				setupLoaders.put(setupId, loader);
 				return loader;
 				//rawPixelDataChannelToSetupLoader.get(keySetup);.get(openers.get(viewSetupToOpenerChannel.get(setupId).openerIndex).getRawPixelDataKey());
@@ -177,7 +179,7 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 				// select the correct setup loader according to opener type
 				try {
-					BiopSetupLoader<?,?,?> imgL = openers.get(iOpener).getSetupLoader(iC, setupId, this::getCacheControl);
+					OpenerSetupLoader<?,?,?> imgL = openers.get(iOpener).getSetupLoader(iC, setupId, this::getCacheControl);
 					setupLoaders.put(setupId, imgL);
 					rawPixelDataChannelToSetupLoader.put(keySetup, imgL);
 					return imgL;

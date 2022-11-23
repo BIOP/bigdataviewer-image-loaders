@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.opener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

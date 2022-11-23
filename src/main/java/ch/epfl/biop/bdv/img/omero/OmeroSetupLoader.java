@@ -24,8 +24,7 @@ package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.BiopSetupLoader;
-import ch.epfl.biop.bdv.img.OmeroBdvOpener;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -52,7 +51,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends BiopSetupLoader<T,V ,A>
+	extends OpenerSetupLoader<T,V ,A>
 {
 
 	final private static Logger logger = LoggerFactory.getLogger(OmeroSetupLoader.class);
@@ -70,7 +69,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 
 
 	// -------- Opener
-	final OmeroBdvOpener opener;
+	final OmeroOpener opener;
 
 
 	// -------- Channel
@@ -89,8 +88,8 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 	final int setup;
 
 
-	public OmeroSetupLoader(OmeroBdvOpener opener, int channelIndex, int setup,
-		T t, V v, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+	public OmeroSetupLoader(OmeroOpener opener, int channelIndex, int setup,
+							T t, V v, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		super(t, v);
 		this.opener = opener;
 		this.iChannel = channelIndex;

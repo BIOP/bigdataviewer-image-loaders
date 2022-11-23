@@ -22,8 +22,8 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.ImageToSpimData;
-import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.Context;
@@ -82,7 +82,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.context(ctx));
 			}
 		}
-		spimdata = ImageToSpimData.getSpimData(openerSettings);
+		spimdata = OpenersToSpimData.getSpimData(openerSettings);
 	}
 
 }

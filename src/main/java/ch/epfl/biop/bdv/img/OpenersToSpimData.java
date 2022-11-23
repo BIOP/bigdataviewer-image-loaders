@@ -24,6 +24,9 @@ package ch.epfl.biop.bdv.img;
 
 
 import ch.epfl.biop.bdv.img.entity.ImageName;
+import ch.epfl.biop.bdv.img.opener.ChannelProperties;
+import ch.epfl.biop.bdv.img.opener.Opener;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.registration.ViewRegistration;
@@ -46,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spimdata.util.Displaysettings;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,16 +65,15 @@ import java.util.stream.IntStream;
  * @author nicolas.chiaruttini@epfl.ch, BIOP, EPFL 2020
  * @author remy.dornier@epfl.ch, BIOP, EPFL 2022
  */
-public class ImageToSpimData {
+public class OpenersToSpimData {
 
     final protected static Logger logger = LoggerFactory.getLogger(
-            ImageToSpimData.class);
+            OpenersToSpimData.class);
 
     // -------- ViewSetups map and counters
     int viewSetupCounter = 0;
     int nTileCounter = 0;
     final Map<Integer, OpenerChannel> viewSetupToFileChannel = new HashMap<>();
-
 
     // Channel registration to Ids
     int channelCounter = 0;
@@ -81,9 +82,6 @@ public class ImageToSpimData {
 
     // TimePoints
     int maxTimepoints = -1;
-
-    // openers registration
-    //List<Opener<?>> openers = new ArrayList<>();
 
     /**
      * Build a SpimData object from a list of OpenerSettings
@@ -102,7 +100,7 @@ public class ImageToSpimData {
         // Many View Setups
         List<ViewSetup> viewSetups = new ArrayList<>();
 
-        List<Opener<?>> openers = BiopImageLoader.createOpeners(openerSettings);
+        List<Opener<?>> openers = OpenersImageLoader.createOpeners(openerSettings);
 
         try {
             for (int iOpener = 0; iOpener < openerSettings.size(); iOpener++) {
@@ -208,7 +206,7 @@ public class ImageToSpimData {
 
             // create spimdata
             SequenceDescription sd = new SequenceDescription(new TimePoints(timePoints), viewSetups, null, new MissingViews(missingViews));
-            sd.setImgLoader(new BiopImageLoader(openerSettings, openers, sd));
+            sd.setImgLoader(new OpenersImageLoader(openerSettings, openers, sd));
             return new SpimData(null, sd, new ViewRegistrations(registrations));
         }
         catch (Exception e) {
@@ -251,7 +249,7 @@ public class ImageToSpimData {
      * @return
      */
     public static AbstractSpimData getSpimData(List<OpenerSettings> openersSettings) {
-        return new ImageToSpimData().getSpimDataInstance(openersSettings);
+        return new OpenersToSpimData().getSpimDataInstance(openersSettings);
     }
 
     /**
@@ -262,7 +260,7 @@ public class ImageToSpimData {
     public static AbstractSpimData getSpimData(OpenerSettings openerSetting) {
         ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();
         singleOpenerList.add(openerSetting);
-        return ImageToSpimData.getSpimData(singleOpenerList);
+        return OpenersToSpimData.getSpimData(singleOpenerList);
     }
 
     static class OpenerChannel {

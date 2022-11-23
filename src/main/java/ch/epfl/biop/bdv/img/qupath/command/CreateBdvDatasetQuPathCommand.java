@@ -22,8 +22,8 @@
 
 package ch.epfl.biop.bdv.img.qupath.command;
 
-import ch.epfl.biop.bdv.img.ImageToSpimData;
-import ch.epfl.biop.bdv.img.OpenerSettings;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
@@ -100,7 +100,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 			});
 
-			spimData = ImageToSpimData.getSpimData(openerSettingsList);
+			spimData = OpenersToSpimData.getSpimData(openerSettingsList);
 
 			if (datasetname.equals("")) {
 				datasetname = quPathProject.getParentFile().getName();

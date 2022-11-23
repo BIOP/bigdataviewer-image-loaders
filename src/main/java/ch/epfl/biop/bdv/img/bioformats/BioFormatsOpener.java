@@ -20,11 +20,13 @@
  * #L%
  */
 
-package ch.epfl.biop.bdv.img;
+package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.VolatileGlobalCellCache;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.opener.ChannelProperties;
+import ch.epfl.biop.bdv.img.opener.Opener;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import loci.formats.ChannelSeparator;
@@ -50,7 +52,6 @@ import net.imglib2.type.volatiles.*;
 import ome.units.quantity.Length;
 import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,15 +64,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static ch.epfl.biop.bdv.img.OpenerHelper.memoize;
+import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
 
 /**
  * Contains all BioFormats-specific methods and fields necessary to open an image.
  */
-public class BioFormatsBdvOpener implements Opener<IFormatReader> {
+public class BioFormatsOpener implements Opener<IFormatReader> {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
-		BioFormatsBdvOpener.class);
+		BioFormatsOpener.class);
 
 	// -------- How to open the dataset (reader pool, transforms)
 	//protected Consumer<IFormatReader> readerModifier = (e) -> {};
@@ -128,7 +129,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	 * @param splitRGBChannels
 	 * @throws URISyntaxException
 	 */
-	public BioFormatsBdvOpener(
+	public BioFormatsOpener(
 			Context context, // not used
 			// opener core option
 			String dataLocation,
@@ -144,7 +145,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			// How to stream it
 			int poolSize,
 			boolean useDefaultXYBlockSize,
-			FinalInterval cacheBlockSize,
+			int[] cacheBlockSize,
 			// channel options
 			boolean splitRGBChannels,
 			// Optimisation : reuse from existing openers
@@ -193,9 +194,9 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			this.format = reader.getFormat();
 
 			this.cellDimensions = new int[] {
-					useDefaultXYBlockSize ? reader.getOptimalTileWidth() : (int) cacheBlockSize.dimension(0),
-					useDefaultXYBlockSize ? reader.getOptimalTileHeight() : (int) cacheBlockSize.dimension(1),
-					useDefaultXYBlockSize ? 1 : (int) cacheBlockSize.dimension(2) };
+					useDefaultXYBlockSize ? reader.getOptimalTileWidth() : cacheBlockSize[0],
+					useDefaultXYBlockSize ? reader.getOptimalTileHeight() : cacheBlockSize[1],
+					useDefaultXYBlockSize ? 1 : cacheBlockSize[2] };
 
 			this.dimensions = new Dimensions[this.nMipMapLevels];
 			for (int level = 0; level < this.nMipMapLevels; level++) {
@@ -205,7 +206,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			pool.recycle(reader);
 		}
 
-		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
+		this.t = BioFormatsOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
 
 		if (!skipMeta) {
 
@@ -277,7 +278,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 					.setChannelColor(iSerie,omeMeta)
 					.setRGB(this.isRGB)
 					.setPixelType(this.t)
-					.setDynamicRange()
+					.setDisplayRange(0,255)
 			);
 
 		}
@@ -430,7 +431,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
-	public BiopSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
+	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new BioFormatsSetupLoader(this,
 				channelIdx, this.iSerie, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
