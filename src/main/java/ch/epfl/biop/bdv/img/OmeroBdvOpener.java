@@ -40,7 +40,11 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.type.volatiles.*;
+import net.imglib2.type.volatiles.VolatileARGBType;
+import net.imglib2.type.volatiles.VolatileFloatType;
+import net.imglib2.type.volatiles.VolatileIntType;
+import net.imglib2.type.volatiles.VolatileUnsignedByteType;
+import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import ome.model.units.BigResult;
 import omero.ServerError;
 import omero.api.RawPixelsStorePrx;
@@ -84,9 +88,8 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	RawPixelsStorePool pool;
 
 	// -------- handle OMERO connection
-	 Gateway gateway;
-	 SecurityContext securityContext;
-
+	Gateway gateway;
+	SecurityContext securityContext;
 
 	// -------- Image characteristics
 	long omeroImageID;
@@ -95,19 +98,15 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	Map<Integer, int[]> imageSize;
 	Map<Integer, int[]> tileSize;
 
-
 	// Miscroscope stage
 	double stagePosX;
 	double stagePosY;
 
-
 	// -------- Resolutions levels
 	int nMipmapLevels;
 
-
 	// -------- TimePoints
 	int nTimePoints;
-
 
 	// -------- Pixels characteristics
 	Type<? extends NumericType> pixelType;
@@ -117,10 +116,9 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	double psizeZ;
 	long pixelsID;
 
-
 	// -------- Channel options and characteristics
-	List<ChannelData> channelMetadata;
-	RenderingDef renderingDef;
+	//List<ChannelData> channelMetadata;
+	//RenderingDef renderingDef;
 	private List<ChannelProperties> channelPropertiesList;
 	int nChannels;
 
@@ -220,52 +218,55 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.pool = memoize("opener.omero.pool."+host+"."+imageID, cachedObjects, () -> new RawPixelsStorePool(poolSize, true, this::getNewStore));
 
 		// get the current pixel store
-		RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(securityContext);
-		rawPixStore.setPixelsId(this.pixelsID, false);
+		{
+			RawPixelsStorePrx rawPixStore = gateway.getPixelsStore(securityContext);
 
-		// populate information on image dimensions and resolution levels
-		this.nMipmapLevels = rawPixStore.getResolutionLevels();
-		this.imageSize = new HashMap<>();
-		this.tileSize = new HashMap<>();
+			rawPixStore.setPixelsId(this.pixelsID, false);
 
-		// Optimize time if there is only one resolution level because
-		// getResolutionDescriptions() is time-consuming // TODO : WHAT ??
-		if (this.nMipmapLevels == 1) {
-			imageSize.put(0, new int[] { pixels.getSizeX(), pixels.getSizeY(), pixels.getSizeZ() });
-			tileSize = imageSize;
-		}
-		else {
-			logger.debug("Get image size and tile sizes...");
-			Instant start = Instant.now();
-			ResolutionDescription[] resDesc = rawPixStore.getResolutionDescriptions();
-			Instant finish = Instant.now();
-			logger.debug("Done! Time elapsed : " + Duration.between(start,
-				finish));
-			int tileSizeX = rawPixStore.getTileSize()[0];
-			int tileSizeY = rawPixStore.getTileSize()[1];
+			// populate information on image dimensions and resolution levels
+			this.nMipmapLevels = rawPixStore.getResolutionLevels();
+			this.imageSize = new HashMap<>();
+			this.tileSize = new HashMap<>();
 
-			for (int level = 0; level < this.nMipmapLevels; level++) {
-				int[] sizes = new int[3];
-				sizes[0] = resDesc[level].sizeX;
-				sizes[1] = resDesc[level].sizeY;
-				sizes[2] = pixels.getSizeZ();
-				int[] tileSizes = new int[2];
-				tileSizes[0] = Math.min(tileSizeX, resDesc[this.nMipmapLevels - 1].sizeX);
-				tileSizes[1] = Math.min(tileSizeY, resDesc[this.nMipmapLevels - 1].sizeY);
-				imageSize.put(level, sizes);
-				tileSize.put(level, tileSizes);
+			// Optimize time if there is only one resolution level because
+			// getResolutionDescriptions() is time-consuming // TODO : WHAT ??
+			if (this.nMipmapLevels == 1) {
+				imageSize.put(0, new int[] { pixels.getSizeX(), pixels.getSizeY(), pixels.getSizeZ() });
+				tileSize = imageSize;
 			}
+			else {
+				logger.debug("Get image size and tile sizes...");
+				Instant start = Instant.now();
+				ResolutionDescription[] resDesc = rawPixStore.getResolutionDescriptions();
+				Instant finish = Instant.now();
+				logger.debug("Done! Time elapsed : " + Duration.between(start,
+					finish));
+				int tileSizeX = rawPixStore.getTileSize()[0];
+				int tileSizeY = rawPixStore.getTileSize()[1];
+
+				for (int level = 0; level < this.nMipmapLevels; level++) {
+					int[] sizes = new int[3];
+					sizes[0] = resDesc[level].sizeX;
+					sizes[1] = resDesc[level].sizeY;
+					sizes[2] = pixels.getSizeZ();
+					int[] tileSizes = new int[2];
+					tileSizes[0] = Math.min(tileSizeX, resDesc[this.nMipmapLevels - 1].sizeX);
+					tileSizes[1] = Math.min(tileSizeY, resDesc[this.nMipmapLevels - 1].sizeY);
+					imageSize.put(level, sizes);
+					tileSize.put(level, tileSizes);
+				}
+			}
+			// close the to free up resources
+			rawPixStore.close();
 		}
 
-		// close the to free up resources
-		rawPixStore.close();
 
 		this.nTimePoints = pixels.getSizeT();
 		this.nChannels = pixels.getSizeC();
 
 		this.imageName = getImageData(imageID, gateway, securityContext).getName();
-		this.channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, imageID);
-		this.renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
+		List<ChannelData> channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, imageID);
+		RenderingDef renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
 
 		// --X and Y stage positions--
 		logger.debug("Begin SQL request for OMERO image with ID : " + imageID);
@@ -343,7 +344,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.pixelType = getNumericType(pixels);
 
 		boolean isRGB = this.nChannels == 3 && this.pixelType instanceof UnsignedByteType;
-		this.channelPropertiesList = getChannelProperties(this.channelMetadata,this.renderingDef, this.nChannels, this.pixelType, isRGB);
+		this.channelPropertiesList = getChannelProperties(channelMetadata, renderingDef, this.nChannels, this.pixelType, isRGB);
 	}
 
 
@@ -516,7 +517,7 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 	// OVERRIDDEN METHODS
 	@Override
 	public String getImageName() {
-		return (this.imageName + "--OMERO ID:" + this.omeroImageID);
+		return (this.imageName); // + "--OMERO ID:" + this.omeroImageID
 	}
 
 	@Override

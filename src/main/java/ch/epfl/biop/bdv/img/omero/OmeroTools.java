@@ -201,7 +201,7 @@ public class OmeroTools {
 		try {
 			omeroSession = omeroService.session(server);
 		} catch (Exception e) {
-			IJ.log("The OMERO session needs to be initialized");
+			IJ.log("The OMERO session for "+host+" needs to be initialized");
 			CommandService command = context.getService(CommandService.class);
 			boolean success = false;
 			DSOutOfServiceException error = null;
