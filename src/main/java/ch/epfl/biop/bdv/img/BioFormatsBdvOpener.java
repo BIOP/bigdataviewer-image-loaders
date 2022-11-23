@@ -76,11 +76,11 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	// -------- How to open the dataset (reader pool, transforms)
 	//protected Consumer<IFormatReader> readerModifier = (e) -> {};
 	private final ReaderPool pool;
-	private AffineTransform3D rootTransform;
+	// private AffineTransform3D rootTransform;
 
 	// -------- Opener core options
 	private int nTimePoints;
-	private String imageName;
+	// private String imageName;
 	private String format;
 	private IMetadata omeMeta;
 	private final String dataLocation;
@@ -99,7 +99,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	private Dimensions[] dimensions;
 
 	// -------- Channel options and properties
-	private List<ChannelProperties> channelPropertiesList;
+	//private List<ChannelProperties> channelPropertiesList;
 	private final boolean splitRGBChannels;
 	int nChannels;
 
@@ -205,25 +205,27 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			pool.recycle(reader);
 		}
 
-		this.rootTransform = BioFormatsTools.getSeriesRootTransform(
-				this.omeMeta, //metadata
-				iSerie, // serie
-				BioFormatsTools.getUnitFromString(unit), // unit
-				positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
-				positionPostTransformMatrixArray, // AffineTransform3D for positionPostTransform,
-				defaultSpaceUnit,
-				positionIsImageCenter, // boolean positionIsImageCenter,
-				new AffineTransform3D().getRowPackedCopy(), // voxSizePreTransform,
-				new AffineTransform3D().getRowPackedCopy(), // voxSizePostTransform,
-				defaultVoxelUnit,
-				new boolean[]{false, false, false} // axesOfImageFlip
-				);
-
-		this.imageName = getImageName(this.omeMeta,iSerie,dataLocation);
 		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
-		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
 
 		if (!skipMeta) {
+
+			AffineTransform3D rootTransform = BioFormatsTools.getSeriesRootTransform(
+					this.omeMeta, //metadata
+					iSerie, // serie
+					BioFormatsTools.getUnitFromString(unit), // unit
+					positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
+					positionPostTransformMatrixArray, // AffineTransform3D for positionPostTransform,
+					defaultSpaceUnit,
+					positionIsImageCenter, // boolean positionIsImageCenter,
+					new AffineTransform3D().getRowPackedCopy(), // voxSizePreTransform,
+					new AffineTransform3D().getRowPackedCopy(), // voxSizePostTransform,
+					defaultVoxelUnit,
+					new boolean[]{false, false, false} // axesOfImageFlip
+			);
+
+			String imageName = getImageName(this.omeMeta,iSerie,dataLocation);
+			List<ChannelProperties> channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
+
 			meta = new OpenerMeta() {
 
 				@Override

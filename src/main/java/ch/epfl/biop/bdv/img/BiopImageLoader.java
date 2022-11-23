@@ -74,7 +74,7 @@ public class BiopImageLoader implements ViewerImgLoader, MultiResolutionImgLoade
 
 
 	// GETTER
-	public  List<OpenerSettings> getOpenerSettings() {
+	public List<OpenerSettings> getOpenerSettings() {
 		return openerSettings;
 	}
 

@@ -246,14 +246,6 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 		this.nTimePoints = pixels.getSizeT();
 		this.nChannels = pixels.getSizeC();
 
-		// --X and Y stage positions--
-		logger.debug("Begin SQL request for OMERO image with ID : " + imageID);
-		List<IObject> objectinfos = gateway.getQueryService(securityContext)
-			.findAllByQuery("select info from PlaneInfo as info " +
-				"join fetch info.deltaT as dt " +
-				"join fetch info.exposureTime as et " + "where info.pixels.id=" + pixels
-					.getId(), null);
-
 		logger.debug("SQL request completed!");
 		// psizes are expressed in the unit given in the builder
 
@@ -291,6 +283,14 @@ public class OmeroBdvOpener implements Opener<RawPixelsStorePrx>{
 			// Miscroscope stage
 			double stagePosX;
 			double stagePosY;
+
+			// --X and Y stage positions--
+			logger.debug("Begin SQL request for OMERO image with ID : " + imageID);
+			List<IObject> objectinfos = gateway.getQueryService(securityContext)
+					.findAllByQuery("select info from PlaneInfo as info " +
+							"join fetch info.deltaT as dt " +
+							"join fetch info.exposureTime as et " + "where info.pixels.id=" + pixels
+							.getId(), null);
 
 			if (objectinfos.size() != 0) {
 				// one plane per (c,z,t) combination: we assume that X and Y stage

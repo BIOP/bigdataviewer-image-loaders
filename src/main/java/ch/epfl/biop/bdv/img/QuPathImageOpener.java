@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.entity.ChannelName;
+import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -237,19 +239,10 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 				@Override
 				public List<Entity> getEntities(int iChannel) {
-					List<Entity> oldEntities = opener.getMeta().getEntities(iChannel);
-					List<Entity> newEntities = oldEntities.stream().filter(e->!(e instanceof ChannelName)).collect(Collectors.toList());
-					newEntities.add(new ChannelName(0, getChannel(iChannel).getChannelName()));
-
-					// create a QuPath Entry
-					// QuPathEntryEntity qpentry = new QuPathEntryEntity(this.image.entryID);
-					// qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(this.image.serverBuilder.uri, this.iSerie));
-					//qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
-
-					//newEntities.add(qpentry);
-					newEntities.forEach(e->System.out.println(e));
-					return newEntities;
-
+					List<Entity> entities = new ArrayList<>();
+					QuPathEntryEntity entry = new QuPathEntryEntity(entryId);
+					entities.add(entry);
+					return entities;
 				}
 
 				@Override
