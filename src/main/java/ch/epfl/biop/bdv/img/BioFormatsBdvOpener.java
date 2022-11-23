@@ -110,6 +110,7 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	final String rawPixelDataKey;
 	final String filename;
 	final int idxFilename;
+	final OpenerMeta meta;
 	/**
 	 * Class constructor : sets all fields
 	 *
@@ -148,7 +149,8 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 			boolean splitRGBChannels,
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects,
-			int defaultNumberOfChannels
+			int defaultNumberOfChannels,
+			boolean skipMeta
 	) throws Exception {
 
 		this.dataLocation = dataLocation;
@@ -220,6 +222,39 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 		this.imageName = getImageName(this.omeMeta,iSerie,dataLocation);
 		this.t = BioFormatsBdvOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
 		this.channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
+
+		if (!skipMeta) {
+			meta = new OpenerMeta() {
+
+				@Override
+				public ChannelProperties getChannel(int iChannel) {
+					if(iChannel >= nChannels) {
+						logger.error("You are trying to get the channel " + iChannel + " in an image with only " + nChannels);
+						return null;
+					}
+					return channelPropertiesList.get(iChannel);
+				}
+
+				@Override
+				public List<Entity> getEntities(int iChannel) {
+					ArrayList<Entity> entityList = new ArrayList<>();
+					entityList.add(new FileName(idxFilename, filename));
+					entityList.add(new SeriesIndex(iSerie));
+					return entityList;
+				}
+
+				@Override
+				public String getImageName() {
+					return imageName;
+				}
+
+				@Override
+				public AffineTransform3D getTransform() {
+					return rootTransform;
+				}
+
+			};
+		} else meta = null;
 	}
 
 	/**
@@ -378,11 +413,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
-	public AffineTransform3D getTransform() {
-		return rootTransform;
-	}
-
-	@Override
 	public ResourcePool<IFormatReader> getPixelReader() {
 		return this.pool;
 	}
@@ -409,6 +439,11 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
+	public OpenerMeta getMeta() {
+		return meta;
+	}
+
+	@Override
 	public int[] getCellDimensions(int level) {
 		return cellDimensions;
 	}
@@ -426,28 +461,6 @@ public class BioFormatsBdvOpener implements Opener<IFormatReader> {
 	@Override
 	public Type<? extends NumericType> getPixelType() {
 		return this.t;
-	}
-
-	@Override
-	public ChannelProperties getChannel(int iChannel) {
-		if(iChannel >= this.nChannels) {
-			logger.error("You are trying to get1 the channel " + iChannel + " in an image with only " + this.nChannels);
-			return null;
-		}
-		return this.channelPropertiesList.get(iChannel);
-	}
-
-	@Override
-	public List<Entity> getEntities(int iChannel) {
-		ArrayList<Entity> entityList = new ArrayList<>();
-		entityList.add(new FileName(idxFilename, filename));
-		entityList.add(new SeriesIndex(iSerie));
-		return entityList;
-	}
-
-	@Override
-	public String getImageName() {
-		return this.imageName;
 	}
 
 	@Override

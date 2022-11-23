@@ -298,6 +298,13 @@ public class OpenerSettings {
         return this;
     }
 
+    transient boolean skipMeta = false;
+
+    public OpenerSettings skipMeta() {
+        this.skipMeta = true;
+        return this;
+    }
+
     public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
         Opener<?> opener;
         switch (this.type) {
@@ -309,7 +316,8 @@ public class OpenerSettings {
                         unit,
                         positionIsImageCenter,
                         cachedObjects,
-                        nChannels
+                        nChannels,
+                        skipMeta
                 );
                 break;
             case QUPATH:
@@ -324,7 +332,7 @@ public class OpenerSettings {
                         blockSize,
                         splitRGB,
                         cachedObjects,
-                        nChannels);
+                        nChannels, skipMeta);
                 break;
             case BIOFORMATS:
                 opener = new BioFormatsBdvOpener(
@@ -345,7 +353,7 @@ public class OpenerSettings {
                         // Channel options
                         splitRGB,
                         cachedObjects,
-                        nChannels
+                        nChannels, skipMeta
                 );
                 break;
             case IMAGEJ:

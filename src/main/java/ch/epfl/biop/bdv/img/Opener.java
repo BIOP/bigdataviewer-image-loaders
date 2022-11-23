@@ -30,68 +30,35 @@ public interface Opener<T> extends Closeable {
      */
     int[] getCellDimensions(int level);
 
-
-    /**
-     * @param iChannel
-     * @return properties of the specified channel {@param iChannel}
-     */
-    ChannelProperties getChannel(int iChannel);
-
-
     /**
      * @return the image dimensions in X,Y and Z
      */
     Dimensions[] getDimensions();
-
-
-    /**
-     * @param iChannel
-     * @return the list of {@link Entity} for the specified channel {@param iChannel}
-     * that are then added to a {@link mpicbg.spim.data.sequence.ViewSetup}
-     */
-    List<Entity> getEntities(int iChannel);
-
-
-    /**
-     * @return the image name
-     */
-    String getImageName();
-
 
     /**
      * @return the number of channels of the image
      */
     int getNChannels();
 
-
     /**
      * @return the number of frames of the image
      */
     int getNTimePoints();
-
 
     /**
      * @return the number of resolution levels of the image
      */
     int getNumMipmapLevels();
 
-
     /**
      * @return a specific reader depending on if the image is coming from OMERO or BioFormats
      */
     ResourcePool<T> getPixelReader();
 
-
     /**
      * @return BDV compatible pixel type
      */
     Type<? extends NumericType> getPixelType();
-
-
-    /**
-     * @return the AffineTransform used to recover the original display
-     */
-    AffineTransform3D getTransform();
 
 
     /**
@@ -119,5 +86,36 @@ public interface Opener<T> extends Closeable {
      * from duplicated data will be redirected to a single one.
      */
     String getRawPixelDataKey();
+
+    OpenerMeta getMeta();
+
+    /**
+     * Contains informations that are optionally initialized
+     * This can speed up OMERO opener by avoiding unecessary requests
+     */
+    interface OpenerMeta {
+        /**
+         * @return the image name
+         */
+        String getImageName();
+        /**
+         * @return the AffineTransform used to recover the original display
+         */
+        AffineTransform3D getTransform();
+
+        /**
+         * @param iChannel
+         * @return the list of {@link Entity} for the specified channel {@param iChannel}
+         * that are then added to a {@link mpicbg.spim.data.sequence.ViewSetup}
+         */
+        List<Entity> getEntities(int iChannel);
+
+        /**
+         * @param iChannel
+         * @return properties of the specified channel {@param iChannel}
+         */
+        ChannelProperties getChannel(int iChannel);
+
+    }
 
 }

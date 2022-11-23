@@ -82,7 +82,9 @@ public class XmlIoBiopImgLoader implements
 			String allOpeners = XmlHelpers.getText(elem, OPENERS_TAG);
 			List<OpenerSettings> openerSettingsList = Arrays.asList(new Gson().fromJson(allOpeners, OpenerSettings[].class));
 			validateOpeners(openerSettingsList);
-			openerSettingsList.forEach(opener -> opener.context(Services.commandService.context()));
+			openerSettingsList.forEach(opener ->
+					opener.context(Services.commandService.context())
+							.skipMeta());
 			return new BiopImageLoader(openerSettingsList, sequenceDescription);
 		}
 		catch (final Exception e) {

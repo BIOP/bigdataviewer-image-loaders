@@ -34,7 +34,9 @@ public class EmptyOpener implements Opener<RawArrayReader>{
     String message;
     ResourcePool<RawArrayReader> pool;
 
-    public EmptyOpener(String imageName, int nChannels, String message) {
+    OpenerMeta meta;
+
+    public EmptyOpener(String imageName, int nChannels, String message, boolean skipMeta) {
         this.message = message;
         for (int iCh = 0; iCh<nChannels; iCh++) {
             ChannelProperties channel = new ChannelProperties(iCh);
@@ -52,6 +54,28 @@ public class EmptyOpener implements Opener<RawArrayReader>{
                 return new RawArrayReader();
             }
         };
+        meta = new OpenerMeta() {
+            @Override
+            public String getImageName() {
+                return imageName;
+            }
+
+            @Override
+            public AffineTransform3D getTransform() {
+                return new AffineTransform3D();
+            }
+
+            @Override
+            public List<Entity> getEntities(int iChannel) {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public ChannelProperties getChannel(int iChannel) {
+                return channelProperties.get(iChannel);
+            }
+        };
+
     }
 
     @Override
@@ -59,24 +83,10 @@ public class EmptyOpener implements Opener<RawArrayReader>{
         return new int[]{512,512,1};
     }
 
-    @Override
-    public ChannelProperties getChannel(int iChannel) {
-        return channelProperties.get(iChannel);
-    }
 
     @Override
     public Dimensions[] getDimensions() {
         return new Dimensions[0];
-    }
-
-    @Override
-    public List<Entity> getEntities(int iChannel) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public String getImageName() {
-        return imageName;
     }
 
     @Override
@@ -105,11 +115,6 @@ public class EmptyOpener implements Opener<RawArrayReader>{
     }
 
     @Override
-    public AffineTransform3D getTransform() {
-        return new AffineTransform3D();
-    }
-
-    @Override
     public VoxelDimensions getVoxelDimensions() {
         return new FinalVoxelDimensions("px",1,1,1);
     }
@@ -127,6 +132,11 @@ public class EmptyOpener implements Opener<RawArrayReader>{
     @Override
     public String getRawPixelDataKey() {
         return "empty."+imageName+"."+message;
+    }
+
+    @Override
+    public OpenerMeta getMeta() {
+        return null;
     }
 
     @Override

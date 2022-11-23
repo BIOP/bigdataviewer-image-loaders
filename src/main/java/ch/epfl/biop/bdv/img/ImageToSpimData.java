@@ -132,15 +132,15 @@ public class ImageToSpimData {
                 IntStream channels = IntStream.range(0, opener.getNChannels());
                 logger.debug("There are "+opener.getNChannels()+" channels.");
 
-                ImageName imageName = new ImageName(iOpener, opener.getImageName());
+                ImageName imageName = new ImageName(iOpener, opener.getMeta().getImageName());
                 System.out.println("ImageName ["+imageName.getId()+"] = "+imageName.getName());
 
                 channels.forEach(iCh -> {
                     // get channel properties
-                    ChannelProperties channelProperties = opener.getChannel(iCh);
+                    ChannelProperties channelProperties = opener.getMeta().getChannel(iCh);
 
                     // build the viewsetup
-                    String setupName = opener.getImageName() + "-" + channelProperties.getChannelName();
+                    String setupName = opener.getMeta().getImageName() + "-" + channelProperties.getChannelName();
                     logger.debug("setup name : "+setupName);
                     ViewSetup vs = new ViewSetup(viewSetupCounter, setupName, dims, voxDims, tile, // Tile is index of Serie
                             getChannelEntity(iCh, channelProperties),
@@ -162,7 +162,7 @@ public class ImageToSpimData {
                     }
 
                     // set viewsetup attributes
-                    opener.getEntities(iCh).forEach(vs::setAttribute);
+                    opener.getMeta().getEntities(iCh).forEach(vs::setAttribute);
                     vs.setAttribute(ds);
                     vs.setAttribute(imageName);
 
@@ -188,7 +188,7 @@ public class ImageToSpimData {
 
                 Opener<?> opener = openers.get(iF);
                 final int nTimePoints = opener.getNTimePoints();
-                AffineTransform3D rootTransform = opener.getTransform();
+                AffineTransform3D rootTransform = opener.getMeta().getTransform();
 
                 // create views
                 timePoints.forEach(iTp -> {

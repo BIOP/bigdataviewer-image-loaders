@@ -31,6 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imagej.ops.Ops;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -75,6 +76,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	final String unit;
 	final int entryId;
 
+	final OpenerMeta meta;
+
 
 	/**
 	 * Create an OMERO or BioFormats opener depending on the providerClassName of QuPath
@@ -99,7 +102,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							 boolean splitRGBChannels,
 							 // Optimisation : reuse existing openers
 							 Map<String, Object> cachedObjects,
-							 int defaultNumberOfChannels) throws Exception {
+							 int defaultNumberOfChannels,
+							 boolean skipMeta) throws Exception {
 
 		MinimalQuPathProject project = OpenerHelper.memoize("opener.qupath.project."+dataLocation,
 				cachedObjects,
@@ -126,7 +130,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 
 		if (mostInnerBuilder.builderType.equals("Empty")) {
 			logger.error("Empty image server!");
-			this.opener = (Opener<T>) new EmptyOpener("Entry "+entryId, defaultNumberOfChannels, "Error, entry "+entryId+" missing!");
+			this.opener = (Opener<T>) new EmptyOpener("Entry "+entryId, defaultNumberOfChannels, "Error, entry "+entryId+" missing!", false);
 		} else if (mostInnerBuilder.builderType.equals("uri")) {
 			logger.debug("URI image server");
 			try {
@@ -162,7 +166,8 @@ public class QuPathImageOpener<T> implements Opener<T> {
 							// Channel options
 							splitRGBChannels,
 							cachedObjects,
-							defaultNumberOfChannels);
+							defaultNumberOfChannels,
+							skipMeta);
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
 				} else {
@@ -177,7 +182,7 @@ public class QuPathImageOpener<T> implements Opener<T> {
 								unit,
 								positionIsImageCenter,
 								cachedObjects,
-								defaultNumberOfChannels);
+								defaultNumberOfChannels, skipMeta);
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					} else {
@@ -200,6 +205,59 @@ public class QuPathImageOpener<T> implements Opener<T> {
 			logger.error("Unsupported " + image.serverBuilder.builderType +
 					" server builder");
 		}
+		if (!skipMeta) {
+			meta = new OpenerMeta() {
+
+				@Override
+				public String getImageName() {
+					return image.imageName;
+				}
+
+				@Override
+				public ChannelProperties getChannel(int iChannel) {
+					if (image.serverBuilder != null &&
+							image.serverBuilder.metadata != null &&
+							image.serverBuilder.metadata.channels != null){
+
+						if (image.serverBuilder.metadata.isRGB) {
+							if (opener.getPixelType() instanceof ARGBType) {
+								// No split RGB
+								return opener.getMeta().getChannel(iChannel).setChannelName("RGB");
+							} else {
+								MinimalQuPathProject.ChannelInfo channel = image.serverBuilder.metadata.channels.get(iChannel);
+								return opener.getMeta().getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
+							}
+						}
+
+						MinimalQuPathProject.ChannelInfo channel = image.serverBuilder.metadata.channels.get(iChannel);
+						return opener.getMeta().getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
+					} else return opener.getMeta().getChannel(iChannel);
+				}
+
+
+				@Override
+				public List<Entity> getEntities(int iChannel) {
+					List<Entity> oldEntities = opener.getMeta().getEntities(iChannel);
+					List<Entity> newEntities = oldEntities.stream().filter(e->!(e instanceof ChannelName)).collect(Collectors.toList());
+					newEntities.add(new ChannelName(0, getChannel(iChannel).getChannelName()));
+
+					// create a QuPath Entry
+					// QuPathEntryEntity qpentry = new QuPathEntryEntity(this.image.entryID);
+					// qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(this.image.serverBuilder.uri, this.iSerie));
+					//qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
+
+					//newEntities.add(qpentry);
+					newEntities.forEach(e->System.out.println(e));
+					return newEntities;
+
+				}
+
+				@Override
+				public AffineTransform3D getTransform() {
+					return opener.getMeta().getTransform();
+				}
+			};
+		} else meta = null;
 	}
 
 	public static MinimalQuPathProject getQuPathProject(Context ctx, String dataLocation) {
@@ -442,52 +500,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	}
 
 	@Override
-	public ChannelProperties getChannel(int iChannel) {
-		if (this.image.serverBuilder != null &&
-				this.image.serverBuilder.metadata != null &&
-				this.image.serverBuilder.metadata.channels != null){
-
-			if (this.image.serverBuilder.metadata.isRGB) {
-				if (opener.getPixelType() instanceof ARGBType) {
-					// No split RGB
-					return this.opener.getChannel(iChannel).setChannelName("RGB");
-				} else {
-					MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
-					return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
-				}
-			}
-
-			MinimalQuPathProject.ChannelInfo channel = this.image.serverBuilder.metadata.channels.get(iChannel);
-			return this.opener.getChannel(iChannel).setChannelName(channel.name).setChannelColor(channel.color);
-		} else return this.opener.getChannel(iChannel);
-	}
-
-	@Override
 	public Dimensions[] getDimensions() {
 		return this.opener.getDimensions();
 	}
 
-	@Override
-	public List<Entity> getEntities(int iChannel) {
-		List<Entity> oldEntities = this.opener.getEntities(iChannel);
-		List<Entity> newEntities = oldEntities.stream().filter(e->!(e instanceof ChannelName)).collect(Collectors.toList());
-		newEntities.add(new ChannelName(0, getChannel(iChannel).getChannelName()));
 
-		// create a QuPath Entry
-		// QuPathEntryEntity qpentry = new QuPathEntryEntity(this.image.entryID);
-		// qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(this.image.serverBuilder.uri, this.iSerie));
-		//qpentry.setQuPathProjectionLocation(Paths.get(this.qpProj).toString());
-
-		//newEntities.add(qpentry);
-		newEntities.forEach(e->System.out.println(e));
-		return newEntities;
-
-	}
-
-	@Override
-	public String getImageName() {
-		return this.image.imageName;
-	}
 
 	@Override
 	public int getNChannels() {
@@ -515,19 +532,6 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	}
 
 	@Override
-	public AffineTransform3D getTransform() {
-		/*if(this.image.serverBuilder != null &&
-				this.image.serverBuilder.metadata != null &&
-				this.image.serverBuilder.metadata.pixelCalibration != null){
-			return getTransform(this.image.serverBuilder.metadata.pixelCalibration,
-					this.unit, opener.getTransform(), getVoxelDimensions());
-		} else */
-		{
-			return this.opener.getTransform();
-		}
-	}
-
-	@Override
 	public VoxelDimensions getVoxelDimensions() {
 		if(this.image.serverBuilder != null &&
 		this.image.serverBuilder.metadata != null &&
@@ -550,6 +554,11 @@ public class QuPathImageOpener<T> implements Opener<T> {
 	@Override
 	public String getRawPixelDataKey() {
 		return opener.getRawPixelDataKey();
+	}
+
+	@Override
+	public OpenerMeta getMeta() {
+		return meta;
 	}
 
 	@Override
