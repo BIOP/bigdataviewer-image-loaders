@@ -42,7 +42,6 @@ public class OpenerSettings {
     transient Context scijavaContext;
 
     // --------- Extensibility
-    String ver = VersionUtils.getVersion(OpenerSettings.class); // version
     String opt = ""; // options
 
     //---- Modifications on the location of the dataset ( pixel size, origin, flip)

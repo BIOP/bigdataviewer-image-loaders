@@ -30,6 +30,7 @@ import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
 import org.jdom2.Element;
+import org.scijava.util.VersionUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -42,13 +43,14 @@ import java.util.stream.Collectors;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
-@ImgLoaderIo(format = "spimreconstruction.openersimageloader_v1",
+@ImgLoaderIo(format = "spimreconstruction.openersimageloader",
 	type = OpenersImageLoader.class)
 public class XmlIoOpenersImageLoader implements
 	XmlIoBasicImgLoader<OpenersImageLoader>
 {
 
 	public static final String OPENERS_TAG = "openers";
+	public static final String VERSION_TAG = "version";
 
 	/**
 	 * Write QuPathImageOpener class in a xml file
@@ -62,7 +64,10 @@ public class XmlIoOpenersImageLoader implements
 		final Element elem = new Element("ImageLoader");
 		elem.setAttribute(IMGLOADER_FORMAT_ATTRIBUTE_NAME, this.getClass()
 			.getAnnotation(ImgLoaderIo.class).format());
-		String allOpeners = new GsonBuilder().setPrettyPrinting().create().toJson(imgLoader.getOpenerSettings().toArray(new OpenerSettings[0]));
+		String allOpeners = new GsonBuilder()
+				//.setPrettyPrinting()
+				.create().toJson(imgLoader.getOpenerSettings().toArray(new OpenerSettings[0]));
+		elem.addContent(XmlHelpers.textElement(VERSION_TAG, VersionUtils.getVersion(OpenersImageLoader.class)));
 		elem.addContent(XmlHelpers.textElement(OPENERS_TAG, allOpeners));
 		return elem;
 	}
