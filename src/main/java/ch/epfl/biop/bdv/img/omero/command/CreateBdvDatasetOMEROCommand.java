@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO Bridge]",
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO]",
 	description = "description")
 
 public class CreateBdvDatasetOMEROCommand implements Command {
@@ -70,19 +70,9 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
 	String position_convention = "CENTER"; // Split rgb channels to allow for best
 
-	public UnitsLength unitsLength;
 
 	public void run() {
 		try {
-			if (unit.equals("MILLIMETER")) {
-				unitsLength = UnitsLength.MILLIMETER;
-			}
-			if (unit.equals("MICROMETER")) {
-				unitsLength = UnitsLength.MICROMETER;
-			}
-			if (unit.equals("NANOMETER")) {
-				unitsLength = UnitsLength.NANOMETER;
-			}
 			List<OpenerSettings> openersSettings = new ArrayList<>();
 			String[] omeroIDstrings = omeroIDs.split(",");
 
@@ -90,12 +80,12 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 				IJ.log("Getting settings for omero url " + s);
 
 				// create a new settings and modify it
-				OpenerSettings settings = new OpenerSettings()
+				OpenerSettings settings =
+						OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO)
 						.context(context)
 						.location(s)
 						.unit(unit)
-						.positionConvention(position_convention)
-						.omeroBuilder();
+						.positionConvention(position_convention);
 
 				openersSettings.add(settings);
 			}

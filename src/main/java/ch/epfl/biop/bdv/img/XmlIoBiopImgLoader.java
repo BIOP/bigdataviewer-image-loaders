@@ -114,7 +114,7 @@ public class XmlIoBiopImgLoader implements
 				File[] out = (File[]) Services.commandService.run(FixFilePathsCommand.class, true,
 						"invalidFilePaths", in).get().getOutput("fixedFilePaths");
 				if (out.length!=in.length) {
-					System.err.println("You did not enter the same number of files as requested");
+					System.err.println("You did not enter the requested number of files");
 					return;
 				}
 				Map<String, String> oldToNew = new HashMap<>();

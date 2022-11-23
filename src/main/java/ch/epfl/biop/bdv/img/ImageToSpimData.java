@@ -265,50 +265,6 @@ public class ImageToSpimData {
         return ImageToSpimData.getSpimData(singleOpenerList);
     }
 
-    /**
-     * Create default {@link SpimData} for BioFormats opener from a list of Files
-     * @param files
-     * @return
-     */
-    public static AbstractSpimData getBioFormatsSpimData(List<File> files) {
-        ArrayList<OpenerSettings> openerSettingsList = new ArrayList<>();
-        for (File f : files) {
-            openerSettingsList.add(getBioFormatsDefaultSettings(f.getAbsolutePath()));
-        }
-        return ImageToSpimData.getSpimData(openerSettingsList);
-    }
-
-    /**
-     * Create default {@link SpimData} for OMERO opener from a list of Files
-     * @param files
-     * @return
-     */
-    public static AbstractSpimData getOmeroSpimData(List<File> files) {
-        ArrayList<OpenerSettings> openerSettingsList = new ArrayList<>();
-        for (File f : files) {
-            openerSettingsList.add(getOmeroDefaultSettings(f.getAbsolutePath()));
-        }
-        return ImageToSpimData.getSpimData(openerSettingsList);
-    }
-
-    /**
-     * Create default {@link OpenerSettings} for BioFormats opener from a list of Files
-     * @param dataLocation
-     * @return
-     */
-    public static OpenerSettings getBioFormatsDefaultSettings(String dataLocation) {
-        return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS, dataLocation);
-    }
-
-    /**
-     * Create default {@link OpenerSettings} for OMERO opener from a list of Files
-     * @param dataLocation
-     * @return
-     */
-    public static OpenerSettings getOmeroDefaultSettings(String dataLocation) {
-        return OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO, dataLocation);
-    }
-
     static class OpenerChannel {
 
         public final int iOpener;

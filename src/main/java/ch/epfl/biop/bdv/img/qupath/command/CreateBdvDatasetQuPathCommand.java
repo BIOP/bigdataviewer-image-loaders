@@ -24,7 +24,6 @@ package ch.epfl.biop.bdv.img.qupath.command;
 
 import ch.epfl.biop.bdv.img.ImageToSpimData;
 import ch.epfl.biop.bdv.img.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsBaseCommand;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
@@ -43,15 +42,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Warning : a QuPath project may have its source reordered and or removed : -
- * not all entries will be present in the qupath project Limitations : only
- * images
  */
 
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath Bridge]")
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath]")
 public class CreateBdvDatasetQuPathCommand implements Command
-		//CreateBdvDatasetBioFormatsBaseCommand
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
@@ -82,9 +77,6 @@ public class CreateBdvDatasetQuPathCommand implements Command
 	public void run() {
 
 		try {
-			CreateBdvDatasetBioFormatsBaseCommand settings =
-					new CreateBdvDatasetBioFormatsBaseCommand();
-
 			// Deserialize the QuPath project
 			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject.toURI()));
 			Gson gson = new Gson();
@@ -95,10 +87,8 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 			project.images.forEach(image -> {
 
-				//image.indexInQuPathProject = project.images.indexOf(image); // TODO : put a normal index
-
 				OpenerSettings openerSettings =
-						settings.getSettings()
+						OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO)
 								.splitRGBChannels(splitRGB)
 								.location(quPathProject.getAbsolutePath())
 								.setSerie(image.entryID)

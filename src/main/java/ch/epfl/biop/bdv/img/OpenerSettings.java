@@ -9,6 +9,8 @@ import ome.units.unit.Unit;
 import omero.model.enums.UnitsLength;
 import org.scijava.Context;
 import org.scijava.util.VersionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
@@ -31,6 +33,8 @@ import java.util.Map;
  *
  * */
 public class OpenerSettings {
+
+    transient static Logger logger = LoggerFactory.getLogger(OpenerSettings.class);
 
     transient Context scijavaContext;
 
@@ -60,7 +64,7 @@ public class OpenerSettings {
     boolean splitRGB = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
 
     // ---- Opener core options
-    OpenerType type;
+    OpenerType type = OpenerType.UNDEF;
     String location = "";
 
     // ---- For BioFormats: series index
@@ -83,7 +87,8 @@ public class OpenerSettings {
         OMERO,
         IMAGEJ,
         OPENSLIDE,
-        QUPATH
+        QUPATH,
+        UNDEF
     }
 
     public OpenerSettings context(Context context) {
@@ -375,14 +380,16 @@ public class OpenerSettings {
     }
 
 
-    public static OpenerSettings getDefaultSettings(OpenerType type, String location){
+    public static OpenerSettings getDefaultSettings(OpenerType type){
         switch (type){
-            case OMERO: return new OpenerSettings().omeroBuilder().location(location);
-            case IMAGEJ: return new OpenerSettings().imageJBuilder().location(location);
-            case BIOFORMATS: return new OpenerSettings().bioFormatsBuilder().location(location);
-            case OPENSLIDE:; return new OpenerSettings().openSlideBuilder().location(location);
+            case OMERO: return new OpenerSettings().omeroBuilder();
+            case IMAGEJ: return new OpenerSettings().imageJBuilder();
+            case BIOFORMATS: return new OpenerSettings().bioFormatsBuilder();
+            case OPENSLIDE:; return new OpenerSettings().openSlideBuilder();
+            default:
+                logger.error("Unrecognized opener type "+ type);
+                return null;
         }
-        return null;
     }
 
     @Override

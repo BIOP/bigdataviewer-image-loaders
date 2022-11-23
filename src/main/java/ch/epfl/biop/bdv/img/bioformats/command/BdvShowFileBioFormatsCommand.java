@@ -38,7 +38,7 @@ import java.util.List;
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
-	description = "Support bioformats multiresolution api. Attempts to set colors based " +
+	description = "Support Bio-Formats multiresolution api. Attempts to set colors based " +
 		"on bioformats metadata. Do not attempt auto contrast.")
 public class BdvShowFileBioFormatsCommand
 	implements Command
@@ -57,21 +57,19 @@ public class BdvShowFileBioFormatsCommand
 																		// compatibility (RGB 16 bits)
 	@Parameter(required = false,
 			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
-	String position_convention = "CENTER"; // Split rgb channels to allow for best
-	// compatibility (RGB 16 bits)
+	String position_convention = "CENTER";
 
 	public void run() {
 
-		CreateBdvDatasetBioFormatsBaseCommand settings =
-			new CreateBdvDatasetBioFormatsBaseCommand();
-		settings.splitrgbchannels = splitrgbchannels;
-		settings.unit = unit;
-
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (int i = 0; i< BioFormatsTools.getNSeries(file); i++) {
-			openerSettings.add(settings.getSettings(file).setSerie(i)
+			openerSettings.add(OpenerSettings
+							.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS)
+							.location(file.getAbsolutePath())
+							.setSerie(i)
+							.unit(unit)
+							.splitRGBChannels(splitrgbchannels)
 							.positionConvention(position_convention));
-					//.cornerPositionConvention());
 		}
 
 		final AbstractSpimData spimData = ImageToSpimData.getSpimData(openerSettings);
