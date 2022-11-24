@@ -38,7 +38,9 @@ import java.util.List;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [BioFormats]")
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Bio-Formats]",
+	description = "Bridge between Bio-Formats (BioFormats) and BigDataViewer. You can create a BDV dataset" +
+			" from a set of Bio-Formats supported files.")
 public class CreateBdvDatasetBioFormatsCommand implements
 	Command
 {

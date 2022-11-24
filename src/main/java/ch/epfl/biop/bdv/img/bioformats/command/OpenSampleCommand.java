@@ -99,7 +99,7 @@ public class OpenSampleCommand implements Command {
 			return;
 		}
 		for (Field f : fields) {
-			if (f.getName().toUpperCase().equals(datasetName.toUpperCase())) {
+			if (f.getName().equals(datasetName.toUpperCase())) {
 				try {
 					// Dataset found
 					datasetName = (String) f.get(null);

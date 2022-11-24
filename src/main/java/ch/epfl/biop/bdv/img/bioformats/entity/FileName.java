@@ -25,9 +25,16 @@ package ch.epfl.biop.bdv.img.bioformats.entity;
 import mpicbg.spim.data.generic.base.NamedEntity;
 
 /**
- * Just storing the index of the series within bioformats - does not store the name
- * because it is not unique within a bdv dataset backed by a biopimageloader
- * (you can have multiple files)
+ * Just storing the filename of the series within - does not store the path
+ * because it is hard to update the path within an {@link NamedEntity}
+ * and it's probably not what it had been designed for.
+ *
+ * Note : you can have multiple files in a dataset backed by a
+ * {@link ch.epfl.biop.bdv.img.OpenersImageLoader}, which is where
+ * you will find this entity.
+ *
+ * TODO : check if two files with identical names but different path
+ * get different ids in the {@link ch.epfl.biop.bdv.img.OpenersImageLoader}
  */
 
 public class FileName extends NamedEntity implements

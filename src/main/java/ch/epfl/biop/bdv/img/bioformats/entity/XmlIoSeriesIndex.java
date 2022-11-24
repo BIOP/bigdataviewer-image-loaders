@@ -22,12 +22,12 @@
 
 package ch.epfl.biop.bdv.img.bioformats.entity;
 
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoEntity;
-import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
-import org.jdom2.Element;
+
+/**
+ * Class that serializes {@link SeriesIndex} entities
+ */
 
 @ViewSetupAttributeIo(name = "seriesindex", type = SeriesIndex.class)
 public class XmlIoSeriesIndex extends XmlIoEntity<SeriesIndex> {
@@ -36,13 +36,4 @@ public class XmlIoSeriesIndex extends XmlIoEntity<SeriesIndex> {
 		super("seriesindex", SeriesIndex.class);
 	}
 
-	@Override
-	public Element toXml(final SeriesIndex fi) {
-		return super.toXml(fi);
-	}
-
-	@Override
-	public SeriesIndex fromXml(final Element elem) throws SpimDataException {
-		return super.fromXml(elem);
-	}
 }

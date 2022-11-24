@@ -206,6 +206,7 @@ public class OmeroTools {
 			boolean success = false;
 			DSOutOfServiceException error = null;
 			try {
+				OmeroConnectCommand.message_in = "Please enter your "+host+" credentials:";
 				CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
 				success = (Boolean) module.getOutput("success");
 				omeroSession = (OMEROSession) module.getOutput("omeroSession");

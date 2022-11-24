@@ -40,10 +40,11 @@ import java.util.List;
 
 @Deprecated
 @SuppressWarnings({ "Unused", "CanBeFinal" })
-@Plugin(type = Command.class,
+/*@Plugin(type = Command.class,
         menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>(Legacy) Open [BioFormats Bdv Bridge]",
         description = "Support bioformats multiresolution api. Attempts to set colors based " +
                 "on bioformats metadata. Do not attempt auto contrast.")
+ */
 public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends
         BioformatsBigdataviewerBridgeDatasetCommand
 {

@@ -29,6 +29,7 @@ import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -38,8 +39,6 @@ import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
-import net.imglib2.FinalInterval;
-import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
@@ -48,7 +47,6 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.type.volatiles.*;
 import ome.units.quantity.Length;
 import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
@@ -58,7 +56,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,8 +64,9 @@ import java.util.function.Supplier;
 import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
 
 /**
- * Contains all BioFormats-specific methods and fields necessary to open an image.
+ * {@link Opener} implementation for Bio-Formats backed dataset
  */
+
 public class BioFormatsOpener implements Opener<IFormatReader> {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
@@ -80,41 +78,42 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	// private AffineTransform3D rootTransform;
 
 	// -------- Opener core options
-	private int nTimePoints;
+	private final int nTimePoints;
 	// private String imageName;
-	private String format;
-	private IMetadata omeMeta;
+	private final String format;
+	private final IMetadata omeMeta;
 	private final String dataLocation;
 
 	// -------- Pixels characteristics
-	private boolean isLittleEndian;
-	private boolean isRGB;
-	private VoxelDimensions voxelDimensions;
-	Type<? extends NumericType> t;
+	private final boolean isLittleEndian;
+	private final boolean isRGB;
+	private final VoxelDimensions voxelDimensions;
+	private final Type<? extends NumericType> t;
 
 	// -------- Resolutions options
-	private int[] cellDimensions;
-	private int nMipMapLevels;
+	private final int[] cellDimensions;
+	private final int nMipMapLevels;
 
 	// -------- Image dimensions
-	private Dimensions[] dimensions;
+	private final Dimensions[] dimensions;
 
 	// -------- Channel options and properties
 	//private List<ChannelProperties> channelPropertiesList;
 	private final boolean splitRGBChannels;
-	int nChannels;
+	private final int nChannels;
 
 	// -------- Series
-	private int iSerie;
+	private final int iSerie;
 
 	// --------
-	final String rawPixelDataKey;
-	final String filename;
-	final int idxFilename;
-	final OpenerMeta meta;
+	private final String rawPixelDataKey;
+	private final String filename;
+	private final int idxFilename;
+	private final OpenerMeta meta;
+
 	/**
-	 * Class constructor : sets all fields
 	 *
+	 * @param context
 	 * @param dataLocation
 	 * @param iSerie
 	 * @param positionPreTransformMatrixArray
@@ -127,7 +126,10 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	 * @param useDefaultXYBlockSize
 	 * @param cacheBlockSize
 	 * @param splitRGBChannels
-	 * @throws URISyntaxException
+	 * @param cachedObjects
+	 * @param defaultNumberOfChannels
+	 * @param skipMeta
+	 * @throws Exception
 	 */
 	public BioFormatsOpener(
 			Context context, // not used
@@ -324,14 +326,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			reader = new ChannelSeparator(reader);
 		}
 		Memoizer memo = new Memoizer(reader);
-
 		try {
-			//logger.debug("setId for reader " + dataLocation);
-			//StopWatch watch = new StopWatch();
-			//watch.start();
-			memo.setId(dataLocation); // take some time
-			//watch.stop();
-			//logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
+			memo.setId(dataLocation);
 		}
 		catch (FormatException | IOException e) {
 			e.printStackTrace();
@@ -433,7 +429,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	@Override
 	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new BioFormatsSetupLoader(this,
-				channelIdx, this.iSerie, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
+				channelIdx, this.iSerie, setupIdx, (NumericType) this.getPixelType(), OpenerHelper.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
 
 	@Override
@@ -477,26 +473,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		});
 	}
 
-	/**
-	 *
-	 * @param t
-	 * @return volatile pixel type from t
-	 */
-	private Volatile getVolatileOf(NumericType t) {
-		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
-
-		if (t instanceof IntType) return new VolatileIntType();
-
-		if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
-
-		if (t instanceof FloatType) return new VolatileFloatType();
-
-		if (t instanceof ARGBType) return new VolatileARGBType();
-		return null;
-	}
-
-
-	static class ReaderPool extends ResourcePool<IFormatReader> {
+	private static class ReaderPool extends ResourcePool<IFormatReader> {
 
 		final Supplier<IFormatReader> readerSupplier;
 
@@ -512,6 +489,5 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		public IFormatReader createObject() {
 			return readerSupplier.get();
 		}
-
 	}
 }

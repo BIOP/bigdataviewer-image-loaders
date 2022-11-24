@@ -41,7 +41,8 @@ import java.util.List;
 
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO]",
-	description = "description")
+	description = "Bridge between OMERO and BigDataViewer. You can create a BDV dataset" +
+			" from a set of OMERO URLs.")
 
 public class CreateBdvDatasetOMEROCommand implements Command {
 

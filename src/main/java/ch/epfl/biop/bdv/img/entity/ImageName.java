@@ -40,5 +40,8 @@ public class ImageName extends NamedEntity implements
         return getId() - o.getId();
     }
 
+    /**
+     * Empty constructor strictly necessary for dataset deserialization
+     */
     protected ImageName() {}
 }

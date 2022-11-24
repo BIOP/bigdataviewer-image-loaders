@@ -27,6 +27,9 @@ import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
 import org.jdom2.Element;
 
+/**
+ * For xml (de)serialisation of {@link OmeroHostId}
+ */
 @ViewSetupAttributeIo(name = "omerohost", type = OmeroHostId.class)
 public class XmlIoOmeroHostId extends XmlIoNamedEntity<OmeroHostId> {
 

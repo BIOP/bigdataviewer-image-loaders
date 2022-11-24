@@ -58,52 +58,37 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 	private static final Logger logger = LoggerFactory.getLogger(BioFormatsSetupLoader.class);
 
 	// -------- How to load an image
-	final Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
-	final Converter<T, FloatType> cvt;
-	final private ResourcePool<IFormatReader> readerPool;
-	final Supplier<VolatileGlobalCellCache> cacheSupplier;
-	final CacheArrayLoader<A> loader;
+	private final Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
+	private final Converter<T, FloatType> cvt;
+	private final ResourcePool<IFormatReader> readerPool;
+	private final Supplier<VolatileGlobalCellCache> cacheSupplier;
+	private final CacheArrayLoader<A> loader;
 
+	// -------- Resolution levels
+	private final double[][] mmResolutions;
+	private final int[] cellDimensions;
+	private final int numMipmapLevels;
 
-
-	// -------- Resoluion levels
-	final double[][] mmResolutions;
-	final int[] cellDimensions;
-	final int numMipmapLevels;
-
-
-	// Channels
-	final int iChannel;
-
+	// Channel index
+	private final int iChannel;
 
 	// -------- ViewSetup
-	final int setup;
-
-
-	// -------- Timepoints
-	final int NTimePoints;
-
+	private final int setup;
 
 	// Image dimension
-	final Dimensions[] dimensions;
+	private final Dimensions[] dimensions;
 
 
-	// Opener
-	final BioFormatsOpener opener;
-
-
-	// pixel dimensions
-	final VoxelDimensions voxelsDimensions;
-
+	// Voxel physical dimensions
+	private final VoxelDimensions voxelsDimensions;
 
 	@SuppressWarnings("unchecked")
-	public BioFormatsSetupLoader(BioFormatsOpener opener,
+	protected BioFormatsSetupLoader(BioFormatsOpener opener,
 								 int channelIndex, int iSeries, int setup, T t, V v,
 								 Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		super(t, v);
 		this.setup = setup;
 		this.cacheSupplier = cacheSupplier;
-		this.opener = opener;
 		this.readerPool = opener.getPixelReader();
 
 		// set RandomAccessibleInterval
@@ -144,9 +129,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		boolean isLittleEndian = opener.isLittleEndian();
 		voxelsDimensions = opener.getVoxelDimensions();
 
-		// timepoints
-		NTimePoints = opener.getNTimePoints();
-
 		// image dimensions
 		dimensions = opener.getDimensions();
 
@@ -159,7 +141,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		mmResolutions[0][2] = 1;
 
 		// compute mipmap levels
-		// Fix vsi issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
+		// Fix VSI specific issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
 		if (opener.getReaderFormat().equals("CellSens VSI")) {
 			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
 				double downscalingFactor = Math.pow(2, iLevel);
@@ -215,8 +197,6 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 	}
 
-
-	// OVERRIDDEN METHODS
 	@Override
 	public RandomAccessibleInterval<FloatType> getFloatImage(int timepointId,
 		int level, boolean normalize, ImgLoaderHint... hints)
@@ -302,7 +282,4 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		return voxelsDimensions;
 	}
 
-	public ResourcePool<IFormatReader> getReaderPool() {
-		return readerPool;
-	}
 }

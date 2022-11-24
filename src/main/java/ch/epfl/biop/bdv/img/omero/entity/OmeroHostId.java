@@ -24,18 +24,16 @@ package ch.epfl.biop.bdv.img.omero.entity;
 
 import mpicbg.spim.data.generic.base.NamedEntity;
 
+/**
+ * The name is the host
+ * The id is the ImageId within the OMERO 'host' server
+ *
+ * ISSUE : ONLY INT IS ALLOWED AS ID, BUT IMAGEID from OMERO can be a LONG TODO : Fix
+ */
 public class OmeroHostId extends NamedEntity implements Comparable<OmeroHostId> {
 
 	public OmeroHostId(final int id, final String name) {
 		super(id, name);
-	}
-
-	/**
-	 * Set the name of this tile.
-	 */
-	@Override
-	public void setName(final String name) {
-		super.setName(name);
 	}
 
 	/**
@@ -46,5 +44,8 @@ public class OmeroHostId extends NamedEntity implements Comparable<OmeroHostId> 
 		return getId() - o.getId();
 	}
 
+	/**
+	 * Protected empty constructor necessary
+	 */
 	protected OmeroHostId() {}
 }

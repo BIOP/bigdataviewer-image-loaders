@@ -36,10 +36,12 @@ import java.util.List;
 
 @Deprecated
 @SuppressWarnings({ "unused", "CanBeFinal" })
+/*
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
 	description = "Support bioformats multiresolution api. Attempts to set colors based " +
 		"on bioformats metadata. Do not attempt auto contrast.")
+*/
 public class StandaloneOpenFileWithBigdataviewerBioformatsBridgeCommand
 	implements Command
 {

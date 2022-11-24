@@ -6,6 +6,7 @@ import net.imagej.omero.OMEROService;
 import net.imagej.omero.OMEROSession;
 import omero.gateway.ServerInformation;
 import org.scijava.ItemIO;
+import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -14,18 +15,23 @@ import org.slf4j.LoggerFactory;
 
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Connect",
-        description = "description")
+        description = "Connect to an OMERO server", initializer = "init")
 
 public class OmeroConnectCommand implements Command {
 
     final private static Logger logger = LoggerFactory.getLogger(
             OmeroConnectCommand.class);
 
+    public static String message_in = "Please enter your OMERO credentials";
+
+    @Parameter(visibility = ItemVisibility.MESSAGE, persist = false)
+    String message = "Please enter your OMERO credentials";
+
     @Parameter
     OMEROService omeroService;
 
     @Parameter(label = "OMERO host")
-    String host;
+    String host = "omero-server.epfl.ch";
 
     @Parameter(label = "Enter your gaspar username")
     String username;
@@ -57,6 +63,10 @@ public class OmeroConnectCommand implements Command {
             logger.error(e.getMessage());
             success = false;
         }
+    }
+
+    public void init() {
+        message = message_in;
     }
 
 }

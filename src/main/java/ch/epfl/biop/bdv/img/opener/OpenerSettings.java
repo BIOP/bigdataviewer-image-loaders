@@ -391,12 +391,14 @@ public class OpenerSettings {
     }
 
 
+
     public static OpenerSettings getDefaultSettings(OpenerType type){
         switch (type){
             case OMERO: return new OpenerSettings().omeroBuilder();
             case IMAGEJ: return new OpenerSettings().imageJBuilder();
             case BIOFORMATS: return new OpenerSettings().bioFormatsBuilder();
-            case OPENSLIDE:; return new OpenerSettings().openSlideBuilder();
+            case OPENSLIDE: return new OpenerSettings().openSlideBuilder();
+            case QUPATH: return new OpenerSettings().quPathBuilder();
             default:
                 logger.error("Unrecognized opener type "+ type);
                 return null;

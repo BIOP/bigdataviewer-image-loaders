@@ -25,9 +25,8 @@ package ch.epfl.biop.bdv.img.bioformats.entity;
 import mpicbg.spim.data.generic.base.Entity;
 
 /**
- * Just storing the index of the series within bioformats - does not store the name
- * because it is not unique within a bdv dataset backed by a biopimageloader
- * (you can have multiple files)
+ * {@link Entity} that stores the index of the series within Bio-Formats
+ * Complementary with {@link FileName}
  */
 
 public class SeriesIndex extends Entity implements

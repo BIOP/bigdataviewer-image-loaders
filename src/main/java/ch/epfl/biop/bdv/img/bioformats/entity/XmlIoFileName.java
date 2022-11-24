@@ -22,26 +22,16 @@
 
 package ch.epfl.biop.bdv.img.bioformats.entity;
 
-import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
-import mpicbg.spim.data.generic.base.XmlIoEntity;
 import mpicbg.spim.data.generic.base.XmlIoNamedEntity;
-import org.jdom2.Element;
+
+/**
+ * Class that serializes {@link FileName} entities
+ */
 
 @ViewSetupAttributeIo(name = "filename", type = FileName.class)
 public class XmlIoFileName extends XmlIoNamedEntity<FileName> {
-
 	public XmlIoFileName() {
 		super("filename", FileName.class);
-	}
-
-	@Override
-	public Element toXml(final FileName fn) {
-		return super.toXml(fn);
-	}
-
-	@Override
-	public FileName fromXml(final Element elem) throws SpimDataException {
-		return super.fromXml(elem);
 	}
 }

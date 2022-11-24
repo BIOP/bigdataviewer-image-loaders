@@ -38,7 +38,7 @@ import java.util.List;
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
-	description = "Support Bio-Formats multiresolution api. Attempts to set colors based " +
+	description = "Support Bio-Formats multiresolution API. Set colors based " +
 		"on bioformats metadata. Do not attempt auto contrast.")
 public class BdvShowFileBioFormatsCommand
 	implements Command
@@ -62,10 +62,11 @@ public class BdvShowFileBioFormatsCommand
 	public void run() {
 
 		List<OpenerSettings> openerSettings = new ArrayList<>();
-		for (int i = 0; i< BioFormatsTools.getNSeries(file); i++) {
+		int nSeries = BioFormatsTools.getNSeries(file);
+		for (int i = 0; i < nSeries; i++) {
 			openerSettings.add(OpenerSettings
 							.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS)
-							.location(file.getAbsolutePath())
+							.location(file)
 							.setSerie(i)
 							.unit(unit)
 							.splitRGBChannels(splitrgbchannels)

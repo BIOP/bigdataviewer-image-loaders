@@ -34,6 +34,21 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 // Copied from N5 Array Loader
+
+/**
+ * This class translates byte arrays given by a {@link ResourcePool}
+ * of Bio-Formats {@link IFormatReader} into ImgLib2 structures
+ *
+ * Supported pixel types:
+ * - unsigned 8-bits integer
+ * - unsigned 16-bits integer
+ * - float (java sense : 32 bits float)
+ * - rgb (24 bits in Bio-Formats, translated to {@link net.imglib2.type.numeric.ARGBType} 32 bits)
+ * - signed 32-bits integer
+ *
+ * See also {@link BioFormatsSetupLoader}
+ *
+ */
 public class BioFormatsArrayLoaders {
 
 	/**
@@ -45,7 +60,7 @@ public class BioFormatsArrayLoaders {
 		final protected int channel;
 		final protected int iSeries;
 
-		public BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel, int iSeries)
+		private BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel, int iSeries)
 		{
 			this.readerPool = readerPool;
 			this.channel = channel;
@@ -57,11 +72,11 @@ public class BioFormatsArrayLoaders {
 	/**
 	 * Class explaining how to read and load pixels of type : Unsigned Byte (8 bits)
 	 */
-	public static class BioFormatsUnsignedByteArrayLoader extends
+	protected static class BioFormatsUnsignedByteArrayLoader extends
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
 	{
 
-		public BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool,
+		protected BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool,
 			int channel, int iSeries)
 		{
 			super(readerPool, channel, iSeries);
@@ -119,7 +134,7 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
+		protected BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
 			int channel, int iSeries, boolean littleEndian)
 		{
 			super(readerPool, channel, iSeries);
@@ -188,7 +203,7 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool,
+		protected BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool,
 										  int channel, int iSeries, boolean littleEndian)
 		{
 			super(readerPool, channel, iSeries);
@@ -255,7 +270,7 @@ public class BioFormatsArrayLoaders {
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
-		public BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
+		protected BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
 			int channel, int iSeries)
 		{
 			super(readerPool, channel, iSeries);
@@ -336,7 +351,7 @@ public class BioFormatsArrayLoaders {
 	}
 
 	/**
-	 * Class explaining how to read and load pixels of type : int (16 bits)
+	 * Class explaining how to read and load pixels of type : signed int (32 bits)
 	 */
 	public static class BioFormatsIntArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
@@ -344,7 +359,7 @@ public class BioFormatsArrayLoaders {
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool,
+		protected BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool,
 										int channel, int iSeries, boolean littleEndian)
 		{
 			super(readerPool, channel, iSeries);

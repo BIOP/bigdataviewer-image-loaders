@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Disconnect",
-        description = "description")
+        description = "Disconnect from an OMERO server.")
 
 public class OmeroDisconnectCommand implements Command {
 
