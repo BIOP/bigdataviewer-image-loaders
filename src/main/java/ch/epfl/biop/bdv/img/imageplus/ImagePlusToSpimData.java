@@ -86,7 +86,7 @@ public class ImagePlusToSpimData {
 		final int d = imp.getNSlices();
 		final FinalDimensions size = new FinalDimensions(w, h, d);
 
-		int originTimePoint = ImagePlusTools.getTimeOriginFromImagePlus(imp);
+		int originTimePoint = ImagePlusHelper.getTimeOriginFromImagePlus(imp);
 		final BasicImgLoader imgLoader;
 		{
 			switch (imp.getType()) {
@@ -160,7 +160,7 @@ public class ImagePlusToSpimData {
 				new TimePoints(timepoints), setups, imgLoader, mv);
 
 		// create ViewRegistrations from the images calibration
-		final AffineTransform3D sourceTransform = ImagePlusTools
+		final AffineTransform3D sourceTransform = ImagePlusHelper
 				.getMatrixFromImagePlus(imp);
 		final ArrayList<ViewRegistration> registrations = new ArrayList<>();
 		for (int t = 0; t < numTimepoints + originTimePoint; ++t)

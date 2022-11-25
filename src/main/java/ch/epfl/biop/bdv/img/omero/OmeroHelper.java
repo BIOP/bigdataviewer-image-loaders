@@ -22,8 +22,16 @@
 
 package ch.epfl.biop.bdv.img.omero;
 
+import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.omero.command.OmeroConnectCommand;
+import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import ij.IJ;
+import mpicbg.spim.data.generic.base.Entity;
+import mpicbg.spim.data.sequence.Angle;
+import mpicbg.spim.data.sequence.Illumination;
+import mpicbg.spim.data.sequence.Tile;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
 import net.imagej.omero.OMEROSession;
@@ -56,11 +64,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class OmeroTools {
+public class OmeroHelper {
 
 	/**
 	 * OMERO connection with credentials and simpleLogger
@@ -350,4 +360,5 @@ public class OmeroTools {
 		}
 		return -1;
 	}
+
 }

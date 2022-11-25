@@ -24,13 +24,13 @@ package ch.epfl.biop.bdv.img.qupath;
 
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import ch.epfl.biop.bdv.img.opener.ChannelProperties;
 import ch.epfl.biop.bdv.img.opener.EmptyOpener;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.omero.OmeroOpener;
 import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
@@ -40,7 +40,6 @@ import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
-import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
@@ -325,33 +324,33 @@ public class QuPathOpener<T> implements Opener<T> {
 			// compute scaling factor
 			if (pixelCalibrations.pixelWidth != null) {
 				MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
-				Length voxLengthX = new Length(voxSizeX, BioFormatsTools.getUnitFromString(voxSizes.unit()));
+				Length voxLengthX = new Length(voxSizeX, BioFormatsHelper.getUnitFromString(voxSizes.unit()));
 
 				if (voxLengthX.value(UNITS.MICROMETER) != null) {
 					logger.debug("xVox size = " + pc.value + " micrometer");
 					scaleX = pc.value / voxLengthX.value(UNITS.MICROMETER).doubleValue();
 				} else {
-					Length defaultxPix = new Length(1, BioFormatsTools.getUnitFromString(outputUnit));
+					Length defaultxPix = new Length(1, BioFormatsHelper.getUnitFromString(outputUnit));
 					scaleX = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
 					logger.debug("rescaling x");
 				}
 			}
 			if (pixelCalibrations.pixelHeight != null) {
 				MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelHeight;
-				Length voxLengthY = new Length(voxSizeY, BioFormatsTools.getUnitFromString(voxSizes.unit()));
+				Length voxLengthY = new Length(voxSizeY, BioFormatsHelper.getUnitFromString(voxSizes.unit()));
 				// if (pc.unit.equals("um")) {
 				if (voxLengthY.value(UNITS.MICROMETER) != null) {
 					logger.debug("yVox size = " + pc.value + " micrometer");
 					scaleY = pc.value / voxLengthY.value(UNITS.MICROMETER).doubleValue();
 				} else {
-					Length defaultxPix = new Length(1, BioFormatsTools.getUnitFromString(outputUnit));
+					Length defaultxPix = new Length(1, BioFormatsHelper.getUnitFromString(outputUnit));
 					scaleY = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
 					logger.debug("rescaling y");
 				}
 			}
 			if (pixelCalibrations.zSpacing != null) {
 				MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.zSpacing;
-				Length voxLengthZ = new Length(voxSizeZ, BioFormatsTools.getUnitFromString(voxSizes.unit()));
+				Length voxLengthZ = new Length(voxSizeZ, BioFormatsHelper.getUnitFromString(voxSizes.unit()));
 				// if (pc.unit.equals("um")) { problem with micrometer character
 				if (voxLengthZ.value(UNITS.MICROMETER) != null) {
 					logger.debug("zVox size = " + pc.value + " micrometer");
@@ -431,7 +430,7 @@ public class QuPathOpener<T> implements Opener<T> {
 				new Length(pixelCalibrations.zSpacing.value, convertStringToUnit(pixelCalibrations.zSpacing.unit))
 		};
 		double[] d = new double[3];
-		Unit<Length> u = BioFormatsTools.getUnitFromString(unit);
+		Unit<Length> u = BioFormatsHelper.getUnitFromString(unit);
 		Length voxSizeReferenceFrameLength = new Length(1, UNITS.MICROMETER);
 
 		// fill the array with the dimension value converted into the specified unit u

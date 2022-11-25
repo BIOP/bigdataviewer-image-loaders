@@ -116,8 +116,6 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	final long pixelsID;
 
 	// -------- Channel options and characteristics
-	//List<ChannelData> channelMetadata;
-	//RenderingDef renderingDef;
 	final int nChannels;
 
 	// -------
@@ -166,14 +164,14 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		System.out.println(datalocation);
 		URL url = new URL(datalocation);
 		host = url.getHost();
-		OMEROSession session = OmeroTools.getGatewayAndSecurityContext(context, host);
+		OMEROSession session = OmeroHelper.getGatewayAndSecurityContext(context, host);
 
 		if (exception != null) throw exception;
 
 		this.gateway = session.getGateway();
 		this.securityContext = session.getSecurityContext();
 
-		List<Long> imageIDs = OmeroTools.getImageIDs(datalocation, gateway, securityContext);
+		List<Long> imageIDs = OmeroHelper.getImageIDs(datalocation, gateway, securityContext);
 
 		if (imageIDs.size()==0) throw new IllegalStateException("Could not found an image ID in url "+datalocation);
 		if (imageIDs.size()>1) throw new UnsupportedOperationException("Could not open multiple Omero IDs in a single URL, split them.");
@@ -251,8 +249,8 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		logger.debug("SQL request completed!");
 		// psizes are expressed in the unit given in the builder
 
-		if (pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(unit)) == null || pixels.getPixelSizeY(
-				OmeroTools.getUnitsLengthFromString(unit)) == null)
+		if (pixels.getPixelSizeX(OmeroHelper.getUnitsLengthFromString(unit)) == null || pixels.getPixelSizeY(
+				OmeroHelper.getUnitsLengthFromString(unit)) == null)
 		{
 			this.psizeX = 1;
 			this.psizeY = 1;
@@ -260,12 +258,12 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 				datalocation + " ; a default value of 1 " + unit + " has been set");
 		}
 		else {
-			this.psizeX = pixels.getPixelSizeX(OmeroTools.getUnitsLengthFromString(unit)).getValue();
-			this.psizeY = pixels.getPixelSizeY(OmeroTools.getUnitsLengthFromString(unit)).getValue();
+			this.psizeX = pixels.getPixelSizeX(OmeroHelper.getUnitsLengthFromString(unit)).getValue();
+			this.psizeY = pixels.getPixelSizeY(OmeroHelper.getUnitsLengthFromString(unit)).getValue();
 		}
 		// to handle 2D images
 
-		Length length = pixels.getPixelSizeZ(OmeroTools.getUnitsLengthFromString(unit));
+		Length length = pixels.getPixelSizeZ(OmeroHelper.getUnitsLengthFromString(unit));
 		if (length != null) {
 			this.psizeZ = length.getValue();
 		} else {
@@ -325,8 +323,8 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 							imageName + " ; a default unit " + unit + " has been set");
 					Length l1 = planeinfo.getPositionX();
 					Length l2 = planeinfo.getPositionY();
-					l1.setUnit(OmeroTools.getUnitsLengthFromString(unit));
-					l2.setUnit(OmeroTools.getUnitsLengthFromString(unit));
+					l1.setUnit(OmeroHelper.getUnitsLengthFromString(unit));
+					l2.setUnit(OmeroHelper.getUnitsLengthFromString(unit));
 					lengthPosX = new LengthI(l1, unit);
 					lengthPosY = new LengthI(l2, unit);
 					stagePosX = lengthPosX.getValue();

@@ -63,6 +63,10 @@ public class CreateBdvDatasetQuPathCommand implements Command
 		persist = false)
 	public String datasetname = ""; // Cheat to allow dataset renaming
 
+	@Parameter(required = false, label = "Physical units of the dataset",
+			choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
+	public String unit = "MILLIMETER";
+
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimData;
 
@@ -88,10 +92,11 @@ public class CreateBdvDatasetQuPathCommand implements Command
 			project.images.forEach(image -> {
 
 				OpenerSettings openerSettings =
-						OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO)
+						OpenerSettings.QuPath()
 								.splitRGBChannels(splitRGB)
 								.location(quPathProject.getAbsolutePath())
-								.setSerie(image.entryID)
+								.setEntry(image.entryID)
+								.unit(unit)
 								.positionConvention(position_convention)
 								.context(context)
 								.quPathBuilder();

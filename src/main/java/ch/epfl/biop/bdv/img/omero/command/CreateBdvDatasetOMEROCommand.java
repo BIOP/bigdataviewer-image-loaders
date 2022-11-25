@@ -81,7 +81,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 
 				// create a new settings and modify it
 				OpenerSettings settings =
-						OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.OMERO)
+						OpenerSettings.OMERO()
 						.context(context)
 						.location(s)
 						.unit(unit)

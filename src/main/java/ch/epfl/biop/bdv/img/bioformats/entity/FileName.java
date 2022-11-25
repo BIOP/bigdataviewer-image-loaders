@@ -35,6 +35,8 @@ import mpicbg.spim.data.generic.base.NamedEntity;
  *
  * TODO : check if two files with identical names but different path
  * get different ids in the {@link ch.epfl.biop.bdv.img.OpenersImageLoader}
+ * Hum, now two different paths should lead to two different FileName entities
+ * TO TEST!!
  */
 
 public class FileName extends NamedEntity implements

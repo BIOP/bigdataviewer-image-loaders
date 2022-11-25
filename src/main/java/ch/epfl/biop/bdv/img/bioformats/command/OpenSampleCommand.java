@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.UNITS;
@@ -66,7 +66,7 @@ public class OpenSampleCommand implements Command {
 
 			ArrayList<OpenerSettings> settings = new ArrayList<>();
 
-			for (int i = 0; i< BioFormatsTools.getNSeries(f20); i++) {
+			for (int i = 0; i< BioFormatsHelper.getNSeries(f20); i++) {
 				OpenerSettings opener20 = new OpenerSettings()
 								.location(f20)
 								.centerPositionConvention()
@@ -80,7 +80,7 @@ public class OpenSampleCommand implements Command {
 				settings.add(opener20);
 			}
 
-			for (int i = 0; i< BioFormatsTools.getNSeries(f60); i++) {
+			for (int i = 0; i< BioFormatsHelper.getNSeries(f60); i++) {
 				OpenerSettings opener60 = new OpenerSettings()
 						.location(f60)
 						.centerPositionConvention()

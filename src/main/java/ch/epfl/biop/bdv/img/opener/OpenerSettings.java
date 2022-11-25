@@ -93,6 +93,9 @@ public class OpenerSettings {
         return location;
     }
 
+    public int getEntryId() { return id; }
+    public int getSeries() { return id; }
+
     public enum OpenerType {
         BIOFORMATS,
         OMERO,
@@ -314,6 +317,11 @@ public class OpenerSettings {
         return this;
     }
 
+    public OpenerSettings setEntry(int entryId){
+        this.id = entryId;
+        return this;
+    }
+
     transient boolean skipMeta = false;
 
     public OpenerSettings skipMeta() {
@@ -390,20 +398,30 @@ public class OpenerSettings {
 
     }
 
+    public static OpenerSettings BioFormats() {
+        return new OpenerSettings().bioFormatsBuilder();
+    }
 
+    public static OpenerSettings OMERO() {
+        return new OpenerSettings().omeroBuilder();
+    }
 
-    public static OpenerSettings getDefaultSettings(OpenerType type){
+    public static OpenerSettings QuPath() {
+        return new OpenerSettings().quPathBuilder();
+    }
+
+    /*public static OpenerSettings getDefaultSettings(OpenerType type){
         switch (type){
-            case OMERO: return new OpenerSettings().omeroBuilder();
+            case OMERO: return
             case IMAGEJ: return new OpenerSettings().imageJBuilder();
-            case BIOFORMATS: return new OpenerSettings().bioFormatsBuilder();
+            case BIOFORMATS: return
             case OPENSLIDE: return new OpenerSettings().openSlideBuilder();
-            case QUPATH: return new OpenerSettings().quPathBuilder();
+            case QUPATH: return
             default:
                 logger.error("Unrecognized opener type "+ type);
                 return null;
         }
-    }
+    }*/
 
     @Override
     public String toString() {

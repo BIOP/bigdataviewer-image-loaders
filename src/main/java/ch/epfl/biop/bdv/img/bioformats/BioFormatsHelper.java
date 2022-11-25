@@ -30,7 +30,6 @@ import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -40,17 +39,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class BioFormatsTools {
+public class BioFormatsHelper {
 
 	final protected static Logger logger = LoggerFactory.getLogger(
-		BioFormatsTools.class);
+		BioFormatsHelper.class);
 
 	// TODO : avoid creating more than one reader on initialization
 	public static int getNSeries(File f){

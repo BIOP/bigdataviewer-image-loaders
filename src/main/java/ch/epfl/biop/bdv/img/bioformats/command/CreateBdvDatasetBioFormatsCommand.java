@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -71,10 +71,10 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	public void run() {
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (File f : files) {
-			int nSeries = BioFormatsTools.getNSeries(f);
+			int nSeries = BioFormatsHelper.getNSeries(f);
 			for (int i = 0; i < nSeries; i++) {
 				openerSettings.add(
-						OpenerSettings.getDefaultSettings(OpenerSettings.OpenerType.BIOFORMATS)
+						OpenerSettings.BioFormats()
 								.location(f)
 								.setSerie(i)
 								.unit(unit)

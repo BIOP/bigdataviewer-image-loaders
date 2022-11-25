@@ -94,7 +94,7 @@ import java.util.regex.Pattern;
  * @author Nicolas Chiaruttini, EPFL, 2020
  */
 
-public class ImagePlusTools {
+public class ImagePlusHelper {
 
 	/**
 	 * Regex matching the toString function of AffineTransform3D

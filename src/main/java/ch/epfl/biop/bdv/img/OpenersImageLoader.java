@@ -81,6 +81,13 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	}
 
 	/**
+	 *
+	 * @return a map linking a view setup id to its associated opener
+	 */
+	public Map<Integer, OpenerAndChannelIndex> getViewSetupToOpenerAndChannelIndex() {
+		return this.viewSetupToOpenerChannel;
+	}
+	/**
 	 * Constructor
 	 * @param openerSettings
 	 * @param sequenceDescription
@@ -226,6 +233,14 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 		public OpenerAndChannelIndex(int openerIndex, int channelIndex) {
 			this.openerIndex = openerIndex;
 			this.channelIndex = channelIndex;
+		}
+
+		public int getChannelIndex() {
+			return channelIndex;
+		}
+
+		public int getOpenerIndex() {
+			return openerIndex;
 		}
 	}
 

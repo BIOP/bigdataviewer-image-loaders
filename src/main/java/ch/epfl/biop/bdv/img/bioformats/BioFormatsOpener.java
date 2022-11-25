@@ -156,6 +156,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			boolean skipMeta
 	) throws Exception {
 
+		if (iSerie<0) throw new IllegalStateException("Invalid series number for file "+dataLocation+" iSerie = "+iSerie+" requested");
+
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
 		this.splitRGBChannels = splitRGBChannels;
@@ -174,7 +176,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 		this.filename = new File(dataLocation).getName();
 		Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
-		this.idxFilename = memoize("opener.bioformats.fileindex."+filename, cachedObjects, () -> {
+		this.idxFilename = memoize("opener.bioformats.fileindex."+dataLocation, cachedObjects, () -> {
 			cachedObjects.put("opener.bioformats.currentfileindex", currentIndexFilename + 1 );
 			return currentIndexFilename;
 		});
@@ -189,8 +191,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			this.nChannels = this.omeMeta.getChannelCount(iSerie);
 			this.nMipMapLevels = reader.getResolutionCount();
 			this.nTimePoints = reader.getSizeT();
-			this.voxelDimensions = BioFormatsTools.getSeriesVoxelDimensions(this.omeMeta,
-					this.iSerie, BioFormatsTools.getUnitFromString(unit), defaultVoxelUnit);
+			this.voxelDimensions = BioFormatsHelper.getSeriesVoxelDimensions(this.omeMeta,
+					this.iSerie, BioFormatsHelper.getUnitFromString(unit), defaultVoxelUnit);
 			this.isLittleEndian = reader.isLittleEndian();
 			this.isRGB = reader.isRGB();
 			this.format = reader.getFormat();
@@ -212,10 +214,10 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 		if (!skipMeta) {
 
-			AffineTransform3D rootTransform = BioFormatsTools.getSeriesRootTransform(
+			AffineTransform3D rootTransform = BioFormatsHelper.getSeriesRootTransform(
 					this.omeMeta, //metadata
 					iSerie, // serie
-					BioFormatsTools.getUnitFromString(unit), // unit
+					BioFormatsHelper.getUnitFromString(unit), // unit
 					positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
 					positionPostTransformMatrixArray, // AffineTransform3D for positionPostTransform,
 					defaultSpaceUnit,

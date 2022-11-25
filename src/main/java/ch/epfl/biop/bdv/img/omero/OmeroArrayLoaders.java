@@ -24,6 +24,8 @@ package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
 import ch.epfl.biop.bdv.img.ResourcePool;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
+import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileIntArray;
@@ -34,6 +36,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 // Copied from N5 Array Loader
+
+/**
+ * This class translates byte arrays given by a {@link ResourcePool}
+ * of OMERO {@link RawPixelsStorePrx} into ImgLib2 structures
+ *
+ *
+ * See also {@link OmeroSetupLoader}
+ *
+ */
 public class OmeroArrayLoaders {
 
 	/**
