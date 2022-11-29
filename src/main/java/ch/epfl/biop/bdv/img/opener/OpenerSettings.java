@@ -93,6 +93,10 @@ public class OpenerSettings {
         return location;
     }
 
+    public int getNChannels() {
+        return nChannels;
+    }
+
     public int getEntryId() { return id; }
     public int getSeries() { return id; }
 

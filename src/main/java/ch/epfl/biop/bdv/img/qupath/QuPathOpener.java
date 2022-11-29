@@ -32,7 +32,7 @@ import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroOpener;
-import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryIdEntity;
 import ch.epfl.biop.bdv.img.qupath.struct.MinimalQuPathProject;
 import ch.epfl.biop.bdv.img.qupath.struct.ProjectIO;
 import com.google.gson.Gson;
@@ -77,7 +77,7 @@ public class QuPathOpener<T> implements Opener<T> {
 
 	protected static Logger logger = LoggerFactory.getLogger(
 			QuPathOpener.class);
-	Opener<T> opener;
+	final Opener<T> opener;
 	final MinimalQuPathProject.ImageEntry image;
 	final String unit;
 	final int entryId;
@@ -152,28 +152,35 @@ public class QuPathOpener<T> implements Opener<T> {
 					// This appears to work more reliably than converting to a File
 					String filePath = Paths.get(uri).toString();
 
-					int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series")+1;
+					if (!new File(filePath).exists()) {
+						String multiLinePath = filePath.replace(File.separator, "\n\t\\");
+						throw new UnsupportedOperationException("Please fix URIs in QuPath.\nFile not found:\n " + multiLinePath);
 
-					this.opener = (Opener<T>) new BioFormatsOpener(
-							context,
-							filePath,
-							Integer.parseInt(mostInnerBuilder.args.get(indexOfSeriesId)),
-							// Location of the image
-							new AffineTransform3D().getRowPackedCopy(),
-							new AffineTransform3D().getRowPackedCopy(),
-							positionIsImageCenter,
-							new Length(1, UNITS.MICROMETER),
-							new Length(1, UNITS.MICROMETER),
-							unit,
-							// How to stream it
-							poolSize,
-							useDefaultXYBlockSize,
-							cacheBlockSize,
-							// Channel options
-							splitRGBChannels,
-							cachedObjects,
-							defaultNumberOfChannels,
-							skipMeta);
+					} else {
+
+						int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series") + 1;
+
+						this.opener = (Opener<T>) new BioFormatsOpener(
+								context,
+								filePath,
+								Integer.parseInt(mostInnerBuilder.args.get(indexOfSeriesId)),
+								// Location of the image
+								new AffineTransform3D().getRowPackedCopy(),
+								new AffineTransform3D().getRowPackedCopy(),
+								positionIsImageCenter,
+								new Length(1, UNITS.MICROMETER),
+								new Length(1, UNITS.MICROMETER),
+								unit,
+								// How to stream it
+								poolSize,
+								useDefaultXYBlockSize,
+								cacheBlockSize,
+								// Channel options
+								splitRGBChannels,
+								cachedObjects,
+								defaultNumberOfChannels,
+								skipMeta);
+					}
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
 				} else {
@@ -192,23 +199,18 @@ public class QuPathOpener<T> implements Opener<T> {
 
 						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
 					} else {
-						this.opener = null;
-						logger.error("Unsupported " +
-								mostInnerBuilder.providerClassName +
-								" provider Class Name");
-						System.out.println("Unsupported " +
+						throw new UnsupportedOperationException("Unsupported " +
 								mostInnerBuilder.providerClassName +
 								" provider Class Name");
 					}
 				}
 			} catch (Exception e) {
 				logger.error("URI Syntax error " + e.getMessage());
-				System.out.println("URI Syntax error " + e.getMessage());
-				e.printStackTrace();
+				//e.printStackTrace();
+				throw new UnsupportedOperationException(e.getMessage());
 			}
 		} else {
-			opener = null;
-			logger.error("Unsupported " + image.serverBuilder.builderType +
+			throw new UnsupportedOperationException("Unsupported " + image.serverBuilder.builderType +
 					" server builder");
 		}
 		if (!skipMeta) {
@@ -244,7 +246,7 @@ public class QuPathOpener<T> implements Opener<T> {
 				@Override
 				public List<Entity> getEntities(int iChannel) {
 					List<Entity> entities = new ArrayList<>();
-					QuPathEntryEntity entry = new QuPathEntryEntity(entryId);
+					QuPathEntryIdEntity entry = new QuPathEntryIdEntity(entryId);
 					entities.add(entry);
 					return entities;
 				}

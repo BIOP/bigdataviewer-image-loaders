@@ -111,7 +111,12 @@ public class XmlIoOpenersImageLoader implements
 		if (!invalidLocations.isEmpty()) {
 			// Houston we have an issue
 			String[] in = invalidLocations.keySet().stream().toArray(String[]::new);
-			String message_in = "<html> Please enter updated file paths for  the following files:<br> ";
+			String message_in;
+			if ((in.length)>1) {
+				message_in = "<html> Please enter updated file paths for the following files:<br> ";
+			} else {
+				message_in = "<html> Please enter updated file paths for the following file:<br> ";
+			}
 			for (String path : in) {
 				message_in+=path+"<br>";
 			}

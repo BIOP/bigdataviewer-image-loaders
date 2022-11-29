@@ -22,23 +22,17 @@
 
 package ch.epfl.biop.bdv.img.qupath.entity;
 
-import mpicbg.spim.data.generic.base.Entity;
+import mpicbg.spim.data.generic.base.ViewSetupAttributeIo;
+import mpicbg.spim.data.generic.base.XmlIoEntity;
 
-public class QuPathEntryEntity extends Entity implements
-	Comparable<QuPathEntryEntity>
+@ViewSetupAttributeIo(name = "qupathentryid",
+	type = QuPathEntryIdEntity.class)
+public class XmlIoQuPathEntryIdEntity extends
+		XmlIoEntity<QuPathEntryIdEntity>
 {
 
-	public QuPathEntryEntity(final int id) {
-		super(id);
+	public XmlIoQuPathEntryIdEntity() {
+		super("qupathentryentity", QuPathEntryIdEntity.class);
 	}
 
-	/**
-	 * Compares the {@link #getId() ids}.
-	 */
-	@Override
-	public int compareTo(final QuPathEntryEntity o) {
-		return getId() - o.getId();
-	}
-
-	protected QuPathEntryEntity() {}
 }

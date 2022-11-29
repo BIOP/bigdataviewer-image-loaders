@@ -25,6 +25,7 @@ package ch.epfl.biop.bdv.img;
 import bdv.ViewerImgLoader;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.opener.EmptyOpener;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -149,9 +150,12 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 				Opener<?> opener = settings.create(cachedObjects);
 				openers.add(opener);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
+				int nChannels = settings.getNChannels()>0?settings.getNChannels():1;
+				openers.add(new EmptyOpener(e.getMessage(), nChannels, e.getMessage(), false));
 			}
 		});
+		assert openerSettings.size() == openers.size();
 		return openers;
 	}
 

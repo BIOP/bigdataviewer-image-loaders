@@ -35,17 +35,20 @@ public class EmptyOpener implements Opener<Object> {
     String imageName;
     String message;
     ResourcePool<Object> pool;
+    Dimensions[] dimensions;
 
     OpenerMeta meta;
+    final int sx = 512, sy = 512;
 
     public EmptyOpener(String imageName, int nChannels, String message, boolean skipMeta) {
         this.message = message;
         for (int iCh = 0; iCh<nChannels; iCh++) {
             ChannelProperties channel = new ChannelProperties(iCh);
             channel.setNChannels(nChannels)
-                .setChannelColor(new ARGBType(ARGBType.rgba(128, 64, 220,128)))
+                .setChannelColor(new ARGBType(ARGBType.rgba(255, 255, 255,128)))
                 .setChannelName("Channel "+iCh)
-                .setDisplayRange(0,255);
+                .setDisplayRange(0,255)
+                    .setPixelType(new UnsignedByteType());
             channelProperties.add(channel);
         }
 
@@ -77,6 +80,21 @@ public class EmptyOpener implements Opener<Object> {
             }
         };
 
+        dimensions = new Dimensions[]{new Dimensions() {
+
+            @Override
+            public long dimension(int d) {
+                if (d == 0) return sx;
+                if (d == 1) return sy;
+                return 1;
+            }
+
+            @Override
+            public int numDimensions() {
+                return 3;
+            }
+        }};
+
     }
 
     @Override
@@ -87,7 +105,7 @@ public class EmptyOpener implements Opener<Object> {
 
     @Override
     public Dimensions[] getDimensions() {
-        return new Dimensions[0];
+        return dimensions;
     }
 
     @Override
@@ -137,7 +155,7 @@ public class EmptyOpener implements Opener<Object> {
 
     @Override
     public OpenerMeta getMeta() {
-        return null;
+        return meta;
     }
 
     @Override
@@ -230,12 +248,12 @@ public class EmptyOpener implements Opener<Object> {
 
     public static byte[] getImage(String text, int w, int h) {
 
-        Font font = new Font("Arial", Font.BOLD, 30);
+        Font font = new Font("Arial", Font.BOLD, 20);
 
         ByteProcessor ip = new ByteProcessor(w,h);
-        ip.setColor(Color.GREEN);
+        ip.setColor(Color.WHITE);
         ip.setFont(font);
-        ip.drawString(text, 20, 160);
+        ip.drawString(text, 20, 25);
         return (byte[]) ip.getPixels();
 
         /*
