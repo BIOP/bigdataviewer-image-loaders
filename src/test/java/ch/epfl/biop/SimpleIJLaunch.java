@@ -22,17 +22,17 @@
 
 package ch.epfl.biop;
 
-import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
 public class SimpleIJLaunch {
-
-	static public void main(String... args) {
+	// -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
+	static public void main(String... args) throws Exception {
 		// Arrange
 		// create the ImageJ application context with all available services
 		final ImageJ ij = new ImageJ();
+		//DebugTools.enableLogging("DEBUG");
+		//SwingUtilities.invokeAndWait(() ->);
 		ij.ui().showUI();
-		// DebugTools.enableLogging("DEBUG");
-		DebugTools.enableLogging("OFF");
+		//DebugTools.enableLogging("INFO");
 	}
 }

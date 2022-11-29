@@ -1,3 +1,4 @@
+/*
 
 package ch.epfl.biop;
 
@@ -17,11 +18,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+*/
 /**
  * Warning : a QuPath project may have its source reordered and or removed : -
  * not all entries will be present in the qupath project Limitations : only
  * images
- */
+ *//*
+
 
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open [QuPath Project (legacy)]")
@@ -106,3 +109,4 @@ public class QuPathProjectToBDVDatasetLegacyCommand extends
 		return opener;
 	}
 }
+*/

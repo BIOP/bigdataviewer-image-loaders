@@ -22,9 +22,10 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsToSpimData;
-import ch.epfl.biop.bdv.img.bioformats.samples.DatasetHelper;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
+import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
@@ -61,29 +62,44 @@ public class OpenSampleCommand implements Command {
 			File f60 = DatasetHelper.getDataset(DatasetHelper.ND2_60X);
 
 			Length micron = new Length(1, UNITS.MICROMETER);
-
 			Length millimeter = new Length(1, UNITS.MILLIMETER);
 
-			BioFormatsBdvOpener opener20 = BioFormatsBdvOpener.getOpener().location(
-				f20).auto().centerPositionConvention().millimeter()
-				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron);
+			ArrayList<OpenerSettings> settings = new ArrayList<>();
 
-			BioFormatsBdvOpener opener60 = BioFormatsBdvOpener.getOpener().location(
-				f60).auto().centerPositionConvention().millimeter()
-				.voxSizeReferenceFrameLength(millimeter).positionReferenceFrameLength(
-					micron);
+			for (int i = 0; i< BioFormatsHelper.getNSeries(f20); i++) {
+				OpenerSettings opener20 = new OpenerSettings()
+								.location(f20)
+								.centerPositionConvention()
+								.millimeter()
+								.voxSizeReferenceFrameLength(millimeter)
+								.positionReferenceFrameLength(micron)
+								.bioFormatsBuilder()
+								.setSerie(i)
+								.cornerPositionConvention();
 
-			ArrayList<BioFormatsBdvOpener> openers = new ArrayList<>();
-			openers.add(opener20);
-			openers.add(opener60);
+				settings.add(opener20);
+			}
 
-			spimData = BioFormatsToSpimData.getSpimData(openers);
+			for (int i = 0; i< BioFormatsHelper.getNSeries(f60); i++) {
+				OpenerSettings opener60 = new OpenerSettings()
+						.location(f60)
+						.centerPositionConvention()
+						.millimeter()
+						.voxSizeReferenceFrameLength(millimeter)
+						.positionReferenceFrameLength(micron)
+						.bioFormatsBuilder()
+						.setSerie(i)
+						.cornerPositionConvention();
+
+				settings.add(opener60);
+			}
+
+			spimData = OpenersToSpimData.getSpimData(settings);
 
 			return;
 		}
 		for (Field f : fields) {
-			if (f.getName().toUpperCase().equals(datasetName.toUpperCase())) {
+			if (f.getName().equals(datasetName.toUpperCase())) {
 				try {
 					// Dataset found
 					datasetName = (String) f.get(null);
@@ -94,10 +110,9 @@ public class OpenSampleCommand implements Command {
 
 					File file = DatasetHelper.getDataset(datasetName);
 
-					spimData = BioFormatsToSpimData.getSpimData(BioFormatsBdvOpener
-						.getOpener().location(file).auto().voxSizeReferenceFrameLength(
+					spimData = OpenersToSpimData.getSpimData(new OpenerSettings().location(file).voxSizeReferenceFrameLength(
 							new Length(1, UNITS.MILLIMETER)).positionReferenceFrameLength(
-								new Length(1, UNITS.MILLIMETER)));
+								new Length(1, UNITS.MILLIMETER)).bioFormatsBuilder());
 
 					return;
 				}

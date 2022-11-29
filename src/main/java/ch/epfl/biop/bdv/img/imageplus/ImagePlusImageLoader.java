@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -74,45 +74,48 @@ import java.util.function.Function;
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
 public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess>
-	implements ViewerImgLoader, TypedBasicImgLoader<T>
+		implements ViewerImgLoader, TypedBasicImgLoader<T>
 {
 
-	public static ImagePlusImageLoader<FloatType, VolatileFloatType, VolatileFloatArray>
-		createFloatInstance(final ImagePlus imp, final int offsetTime)
+	public static
+	ImagePlusImageLoader<FloatType, VolatileFloatType, VolatileFloatArray>
+	createFloatInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileFloatArray((float[]) array, true), new FloatType(),
-			new VolatileFloatType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileFloatArray(
+				(float[]) array, true), new FloatType(), new VolatileFloatType(),
+				offsetTime);
 	}
 
-	public static ImagePlusImageLoader<UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray>
-		createUnsignedShortInstance(final ImagePlus imp, final int offsetTime)
+	public static
+	ImagePlusImageLoader<UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray>
+	createUnsignedShortInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileShortArray((short[]) array, true),
-			new UnsignedShortType(), new VolatileUnsignedShortType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileShortArray(
+				(short[]) array, true), new UnsignedShortType(),
+				new VolatileUnsignedShortType(), offsetTime);
 	}
 
-	public static ImagePlusImageLoader<UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray>
-		createUnsignedByteInstance(final ImagePlus imp, final int offsetTime)
+	public static
+	ImagePlusImageLoader<UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray>
+	createUnsignedByteInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileByteArray((byte[]) array, true),
-			new UnsignedByteType(), new VolatileUnsignedByteType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileByteArray(
+				(byte[]) array, true), new UnsignedByteType(),
+				new VolatileUnsignedByteType(), offsetTime);
 	}
 
-	public static ImagePlusImageLoader<ARGBType, VolatileARGBType, VolatileIntArray>
-		createARGBInstance(final ImagePlus imp, final int offsetTime)
+	public static
+	ImagePlusImageLoader<ARGBType, VolatileARGBType, VolatileIntArray>
+	createARGBInstance(final ImagePlus imp, final int offsetTime)
 	{
-		return new ImagePlusImageLoader<>(imp,
-			array -> new VolatileIntArray((int[]) array, true), new ARGBType(),
-			new VolatileARGBType(), offsetTime);
+		return new ImagePlusImageLoader<>(imp, array -> new VolatileIntArray(
+				(int[]) array, true), new ARGBType(), new VolatileARGBType(), offsetTime);
 	}
 
-	private static double[][] mipmapResolutions = new double[][] { { 1, 1, 1 } };
+	private static final double[][] mipmapResolutions = new double[][] { { 1, 1, 1 } };
 
-	private static AffineTransform3D[] mipmapTransforms =
-		new AffineTransform3D[] { new AffineTransform3D() };
+	private static final AffineTransform3D[] mipmapTransforms =
+			new AffineTransform3D[] { new AffineTransform3D() };
 
 	private final CacheArrayLoader<A> loader;
 
@@ -156,18 +159,18 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 								   final int timeOffset)
 	{
 		this.loader = new VirtualStackArrayLoader<>(imp, wrapPixels, getByteCount(
-			type.getNativeTypeFactory().getPrimitiveType()));
+				type.getNativeTypeFactory().getPrimitiveType()));
 		this.imp = imp;
 		this.timeShift = timeOffset;
 		dimensions = new long[] { imp.getWidth(), imp.getHeight(), imp
-			.getNSlices() };
+				.getNSlices() };
 		cellDimensions = new int[] { imp.getWidth(), imp.getHeight(), 1 };
 		final int numSetups = imp.getNChannels();
 		cache = new VolatileGlobalCellCache(1, 1);
 		setupImgLoaders = new HashMap<>();
 		for (int setupId = 0; setupId < numSetups; ++setupId)
 			setupImgLoaders.put(setupId, new SetupImgLoader(setupId, type,
-				volatileType, timeOffset));
+					volatileType, timeOffset));
 	}
 
 	protected ImagePlusImageLoader(final ImagePlus imp,
@@ -195,7 +198,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 		private final int bytesPerElement;
 
 		public VirtualStackArrayLoader(final ImagePlus imp,
-			final Function<Object, A> wrapPixels, final int bytesPerElement)
+									   final Function<Object, A> wrapPixels, final int bytesPerElement)
 		{
 			this.imp = imp;
 			this.wrapPixels = wrapPixels;
@@ -204,13 +207,13 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 
 		@Override
 		public A loadArray(final int timepoint, final int setup, final int level,
-			final int[] dimensions, final long[] min) throws InterruptedException
+						   final int[] dimensions, final long[] min) throws InterruptedException
 		{
 			final int channel = setup + 1;
 			final int slice = (int) min[2] + 1;
 			final int frame = timepoint + 1;
 			return wrapPixels.apply(imp.getStack().getProcessor(imp.getStackIndex(
-				channel, slice, frame)).getPixels());
+					channel, slice, frame)).getPixels());
 		}
 
 		@Override
@@ -226,7 +229,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 		private final int timeOffset;
 
 		protected SetupImgLoader(final int setupId, final T type,
-			final V volatileType, final int timeOffset)
+								 final V volatileType, final int timeOffset)
 		{
 			super(type, volatileType);
 			this.setupId = setupId;
@@ -235,23 +238,23 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 
 		@Override
 		public RandomAccessibleInterval<V> getVolatileImage(final int timepointId,
-			final int level, final ImgLoaderHint... hints)
+															final int level, final ImgLoaderHint... hints)
 		{
 			return prepareCachedImage(timepointId - timeOffset, level,
-				LoadingStrategy.BUDGETED, volatileType);
+					LoadingStrategy.BUDGETED, volatileType);
 		}
 
 		@Override
 		public RandomAccessibleInterval<T> getImage(final int timepointId,
-			final int level, final ImgLoaderHint... hints)
+													final int level, final ImgLoaderHint... hints)
 		{
 			return prepareCachedImage(timepointId - timeOffset, level,
-				LoadingStrategy.BLOCKING, type);
+					LoadingStrategy.BLOCKING, type);
 		}
 
 		/**
 		 * Create a {@link CachedCellImg} backed by the cache.
-		 * 
+		 *
 		 * @param timepointId timepoint
 		 * @param level resolution level
 		 * @param loadingStrategy loading strategy
@@ -260,15 +263,15 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 		 * @return a {@link CachedCellImg} backed by the cache.
 		 */
 		protected <T extends NativeType<T>> AbstractCellImg<T, A, ?, ?>
-			prepareCachedImage(final int timepointId, final int level,
-				final LoadingStrategy loadingStrategy, final T type)
+		prepareCachedImage(final int timepointId, final int level,
+						   final LoadingStrategy loadingStrategy, final T type)
 		{
 			final int priority = 0;
 			final CacheHints cacheHints = new CacheHints(loadingStrategy, priority,
-				false);
+					false);
 			final CellGrid grid = new CellGrid(dimensions, cellDimensions);
 			return cache.createImg(grid, timepointId, setupId, level, cacheHints,
-				loader, type);
+					loader, type);
 		}
 
 		@Override

@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
@@ -33,43 +34,62 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 // Copied from N5 Array Loader
+
+/**
+ * This class translates byte arrays given by a {@link ResourcePool}
+ * of Bio-Formats {@link IFormatReader} into ImgLib2 structures
+ *
+ * Supported pixel types:
+ * - unsigned 8-bits integer
+ * - unsigned 16-bits integer
+ * - float (java sense : 32 bits float)
+ * - rgb (24 bits in Bio-Formats, translated to {@link net.imglib2.type.numeric.ARGBType} 32 bits)
+ * - signed 32-bits integer
+ *
+ * See also {@link BioFormatsSetupLoader}
+ *
+ */
 public class BioFormatsArrayLoaders {
 
+	/**
+	 * Generic class with the necessary elements to read and load pixels
+	 */
 	abstract static class BioformatsArrayLoader {
 
-		final protected ReaderPool readerPool;
-		final protected int series;
+		final protected ResourcePool<IFormatReader> readerPool;
 		final protected int channel;
-		final protected boolean switchZandC;
+		final protected int iSeries;
 
-		public BioformatsArrayLoader(ReaderPool readerPool, int series, int channel,
-			boolean switchZandC)
+		private BioformatsArrayLoader(ResourcePool<IFormatReader> readerPool, int channel, int iSeries)
 		{
 			this.readerPool = readerPool;
-			this.series = series;
 			this.channel = channel;
-			this.switchZandC = switchZandC;
+			this.iSeries = iSeries;
 		}
 
 	}
 
-	public static class BioFormatsUnsignedByteArrayLoader extends
+	/**
+	 * Class explaining how to read and load pixels of type : Unsigned Byte (8 bits)
+	 */
+	protected static class BioFormatsUnsignedByteArrayLoader extends
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
 	{
 
-		public BioFormatsUnsignedByteArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC)
+		protected BioFormatsUnsignedByteArrayLoader(ResourcePool<IFormatReader> readerPool,
+			int channel, int iSeries)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(readerPool, channel, iSeries);
 		}
 
 		@Override
 		public VolatileByteArray loadArray(int timepoint, int setup, int level,
-			int[] dimensions, long[] min) throws InterruptedException
+										   int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -81,28 +101,18 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				if (dimensions[2] == 1) {
-					// Optimisation (maybe useful ? should avoid an array allocation and
-					// the ByteBuffer overhead
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						minZ, timepoint) : reader.getIndex(minZ, channel, timepoint), minX,
-						minY, w, h);
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
+
+				// read pixels
+				ByteBuffer buffer = ByteBuffer.allocate(nElements);
+				for (int z = minZ; z < maxZ; z++) {
+					byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
+							timepoint), minX, minY, w, h);
+					buffer.put(bytesCurrentPlane);
 				}
-				else {
-					byte[] bytes = new byte[nElements];
-					int offset = 0;
-					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
-						System.arraycopy(bytesCurrentPlane, 0, bytes, offset, nElements);
-						offset += nElements;
-					}
-					readerPool.recycle(reader);
-					return new VolatileByteArray(bytes, true);
-				}
+
+				// release the reader
+				readerPool.recycle(reader);
+				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
 				throw new InterruptedException(e.getMessage());
@@ -115,16 +125,19 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : unsigned short (16 bits)
+	 */
 	public static class BioFormatsUnsignedShortArrayLoader extends
 		BioformatsArrayLoader implements CacheArrayLoader<VolatileShortArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsUnsignedShortArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		protected BioFormatsUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
+			int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -138,8 +151,9 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -151,14 +165,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// unsigned short specific transform
 				short[] shorts = new short[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asShortBuffer().get(shorts);
@@ -175,16 +194,19 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : float (32 bits)
+	 */
 	public static class BioFormatsFloatArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileFloatArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsFloatArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		protected BioFormatsFloatArrayLoader(ResourcePool<IFormatReader> readerPool,
+										  int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -198,8 +220,9 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -211,14 +234,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// float specific transform
 				float[] floats = new float[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asFloatBuffer().get(floats);
@@ -235,25 +263,29 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : RGB (3 * 8 bits)
+	 */
 	public static class BioFormatsRGBArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
-		public BioFormatsRGBArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC)
+		protected BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
+			int channel, int iSeries)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(readerPool, channel, iSeries);
 		}
 
 		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
 		// so 4 bytes
 		@Override
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
-			int[] dimensions, long[] min) throws InterruptedException
+										  int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -265,33 +297,45 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
-				byte[] bytes;
 
+				// read pixels
+				byte[] bytes;
 				if (d == 1) {
-					bytes = reader.openBytes(switchZandC ? reader.getIndex(channel, minZ,
-						timepoint) : reader.getIndex(minZ, channel, timepoint), minX, minY,
-						w, h);
+					bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
+							w, h);
 				}
 				else {
 					int nBytesPerPlane = nElements * 3;
 					bytes = new byte[nBytesPerPlane];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(switchZandC ? reader
-							.getIndex(channel, z, timepoint) : reader.getIndex(z, channel,
+						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
 								timepoint), minX, minY, w, h);
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
-							nBytesPerPlane);
+								nBytesPerPlane);
 						offset += nBytesPerPlane;
 					}
 				}
+				boolean interleaved = reader.isInterleaved();
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// RGB specific transform
 				int[] ints = new int[nElements];
 				int idxPx = 0;
-				for (int i = 0; i < nElements; i++) {
-					ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
-						((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
-					idxPx += 3;
+				if (interleaved) {
+					for (int i = 0; i < nElements; i++) {
+						ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
+								((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
+						idxPx += 3;
+					}
+				} else {
+					int bOffset = 2*nElements;
+					for (int i = 0; i < nElements; i++) {
+						ints[i] = ((bytes[idxPx] & 0xff) << 16 ) | ((bytes[idxPx+nElements] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
+						idxPx += 1;
+					}
 				}
 				return new VolatileIntArray(ints, true);
 			}
@@ -306,16 +350,19 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
+	/**
+	 * Class explaining how to read and load pixels of type : signed int (32 bits)
+	 */
 	public static class BioFormatsIntArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
 
 		final ByteOrder byteOrder;
 
-		public BioFormatsIntArrayLoader(ReaderPool readerPool, int series,
-			int channel, boolean switchZandC, boolean littleEndian)
+		protected BioFormatsIntArrayLoader(ResourcePool<IFormatReader> readerPool,
+										int channel, int iSeries, boolean littleEndian)
 		{
-			super(readerPool, series, channel, switchZandC);
+			super(readerPool, channel, iSeries);
 			if (littleEndian) {
 				byteOrder = ByteOrder.LITTLE_ENDIAN;
 			}
@@ -329,8 +376,9 @@ public class BioFormatsArrayLoaders {
 			int[] dimensions, long[] min) throws InterruptedException
 		{
 			try {
+				// get the reader
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(series);
+				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -342,14 +390,19 @@ public class BioFormatsArrayLoaders {
 				int h = maxY - minY;
 				int d = maxZ - minZ;
 				int nElements = (w * h * d);
+
+				// read pixels
 				ByteBuffer buffer = ByteBuffer.allocate(nElements * 4);
 				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytes = reader.openBytes(switchZandC ? reader.getIndex(channel,
-						z, timepoint) : reader.getIndex(z, channel, timepoint), minX, minY,
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
 						w, h);
 					buffer.put(bytes);
 				}
+
+				// release the reader
 				readerPool.recycle(reader);
+
+				// int specific transform
 				int[] ints = new int[nElements];
 				buffer.flip();
 				buffer.order(byteOrder).asIntBuffer().get(ints);
@@ -365,5 +418,4 @@ public class BioFormatsArrayLoaders {
 			return 4;
 		}
 	}
-
 }

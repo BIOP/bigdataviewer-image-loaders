@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>32.0.0</version>
+		<version>33.2.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-image-loaders</artifactId>
-	<version>0.2.1-SNAPSHOT</version>
+	<version>0.4.0-SNAPSHOT</version>
 
 	<name>Biop bigdataviewer image loaders</name>
 	<description>Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)</description>
@@ -251,8 +251,20 @@
 		</dependency>
 
 		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-biop-tools</artifactId>
+			<version>0.5.8</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-omero</artifactId>
 		</dependency>
 
 		<dependency>

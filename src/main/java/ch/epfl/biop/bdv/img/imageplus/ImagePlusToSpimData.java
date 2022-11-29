@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -50,14 +50,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ImagePlusToSpimData
-{
+public class ImagePlusToSpimData {
 
 	static final private Logger logger = LoggerFactory.getLogger(
-		ImagePlusToSpimData.class);
+			ImagePlusToSpimData.class);
 
 	// Function stolen and modified from bigdataviewer_fiji
-	public static AbstractSpimData<?> getSpimData(ImagePlus imp) throws UnsupportedOperationException {
+	public static AbstractSpimData<?> getSpimData(ImagePlus imp)
+			throws UnsupportedOperationException
+	{
 		// check the image type
 		switch (imp.getType()) {
 			case ImagePlus.GRAY8:
@@ -79,7 +80,7 @@ public class ImagePlusToSpimData
 		String punit = imp.getCalibration().getUnit();
 		if (punit == null || punit.isEmpty()) punit = "px";
 		final FinalVoxelDimensions voxelSize = new FinalVoxelDimensions(punit, pw,
-			ph, pd);
+				ph, pd);
 		final int w = imp.getWidth();
 		final int h = imp.getHeight();
 		final int d = imp.getNSlices();
@@ -90,21 +91,21 @@ public class ImagePlusToSpimData
 		{
 			switch (imp.getType()) {
 				case ImagePlus.GRAY8:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedByteInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedByteInstance(imp,
+							originTimePoint);
 					break;
 				case ImagePlus.GRAY16:
-					imgLoader = ImagePlusImageLoader
-						.createUnsignedShortInstance(imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createUnsignedShortInstance(imp,
+							originTimePoint);
 					break;
 				case ImagePlus.GRAY32:
-					imgLoader = ImagePlusImageLoader.createFloatInstance(
-						imp, originTimePoint);
+					imgLoader = ImagePlusImageLoader.createFloatInstance(imp,
+							originTimePoint);
 					break;
 				case ImagePlus.COLOR_RGB:
 				default:
 					imgLoader = ImagePlusImageLoader.createARGBInstance(imp,
-						originTimePoint);
+							originTimePoint);
 					break;
 			}
 		}
@@ -118,7 +119,7 @@ public class ImagePlusToSpimData
 		ImagePlus[] impSingleChannel = ChannelSplitter.split(imp);
 		for (int s = 0; s < numSetups; ++s) {
 			final BasicViewSetup setup = new BasicViewSetup(s, String.format(imp
-				.getTitle() + " channel %d", s + 1), size, voxelSize);
+					.getTitle() + " channel %d", s + 1), size, voxelSize);
 			setup.setAttribute(new Channel(s + 1));
 			Displaysettings ds = new Displaysettings(s + 1);
 			ds.min = impSingleChannel[s].getDisplayRangeMin();
@@ -130,7 +131,7 @@ public class ImagePlusToSpimData
 				ds.isSet = true;
 				LUT lut = impSingleChannel[s].getProcessor().getLut();
 				ds.color = new int[] { lut.getRed(255), lut.getGreen(255), lut.getBlue(
-					255), lut.getAlpha(255) };
+						255), lut.getAlpha(255) };
 			}
 			setup.setAttribute(ds);
 			setups.put(s, setup);
@@ -156,11 +157,11 @@ public class ImagePlusToSpimData
 		for (int t = 0; t < numTimepoints + originTimePoint; ++t)
 			timepoints.add(new TimePoint(t));
 		final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal(
-			new TimePoints(timepoints), setups, imgLoader, mv);
+				new TimePoints(timepoints), setups, imgLoader, mv);
 
 		// create ViewRegistrations from the images calibration
 		final AffineTransform3D sourceTransform = ImagePlusHelper
-			.getMatrixFromImagePlus(imp);
+				.getMatrixFromImagePlus(imp);
 		final ArrayList<ViewRegistration> registrations = new ArrayList<>();
 		for (int t = 0; t < numTimepoints + originTimePoint; ++t)
 			for (int s = 0; s < numSetups; ++s)
@@ -168,10 +169,8 @@ public class ImagePlusToSpimData
 
 		final File basePath = new File(".");
 
-		final AbstractSpimData<?> spimData = new SpimDataMinimal(basePath, seq,
-			new ViewRegistrations(registrations));
-
-		return spimData;
+		return new SpimDataMinimal(basePath, seq,
+				new ViewRegistrations(registrations));
 	}
 
 }
