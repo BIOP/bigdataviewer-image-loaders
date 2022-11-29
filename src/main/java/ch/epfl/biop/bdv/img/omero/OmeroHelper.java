@@ -80,7 +80,7 @@ public class OmeroHelper {
 	 * @param userName OMERO User
 	 * @param password Password for OMERO User
 	 * @return OMERO gateway (Gateway for simplifying access to an OMERO server)
-	 * @throws Exception
+	 * @throws DSOutOfServiceException
 	 */
 	public static Gateway omeroConnect(String hostname, int port, String userName,
 		String password) throws DSOutOfServiceException
@@ -112,7 +112,6 @@ public class OmeroHelper {
 	 * @param gateway OMERO gateway
 	 * @return Security context hosting information required to access correct
 	 *         connector
-	 * @throws Exception
 	 */
 	public static SecurityContext getSecurityContext(Gateway gateway)
 	{

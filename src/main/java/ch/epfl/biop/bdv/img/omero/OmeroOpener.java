@@ -146,9 +146,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
 	 * image to open (i.e image size for all resolution levels..)
-	 * 
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public OmeroOpener(
 			Context context,

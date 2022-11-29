@@ -92,7 +92,6 @@ public class QuPathOpener<T> implements Opener<T> {
 	 * @param useDefaultXYBlockSize
 	 * @param cacheBlockSize
 	 * @param splitRGBChannels
-	 * @return
 	 */
 	public QuPathOpener(// opener core option
 						Context context,
