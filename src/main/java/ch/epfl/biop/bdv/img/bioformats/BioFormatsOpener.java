@@ -182,7 +182,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		});
 
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
-				cachedObjects, () -> new ReaderPool(poolSize, true, this::getNewReader));
+				cachedObjects,
+				() -> new ReaderPool(poolSize, true, this::getNewReader));
 
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
 			IFormatReader reader = pool.takeOrCreate();

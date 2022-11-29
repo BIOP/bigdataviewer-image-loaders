@@ -164,6 +164,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		System.out.println(datalocation);
 		URL url = new URL(datalocation);
 		host = url.getHost();
+
 		OMEROSession session = OmeroHelper.getGatewayAndSecurityContext(context, host);
 
 		if (exception != null) throw exception;
@@ -653,7 +654,9 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	public void close() throws IOException {
 		pool.shutDown(store -> {
 			try {
-				store.close();
+				if (gateway.isConnected()) {
+					store.close();
+				}
 			} catch (ServerError e) {
 				e.printStackTrace();
 			}
