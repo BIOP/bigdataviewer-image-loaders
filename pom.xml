@@ -250,12 +250,12 @@
 			<version>${bigdataviewer-spimdata-extras.version}</version>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
 			<version>0.5.8</version>
-			<scope>test</scope>
-		</dependency>
+			<scope>${bigdataviewer-biop-tools.version}</scope>
+		</dependency>-->
 
 		<dependency>
 			<groupId>net.imglib2</groupId>
