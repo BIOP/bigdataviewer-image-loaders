@@ -46,7 +46,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class BioFormatsHelper {
-
+	/**
+	 * Class logger
+	 */
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsHelper.class);
 
