@@ -107,14 +107,14 @@ public interface Opener<T> extends Closeable {
 
         /**
          * @param iChannel
-         * @return the list of {@link Entity} for the specified channel {@param iChannel}
+         * @return the list of {@link Entity} for the specified channel
          * that are then added to a {@link mpicbg.spim.data.sequence.ViewSetup}
          */
         List<Entity> getEntities(int iChannel);
 
         /**
          * @param iChannel
-         * @return properties of the specified channel {@param iChannel}
+         * @return properties of the specified channel
          */
         ChannelProperties getChannel(int iChannel);
 
