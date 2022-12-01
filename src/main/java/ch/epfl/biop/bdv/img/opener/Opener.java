@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  * Contains a list of common methods to retrieve necessary objects to load images on BDV
  * and create SpimData instances.
  *
- * This interface has a parameter {@param <T>} to be compatible with the different openers (BioFormats, OMERO).
+ * This interface has a parameter to be compatible with the different openers (BioFormats, OMERO).
  * It corresponds to the type of {@link ResourcePool}.
  *
  */
