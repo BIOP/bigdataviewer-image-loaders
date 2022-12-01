@@ -28,7 +28,7 @@ public interface Opener<T> extends Closeable {
 
     /**
      * @param level of resolution
-     * @return the size of each square that is loaded for the specified resolution {@param level}
+     * @return the size of each square that is loaded for the specified resolution
      */
     int[] getCellDimensions(int level);
 
