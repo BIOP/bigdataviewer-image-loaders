@@ -27,6 +27,7 @@ import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.Angle;
+import mpicbg.spim.data.sequence.Channel;
 import mpicbg.spim.data.sequence.Illumination;
 import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.Volatile;
@@ -85,7 +86,7 @@ public class OpenerHelper {
         entityClasses.put(Tile.class.getSimpleName().toUpperCase(), Tile.class);
         entityClasses.put(Illumination.class.getSimpleName().toUpperCase(), Illumination.class);
         entityClasses.put(Angle.class.getSimpleName().toUpperCase(), Angle.class);
-
+        entityClasses.put(Channel.class.getSimpleName().toUpperCase(), Channel.class);
         entityClasses.put(FileName.class.getSimpleName().toUpperCase(), FileName.class);
         entityClasses.put(SeriesIndex.class.getSimpleName().toUpperCase(), SeriesIndex.class);
         entityClasses.put(ImageName.class.getSimpleName().toUpperCase(), ImageName.class);
