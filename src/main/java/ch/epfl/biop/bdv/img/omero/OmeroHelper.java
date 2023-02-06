@@ -344,7 +344,7 @@ public class OmeroHelper {
 				imageIDs.add(Long.valueOf(parts[0].substring(parts[0].indexOf("=")+1)));
 			}
 		} else {
-			System.out.println("Invalid OMERO URL");
+			System.err.println("Can't parse OMERO URL "+omeroURL);
 		}
 		return imageIDs;
 	}

@@ -103,7 +103,7 @@ public class OpenSampleCommand implements Command {
 				try {
 					// Dataset found
 					datasetName = (String) f.get(null);
-					System.out.println(datasetName);
+					//System.out.println(datasetName);
 					if (datasetName.equals(DatasetHelper.VSI)) {
 						DatasetHelper.getSampleVSIDataset();
 					}

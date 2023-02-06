@@ -159,7 +159,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 			int defaultNumberOfChannels,
 			boolean skipMeta
 	) throws Exception {
-		System.out.println(datalocation);
+		//System.out.println(datalocation);
 		URL url = new URL(datalocation);
 		host = url.getHost();
 

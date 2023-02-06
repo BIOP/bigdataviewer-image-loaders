@@ -131,7 +131,7 @@ public class OpenersToSpimData {
                 logger.debug("There are "+opener.getNChannels()+" channels.");
 
                 ImageName imageName = new ImageName(iOpener, opener.getMeta().getImageName());
-                System.out.println("ImageName ["+imageName.getId()+"] = "+imageName.getName());
+                //System.out.println("ImageName ["+imageName.getId()+"] = "+imageName.getName());
 
                 channels.forEach(iCh -> {
                     // get channel properties

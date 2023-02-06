@@ -176,7 +176,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 			String keySetup = iC+"."+openers.get(viewSetupToOpenerChannel.get(setupId).openerIndex).getRawPixelDataKey();
 
 			if (rawPixelDataChannelToSetupLoader.containsKey(keySetup)) {
-				System.out.println("Reuse "+keySetup);
+				//System.out.println("Reuse "+keySetup);
 				OpenerSetupLoader<?,?,?> loader = rawPixelDataChannelToSetupLoader.get(keySetup);
 				setupLoaders.put(setupId, loader);
 				return loader;
