@@ -141,7 +141,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 		mmResolutions[0][1] = 1;
 		mmResolutions[0][2] = 1;
 
-		int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
+		/*int[] srcL0dims = new int[] { (int) dimensions[0].dimension(0),
 									  (int) dimensions[0].dimension(1),
 				  					  (int) dimensions[0].dimension(2) };
 		for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
@@ -151,6 +151,29 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 			mmResolutions[iLevel][0] = (double) srcL0dims[0] / (double) srcLidims[0];
 			mmResolutions[iLevel][1] = (double) srcL0dims[1] / (double) srcLidims[1];
 			mmResolutions[iLevel][2] = (double) srcL0dims[2] / (double) srcLidims[2];
+		}*/
+		// compute mipmap levels
+		// Fix vsi issue see https://forum.image.sc/t/qupath-omero-weird-pyramid-levels/65484
+		if (opener.getImageFormat().equals("CellSens")) {
+			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
+				double downscalingFactor = Math.pow(2, iLevel);
+				mmResolutions[iLevel][0] = downscalingFactor;
+				mmResolutions[iLevel][1] = downscalingFactor;
+				mmResolutions[iLevel][2] = 1;
+			}
+		}
+		else {
+			int[] srcL0dims = new int[]{(int) dimensions[0].dimension(0),
+					(int) dimensions[0].dimension(1),
+					(int) dimensions[0].dimension(2)};
+			for (int iLevel = 1; iLevel < numMipmapLevels; iLevel++) {
+				int[] srcLidims = new int[]{(int) dimensions[iLevel].dimension(0),
+						(int) dimensions[iLevel].dimension(1),
+						(int) dimensions[iLevel].dimension(2)};
+				mmResolutions[iLevel][0] = (double) srcL0dims[0] / (double) srcLidims[0];
+				mmResolutions[iLevel][1] = (double) srcL0dims[1] / (double) srcLidims[1];
+				mmResolutions[iLevel][2] = (double) srcL0dims[2] / (double) srcLidims[2];
+			}
 		}
 
 		// get the ArrayLoader corresponding to the pixelType

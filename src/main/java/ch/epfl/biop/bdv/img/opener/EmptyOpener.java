@@ -165,6 +165,11 @@ public class EmptyOpener implements Opener<Object> {
     }
 
     @Override
+    public String getImageFormat() {
+        return "Empty";
+    }
+
+    @Override
     public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
         return new EmptySetupLoader<>(message);
     }

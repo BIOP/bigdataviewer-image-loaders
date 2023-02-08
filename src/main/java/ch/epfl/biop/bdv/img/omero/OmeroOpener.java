@@ -143,6 +143,8 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	final OpenerMeta meta;
 
+	final String format;
+
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
 	 * image to open (i.e image size for all resolution levels..)
@@ -271,9 +273,13 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 		this.pixelType = getNumericType(pixels);
 
+		ImageData imageData = getImageData(imageID, gateway, securityContext);
+		this.format = imageData.asImage().getFormat().getValue().getValue();
+		String imageName = imageData.getName();
+
 		if (!skipMeta) {
 
-			String imageName = getImageData(imageID, gateway, securityContext).getName();
+
 			List<ChannelData> channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, imageID);
 			RenderingDef renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
 
@@ -603,6 +609,11 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	// OMERO always produce big-endian pixels
 	public boolean isLittleEndian() {
 		return false;
+	}
+
+	@Override
+	public String getImageFormat() {
+		return this.format;
 	}
 
 	@Override

@@ -376,9 +376,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	}
 
 	// GETTERS
-	public String getReaderFormat() {
-		return this.format;
-	}
+	@Override
+	public String getImageFormat() {return this.format;}
 
 	/**
 	 * @param sizeX

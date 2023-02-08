@@ -95,6 +95,13 @@ public interface Opener<T> extends Closeable {
     boolean isLittleEndian();
 
     /**
+     * @return the image format
+     */
+    String getImageFormat();
+
+
+
+    /**
      * @return opener's setup loader
      */
     OpenerSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,

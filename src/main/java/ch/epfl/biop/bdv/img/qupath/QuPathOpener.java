@@ -545,6 +545,11 @@ public class QuPathOpener<T> implements Opener<T> {
 	}
 
 	@Override
+	public String getImageFormat() {
+		return this.opener.getImageFormat();
+	}
+
+	@Override
 	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return this.opener.getSetupLoader(channelIdx, setupIdx, cacheSupplier);
 	}

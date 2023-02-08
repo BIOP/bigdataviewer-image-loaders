@@ -150,6 +150,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 				Opener<?> opener = settings.create(cachedObjects);
 				openers.add(opener);
 			} catch (Exception e) {
+				System.err.println("Error in opener "+e.getMessage()+" : "+settings.toString());
 				logger.error(e.getMessage());
 				int nChannels = settings.getNChannels()>0?settings.getNChannels():1;
 				openers.add(new EmptyOpener(e.getMessage(), nChannels, e.getMessage(), false));
