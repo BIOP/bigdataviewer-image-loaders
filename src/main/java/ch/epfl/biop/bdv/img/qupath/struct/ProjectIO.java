@@ -4,7 +4,7 @@ package ch.epfl.biop.bdv.img.qupath.struct;
  * #%L
  * Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)
  * %%
- * Copyright (C) 2022 ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)
+ * Copyright (C) 2022 - 2023 ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
