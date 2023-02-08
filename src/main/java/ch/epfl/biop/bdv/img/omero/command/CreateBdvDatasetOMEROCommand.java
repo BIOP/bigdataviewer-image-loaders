@@ -24,9 +24,7 @@ package ch.epfl.biop.bdv.img.omero.command;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import net.imagej.ImageJ;
 import org.apache.commons.lang.time.StopWatch;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -77,7 +75,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 			String[] omeroIDstrings = omero_urls.split(",");
 
 			for (String s : omeroIDstrings) {
-				IJ.log("Getting settings for omero url " + s);
+				logger.debug("Getting settings for omero url " + s);
 
 				// create a new settings and modify it
 				OpenerSettings settings =
@@ -100,23 +98,6 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * This main function serves for development purposes. It allows you to run
-	 * the plugin immediately out of your integrated development environment
-	 * (IDE).
-	 *
-	 * @param args whatever, it's ignored
-	 * @throws Exception
-	 */
-	public static void main(final String... args) throws Exception {
-		// create the ImageJ application context with all available services
-		final ImageJ ij = new ImageJ();
-		ij.ui().showUI();
-
-		ij.command().run(CreateBdvDatasetOMEROCommand.class, true).get();
-
 	}
 
 }

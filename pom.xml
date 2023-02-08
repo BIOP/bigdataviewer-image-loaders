@@ -139,7 +139,7 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.3.1 </bigdataviewer-spimdata-extras.version>
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
 
@@ -237,25 +237,11 @@
 			<artifactId>bigdataviewer-core</artifactId>
 		</dependency>
 
-		<!--dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.version}</version>
-			<scope>test</scope>
-		</dependency-->
-
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-spimdata-extras</artifactId>
 			<version>${bigdataviewer-spimdata-extras.version}</version>
 		</dependency>
-
-		<!--<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-biop-tools</artifactId>
-			<version>0.5.8</version>
-			<scope>${bigdataviewer-biop-tools.version}</scope>
-		</dependency>-->
 
 		<dependency>
 			<groupId>net.imglib2</groupId>
@@ -265,6 +251,11 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-omero</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-legacy</artifactId>
 		</dependency>
 
 		<dependency>

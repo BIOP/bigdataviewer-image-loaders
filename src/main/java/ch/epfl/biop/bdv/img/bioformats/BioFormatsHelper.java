@@ -22,7 +22,6 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
-import ij.IJ;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
@@ -68,7 +67,7 @@ public class BioFormatsHelper {
 			watch.stop();
 			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
 		} catch (Exception e) {
-			IJ.log("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
+			System.err.println("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
 		}
 
 		return nSeries;
