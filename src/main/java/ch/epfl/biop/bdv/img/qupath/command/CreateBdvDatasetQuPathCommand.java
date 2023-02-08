@@ -71,11 +71,11 @@ public class CreateBdvDatasetQuPathCommand implements Command
 	AbstractSpimData spimData;
 
 	@Parameter(label = "Split RGB channels")
-	boolean splitRGB = false;
+	boolean split_rgb_channels = false;
 
 	@Parameter(required = false,
-			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
-	String position_convention = "CENTER"; // Split rgb channels to allow for best
+			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+	String plane_origin_convention = "CENTER";
 
 	@Override
 	public void run() {
@@ -93,11 +93,11 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 				OpenerSettings openerSettings =
 						OpenerSettings.QuPath()
-								.splitRGBChannels(splitRGB)
+								.splitRGBChannels(split_rgb_channels)
 								.location(quPathProject.getAbsolutePath())
 								.setEntry(image.entryID)
 								.unit(unit)
-								.positionConvention(position_convention)
+								.positionConvention(plane_origin_convention)
 								.context(context)
 								.quPathBuilder();
 

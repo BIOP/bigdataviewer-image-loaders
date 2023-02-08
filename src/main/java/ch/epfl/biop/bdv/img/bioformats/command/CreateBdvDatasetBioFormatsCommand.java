@@ -52,15 +52,15 @@ public class CreateBdvDatasetBioFormatsCommand implements
 		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
-	@Parameter(required = false,
-			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
-	String position_convention = "CENTER"; // Split rgb channels to allow for best
-
 	@Parameter(label = "Dataset files")
 	File[] files;
 
 	@Parameter(label = "Split RGB channels")
-	boolean splitrgbchannels;
+	boolean split_rgb_channels = false;
+
+	@Parameter(required = false,
+			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+	String plane_origin_convention = "CENTER";
 
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimdata;
@@ -78,8 +78,8 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.location(f)
 								.setSerie(i)
 								.unit(unit)
-								.splitRGBChannels(splitrgbchannels)
-								.positionConvention(position_convention)
+								.splitRGBChannels(split_rgb_channels)
+								.positionConvention(plane_origin_convention)
 								.cornerPositionConvention()
 								.context(ctx));
 			}

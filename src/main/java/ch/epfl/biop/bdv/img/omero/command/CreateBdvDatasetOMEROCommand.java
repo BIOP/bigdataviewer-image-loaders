@@ -56,7 +56,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 	public String datasetname = "dataset";
 
 	@Parameter(label = "OMERO URLs", style = "text area")
-	public String omeroIDs;
+	public String omero_urls;
 
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData spimdata;
@@ -67,14 +67,14 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 	public String unit = "MILLIMETER";
 
 	@Parameter(required = false,
-			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
-	String position_convention = "CENTER"; // Split rgb channels to allow for best
+			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+	String plane_origin_convention = "CENTER";
 
 
 	public void run() {
 		try {
 			List<OpenerSettings> openersSettings = new ArrayList<>();
-			String[] omeroIDstrings = omeroIDs.split(",");
+			String[] omeroIDstrings = omero_urls.split(",");
 
 			for (String s : omeroIDstrings) {
 				IJ.log("Getting settings for omero url " + s);
@@ -85,7 +85,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 						.context(context)
 						.location(s)
 						.unit(unit)
-						.positionConvention(position_convention);
+						.positionConvention(plane_origin_convention);
 
 				openersSettings.add(settings);
 			}
