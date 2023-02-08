@@ -25,14 +25,12 @@ import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroOpener;
 import ch.epfl.biop.bdv.img.qupath.QuPathOpener;
 import com.google.gson.Gson;
-import net.imglib2.FinalInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import omero.model.enums.UnitsLength;
+//import omero.model.enums.UnitsLength;
 import org.scijava.Context;
-import org.scijava.util.VersionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +73,7 @@ public class OpenerSettings {
     //---- Target unit : the unit in which the image will be opened
     transient Length defaultSpaceUnit = new Length(1,UNITS.MICROMETER);
     transient Length defaultVoxelUnit = new Length(1,UNITS.MICROMETER);
-    transient String unit = UnitsLength.MICROMETER.toString();
+    String unit = "MICROMETER";//UnitsLength.MICROMETER.toString();
 
     //---- How to open the dataset (block size, number of readers per image)
     int nReader = 10; // parallel reading : number of pixel readers allowed
@@ -274,10 +272,10 @@ public class OpenerSettings {
     }
 
     // define unit
-    public OpenerSettings unit(UnitsLength u) {
+    /*public OpenerSettings unit(UnitsLength u) {
         this.unit = u.toString();
         return this;
-    }
+    }*/
 
    public OpenerSettings unit(String u) {
        this.unit = u;
@@ -295,17 +293,17 @@ public class OpenerSettings {
     }
 
     public OpenerSettings millimeter() {
-        this.unit = UnitsLength.MILLIMETER.toString();
+        this.unit = UNITS.MILLIMETER.toString();//UnitsLength.MILLIMETER.toString();
         return this;
     }
 
     public OpenerSettings micrometer() {
-        this.unit = UnitsLength.MICROMETER.toString();
+        this.unit = UNITS.MICROMETER.toString();//UnitsLength.MICROMETER.toString();
         return this;
     }
 
     public OpenerSettings nanometer() {
-        this.unit = UnitsLength.NANOMETER.toString();
+        this.unit = UNITS.NANOMETER.toString();//UnitsLength.NANOMETER.toString();
         return this;
     }
 
