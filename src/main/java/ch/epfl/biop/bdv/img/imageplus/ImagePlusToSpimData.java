@@ -115,21 +115,21 @@ public class ImagePlusToSpimData {
 
 		// create setups from channels
 		final HashMap<Integer, BasicViewSetup> setups = new HashMap<>(numSetups);
-
-		ImagePlus[] impSingleChannel = ChannelSplitter.split(imp);
 		for (int s = 0; s < numSetups; ++s) {
 			final BasicViewSetup setup = new BasicViewSetup(s, String.format(imp
 					.getTitle() + " channel %d", s + 1), size, voxelSize);
 			setup.setAttribute(new Channel(s + 1));
 			Displaysettings ds = new Displaysettings(s + 1);
-			ds.min = impSingleChannel[s].getDisplayRangeMin();
-			ds.max = impSingleChannel[s].getDisplayRangeMax();
+			imp.setPositionWithoutUpdate(s+1,1,1);
+			ds.min = imp.getDisplayRangeMin();
+			ds.max = imp.getDisplayRangeMax();
 			if (imp.getType() == ImagePlus.COLOR_RGB) {
 				ds.isSet = false;
 			}
 			else {
 				ds.isSet = true;
-				LUT lut = impSingleChannel[s].getProcessor().getLut();
+				LUT[] luts = imp.getLuts();
+				LUT lut = luts.length>s ? luts[s]:luts[0];
 				ds.color = new int[] { lut.getRed(255), lut.getGreen(255), lut.getBlue(
 						255), lut.getAlpha(255) };
 			}
