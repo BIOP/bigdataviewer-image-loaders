@@ -99,8 +99,6 @@ public interface Opener<T> extends Closeable {
      */
     String getImageFormat();
 
-
-
     /**
      * @return opener's setup loader
      */

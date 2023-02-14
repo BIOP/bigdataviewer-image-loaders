@@ -461,7 +461,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	}
 
 	@Override
-	public Type<? extends NumericType> getPixelType() {
+	public Type<? extends NumericType<?>> getPixelType() {
 		return this.t;
 	}
 

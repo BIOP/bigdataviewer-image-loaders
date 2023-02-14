@@ -654,7 +654,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	}
 
 	@Override
-	public Type<? extends NumericType> getPixelType() {
+	public Type<? extends NumericType<?>> getPixelType() {
 		return this.pixelType;
 	}
 
