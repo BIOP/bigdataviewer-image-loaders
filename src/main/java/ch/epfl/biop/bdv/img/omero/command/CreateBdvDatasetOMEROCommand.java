@@ -58,7 +58,7 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 	public String omero_urls;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimdata;
+	AbstractSpimData<?> spimdata;
 
 	// Parameter for dataset creation
 	@Parameter(required = false, label = "Physical units of the dataset",

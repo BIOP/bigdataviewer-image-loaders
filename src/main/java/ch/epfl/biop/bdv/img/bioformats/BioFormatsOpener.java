@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -88,7 +89,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final boolean isLittleEndian;
 	private final boolean isRGB;
 	private final VoxelDimensions voxelDimensions;
-	private final Type<? extends NumericType> t;
+	private final Type<? extends NumericType<?>> t;
 
 	// -------- Resolutions options
 	private final int[] cellDimensions;
@@ -169,7 +170,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 						+"."+iSerie;
 
 		if (!useDefaultXYBlockSize) {
-			buildRawPixelDataKey += "."+cacheBlockSize.toString();
+			buildRawPixelDataKey += "."+ Arrays.toString(cacheBlockSize);
 		}
 
 		this.rawPixelDataKey = buildRawPixelDataKey;
@@ -316,8 +317,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	/**
 	 * Build a new IFormatReader to retrieve all pixels and channels information of an image opened
 	 * with BioFormats.
-	 *
-	 * Be careful : calling this method can take some time. Need to call it as less times as possible.
+	 * <p>
+	 * Be careful : calling this method can take some time.
 	 *
 	 * @return the reader
 	 */
@@ -346,7 +347,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	 * @return the bdv compatible pixel type
 	 * @throws UnsupportedOperationException
 	 */
-	private static Type<? extends NumericType> getBioformatsBdvSourceType(PixelType pt, boolean isReaderRGB,
+	private static Type<? extends NumericType<?>> getBioformatsBdvSourceType(PixelType pt, boolean isReaderRGB,
 																		  int image_index) throws UnsupportedOperationException
 	{
 		if (isReaderRGB) {

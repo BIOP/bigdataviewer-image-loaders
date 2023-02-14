@@ -72,7 +72,7 @@ public class BdvShowFileBioFormatsCommand
 							.positionConvention(position_convention));
 		}
 
-		final AbstractSpimData spimData = OpenersToSpimData.getSpimData(openerSettings);
+		final AbstractSpimData<?> spimData = OpenersToSpimData.getSpimData(openerSettings);
 		BdvFunctions.show(spimData);
 	}
 

@@ -106,11 +106,11 @@ public class XmlIoOpenersImageLoader implements
 				.filter(openerSettings ->
 						(openerSettings.getType().equals(OpenerSettings.OpenerType.BIOFORMATS)||(openerSettings.getType().equals(OpenerSettings.OpenerType.QUPATH))))
 				.filter(openerSettings -> !new File(openerSettings.getLocation()).exists())
-				.collect(Collectors.groupingBy(o -> o.getLocation(), LinkedHashMap::new, Collectors.toList()));
+				.collect(Collectors.groupingBy(OpenerSettings::getLocation, LinkedHashMap::new, Collectors.toList()));
 
 		if (!invalidLocations.isEmpty()) {
 			// Houston we have an issue
-			String[] in = invalidLocations.keySet().stream().toArray(String[]::new);
+			String[] in = invalidLocations.keySet().toArray(new String[0]);
 			String message_in;
 			if ((in.length)>1) {
 				message_in = "<html> Please enter updated file paths for the following files:<br> ";
@@ -138,9 +138,7 @@ public class XmlIoOpenersImageLoader implements
 						openerSettings.location(oldToNew.get(openerSettings.getLocation()));
 					});
 				});
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
+			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}

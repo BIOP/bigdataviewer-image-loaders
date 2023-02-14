@@ -107,7 +107,7 @@ public class BioFormatsToSpimData {
 	final Map<Integer, FileSerieChannel> viewSetupToBFFileSerieChannel =
 		new HashMap<>();
 
-	protected AbstractSpimData getSpimDataInstance(
+	protected AbstractSpimData<?> getSpimDataInstance(
 		List<BioFormatsBdvOpener> openers)
 	{
 		openers.forEach(BioFormatsBdvOpener::ignoreMetadata); // necessary for spimdata
@@ -326,24 +326,24 @@ public class BioFormatsToSpimData {
 		}
 	}
 
-	public static AbstractSpimData getSpimData(
+	public static AbstractSpimData<?> getSpimData(
 		List<BioFormatsBdvOpener> openers)
 	{
 		return new BioFormatsToSpimData().getSpimDataInstance(openers);
 	}
 
-	public static AbstractSpimData getSpimData(BioFormatsBdvOpener opener) {
+	public static AbstractSpimData<?> getSpimData(BioFormatsBdvOpener opener) {
 		ArrayList<BioFormatsBdvOpener> singleOpenerList = new ArrayList<>();
 		singleOpenerList.add(opener);
 		return BioFormatsToSpimData.getSpimData(singleOpenerList);
 	}
 
-	public static AbstractSpimData getSpimData(File f) {
+	public static AbstractSpimData<?> getSpimData(File f) {
 		BioFormatsBdvOpener opener = getDefaultOpener(f.getAbsolutePath());
 		return getSpimData(opener);
 	}
 
-	public static AbstractSpimData getSpimData(File[] files) {
+	public static AbstractSpimData<?> getSpimData(File[] files) {
 		ArrayList<BioFormatsBdvOpener> openers = new ArrayList<>();
 		for (File f : files) {
 			openers.add(getDefaultOpener(f.getAbsolutePath()));

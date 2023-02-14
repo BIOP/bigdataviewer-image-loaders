@@ -71,9 +71,9 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 
 	int viewSetupCounter = 0;
 
-	final Map<Integer, Map<Integer, NumericType>> tTypeGetter = new HashMap<>();
+	final Map<Integer, Map<Integer, NumericType<?>>> tTypeGetter = new HashMap<>();
 
-	final Map<Integer, Map<Integer, Volatile>> vTypeGetter = new HashMap<>();
+	final Map<Integer, Map<Integer, Volatile<?>>> vTypeGetter = new HashMap<>();
 
 	final HashMap<Integer, BioFormatsSetupLoader> imgLoaders = new HashMap<>();
 
@@ -141,8 +141,8 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 							viewSetupCounter++;
 						});
 						Type t = getBioformatsBdvSourceType(memo, iSerie);
-						tTypeGetter.get(iF).put(iSerie, (NumericType) t);
-						Volatile v = getVolatileOf((NumericType) t);
+						tTypeGetter.get(iF).put(iSerie, (NumericType<?>) t);
+						Volatile v = getVolatileOf((NumericType<?>) t);
 						vTypeGetter.get(iF).put(iSerie, v);
 					});
 					memo.close();
@@ -207,7 +207,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 		}
 	}
 
-	public static Type getBioformatsBdvSourceType(IFormatReader reader,
+	public static NumericType<?> getBioformatsBdvSourceType(IFormatReader reader,
 		int image_index) throws UnsupportedOperationException
 	{
 		final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();

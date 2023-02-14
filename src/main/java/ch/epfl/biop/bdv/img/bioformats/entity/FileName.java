@@ -28,11 +28,11 @@ import mpicbg.spim.data.generic.base.NamedEntity;
  * Just storing the filename of the series within - does not store the path
  * because it is hard to update the path within an {@link NamedEntity}
  * and it's probably not what it had been designed for.
- *
+ * <p>
  * Note : you can have multiple files in a dataset backed by a
  * {@link ch.epfl.biop.bdv.img.OpenersImageLoader}, which is where
  * you will find this entity.
- *
+ * <p>
  * TODO : check if two files with identical names but different path
  * get different ids in the {@link ch.epfl.biop.bdv.img.OpenersImageLoader}
  * Hum, now two different paths should lead to two different FileName entities

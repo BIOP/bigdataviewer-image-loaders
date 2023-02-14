@@ -108,7 +108,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	final int nTimePoints;
 
 	// -------- Pixels characteristics
-	final Type<? extends NumericType> pixelType;
+	final Type<? extends NumericType<?>> pixelType;
 	final String unit;
 	final double psizeX;
 	final double psizeY;
@@ -147,7 +147,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
-	 * image to open (i.e image size for all resolution levels..)
+	 * image to open (i.e. image size for all resolution levels..)
 	 *
 	 */
 	public OmeroOpener(
@@ -354,7 +354,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 					AffineTransform3D transform = new AffineTransform3D();
 					transform.identity();
 					transform.scale(psizeX, psizeY, psizeZ);
-					transform.translate(new double[]{stagePosX, stagePosY, 0});// TODO : find Z ? getStagePosX(), getStagePosY(), 0});
+					transform.translate(stagePosX, stagePosY, 0);// TODO : find Z ? getStagePosX(), getStagePosY(), 0});
 					return transform;
 				}
 
@@ -390,7 +390,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	 * @return
 	 * @throws BigResult
 	 */
-	static List<ChannelProperties> getChannelProperties(List<ChannelData> channelMetadata, RenderingDef rd, int nChannels, Type<? extends  NumericType> pixType, Boolean isRGB) throws BigResult {
+	static List<ChannelProperties> getChannelProperties(List<ChannelData> channelMetadata, RenderingDef rd, int nChannels, Type<? extends  NumericType<?>> pixType, Boolean isRGB) throws BigResult {
 		List<ChannelProperties> channelPropertiesList = new ArrayList<>();
 		for(int i = 0; i < nChannels; i++){
 			channelPropertiesList.add(new ChannelProperties(i)
@@ -459,7 +459,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	 * @param pixels : OMERO compatible pixel type
 	 * @return BDV compatible pixel type
 	 */
-	private static Type<? extends  NumericType> getNumericType(PixelsData pixels)  {
+	private static Type<? extends  NumericType<?>> getNumericType(PixelsData pixels)  {
 		switch (pixels.getPixelType()) {
 			case FLOAT_TYPE:
 				return new FloatType();

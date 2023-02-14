@@ -57,7 +57,7 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends
     File[] files;
 
     @Parameter(type = ItemIO.OUTPUT)
-    AbstractSpimData spimdata;
+    AbstractSpimData<?> spimdata;
 
 
     public void run() {

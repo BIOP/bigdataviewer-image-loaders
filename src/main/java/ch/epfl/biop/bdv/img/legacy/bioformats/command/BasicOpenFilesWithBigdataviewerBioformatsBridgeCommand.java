@@ -40,8 +40,8 @@ import java.util.List;
 /*
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>(Legacy) Open [BioFormats Bdv Bridge (Basic)]",
-	description = "Support bioformats multiresolution API. Attempts to set colors based " +
-		"on bioformats metadata. Do not attempt auto contrast.")
+	description = "Support bio-formats multi-resolution API. Attempts to set colors based " +
+		"on bio-formats metadata. Do not attempt auto contrast.")
  */
 @SuppressWarnings({ "CanBeFinal", "unused"})
 public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
@@ -65,7 +65,7 @@ public class BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand implements
 	boolean splitrgbchannels;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimdata;
+	AbstractSpimData<?> spimdata;
 
 	public void run() {
 		List<BioFormatsBdvOpener> openers = new ArrayList<>();

@@ -64,7 +64,7 @@ public class QuPathProjectToBDVDatasetLegacyCommand extends
 	public String datasetname = ""; // Cheat to allow dataset renaming
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimData;
+	AbstractSpimData<?> spimData;
 
 	@Override
 	public void run() {

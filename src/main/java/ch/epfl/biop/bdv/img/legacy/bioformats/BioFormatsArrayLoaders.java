@@ -32,11 +32,11 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-@Deprecated
-// Copied from N5 Array Loader
 /**
+ * Copied from N5 Array Loader
  * Bytes loaders for bio-formats readers
  */
+@Deprecated
 public class BioFormatsArrayLoaders {
 
 	abstract static class BioformatsArrayLoader {

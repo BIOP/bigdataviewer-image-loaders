@@ -69,7 +69,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 	public String unit = "MILLIMETER";
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimData;
+	AbstractSpimData<?> spimData;
 
 	@Parameter(label = "Split RGB channels")
 	boolean split_rgb_channels = false;

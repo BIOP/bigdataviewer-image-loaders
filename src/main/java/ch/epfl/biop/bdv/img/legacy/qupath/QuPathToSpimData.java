@@ -121,7 +121,7 @@ public class QuPathToSpimData {
 	final Map<Integer, MinimalQuPathProject.ImageEntry> viewSetupToImageEntry =
 		new HashMap<>();
 
-	public AbstractSpimData getSpimDataInstance(URI quPathProject,
+	public AbstractSpimData<?> getSpimDataInstance(URI quPathProject,
 		final BioFormatsBdvOpener openerModel)
 	{
 
@@ -171,8 +171,7 @@ public class QuPathToSpimData {
 							180.0) * Math.PI;
 					}
 					MinimalQuPathProject.ServerBuilderMetadata metadata =
-						image.serverBuilder.metadata; // To keep the metadata (pixel size
-																					// for instance)
+						image.serverBuilder.metadata; // To keep the metadata (pixel size for instance)
 					image.serverBuilder = image.serverBuilder.builder; // Skips the
 																															// rotation
 					image.serverBuilder.metadata = metadata;
@@ -191,7 +190,7 @@ public class QuPathToSpimData {
 							// This appears to work more reliably than converting to a File
 							String filePath = Paths.get(uri).toString();
 
-							if (!openerMap.keySet().contains(image.serverBuilder.uri)) {
+							if (!openerMap.containsKey(image.serverBuilder.uri)) {
 								BioFormatsBdvOpener opener = new BioFormatsBdvOpener(
 									openerModel).location(Paths.get(uri).toString());
 								opener = opener.ignoreMetadata();

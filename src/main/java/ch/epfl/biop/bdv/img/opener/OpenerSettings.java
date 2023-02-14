@@ -43,16 +43,16 @@ import java.util.Map;
 /**
  * Equivalent to a Builder class, serializable, which can create an {@link Opener}
  * An opener can open and stream data for a 5D image (XYZCT)
- *
+ * <p>
  * This builder class should be easily serializable
- *
+ * <p>
  * Opener can open data from
  * - BioFormats
  * - Omero
  * - More to come...
- *
+ * <p>
  * Depending on the kind of opener, transient fields are required (Gateway and Context) for Omero
- *
+ * <p>
  * */
 public class OpenerSettings {
 

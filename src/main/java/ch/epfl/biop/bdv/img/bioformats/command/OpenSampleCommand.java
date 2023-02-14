@@ -52,7 +52,7 @@ public class OpenSampleCommand implements Command {
 	String datasetName;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimData;
+	AbstractSpimData<?> spimData;
 
 	public void run() {
 		// Find the datasetname through reflection

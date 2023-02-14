@@ -38,7 +38,7 @@ import java.nio.ByteOrder;
 /**
  * This class translates byte arrays given by a {@link ResourcePool}
  * of OMERO {@link RawPixelsStorePrx} into ImgLib2 structures
- *
+ * <p>
  *
  * See also {@link OmeroSetupLoader}
  *

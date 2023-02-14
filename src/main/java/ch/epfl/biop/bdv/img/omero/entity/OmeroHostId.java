@@ -27,7 +27,7 @@ import mpicbg.spim.data.generic.base.NamedEntity;
 /**
  * The name is the host
  * The id is the ImageId within the OMERO 'host' server
- *
+ * <p>
  * ISSUE : ONLY INT IS ALLOWED AS ID, BUT IMAGEID from OMERO can be a LONG TODO : Fix
  */
 public class OmeroHostId extends NamedEntity implements Comparable<OmeroHostId> {

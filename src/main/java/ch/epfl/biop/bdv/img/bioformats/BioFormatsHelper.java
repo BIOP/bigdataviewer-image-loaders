@@ -253,8 +253,8 @@ public class BioFormatsHelper {
 			2.0), -(dims.dimension(2) / 2.0));
 
 		AffineTransform3D translateBwd = new AffineTransform3D();
-		translateBwd.translate(+(dims.dimension(0) / 2.0), +(dims.dimension(1) /
-			2.0), +(dims.dimension(2) / 2.0));
+		translateBwd.translate((dims.dimension(0) / 2.0), (dims.dimension(1) /
+			2.0), (dims.dimension(2) / 2.0));
 
 		AffineTransform3D flip = new AffineTransform3D();
 		flip.scale(axesFlip[0] ? -1 : 1, axesFlip[1] ? -1 : 1, axesFlip[2] ? -1
@@ -430,7 +430,7 @@ public class BioFormatsHelper {
 			new ArrayList<>();
 
 		for (String str : splitIndexes) {
-			str.trim();
+			str = str.trim();
 			String seriesIdentifier = str;
 			String channelIdentifier = "*";
 			if (str.contains(".")) {
@@ -523,7 +523,7 @@ public class BioFormatsHelper {
 		String[] splitIndexes = expression.split(",");
 		ArrayList<Integer> arrayOfIndexes = new ArrayList<>();
 		for (String str : splitIndexes) {
-			str.trim();
+			str = str.trim();
 			if (str.contains(":")) {
 				// Array of source, like 2:5 = 2,3,4,5
 				String[] boundIndex = str.split(":");
@@ -593,9 +593,7 @@ public class BioFormatsHelper {
 			if (f.getType().equals(Unit.class)) {
 				if (f.getName() != null) {
 					try {
-						if (f.getName().toUpperCase().equals(unit_string.trim()
-							.toUpperCase()) || ((Unit) (f.get(null))).getSymbol()
-								.toUpperCase().equals(unit_string.trim().toUpperCase()))
+						if (f.getName().equalsIgnoreCase(unit_string.trim()) || ((Unit<Length>) (f.get(null))).getSymbol().equalsIgnoreCase(unit_string.trim()))
 						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
 							// {
 							// Field found

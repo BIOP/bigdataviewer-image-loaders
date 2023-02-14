@@ -38,14 +38,14 @@ import java.nio.ByteOrder;
 /**
  * This class translates byte arrays given by a {@link ResourcePool}
  * of Bio-Formats {@link IFormatReader} into ImgLib2 structures
- *
+ * <p>
  * Supported pixel types:
  * - unsigned 8-bits integer
  * - unsigned 16-bits integer
  * - float (java sense : 32 bits float)
  * - rgb (24 bits in Bio-Formats, translated to {@link net.imglib2.type.numeric.ARGBType} 32 bits)
  * - signed 32-bits integer
- *
+ * <p>
  * See also {@link BioFormatsSetupLoader}
  *
  */

@@ -61,7 +61,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	final Map<Integer, OpenerSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
 
 	// -------- setupLoader optimisation
-	final Map<String, Opener> rawPixelDataChannelToOpener = new HashMap<>();
+	final Map<String, Opener<?>> rawPixelDataChannelToOpener = new HashMap<>();
 	final Map<String, OpenerSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
 
 	// -------- How to open image (threads, cache)
@@ -231,7 +231,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	/**
 	 * Small class to save opener and channel index together
 	 */
-	public class OpenerAndChannelIndex {
+	public static class OpenerAndChannelIndex {
 		final int openerIndex;
 		final int channelIndex;
 

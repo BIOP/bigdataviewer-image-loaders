@@ -56,7 +56,7 @@ public class ChannelProperties {
     // pixel infos
     double displayRangeMin = 0.0;
     double displayRangeMax = 255.0;
-    transient Type<? extends  NumericType> pixelType;
+    transient Type<? extends  NumericType<?>> pixelType;
     Boolean isRGB = false;
 
     // Wavelength and color
@@ -300,7 +300,7 @@ public class ChannelProperties {
      * @param pixelType
      * @return
      */
-    public ChannelProperties setPixelType(Type<? extends  NumericType> pixelType){
+    public ChannelProperties setPixelType(Type<? extends  NumericType<?>> pixelType){
         this.pixelType = pixelType;
         return this;
     }
@@ -327,7 +327,7 @@ public class ChannelProperties {
 
 
     /**
-     * taken from https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb
+     * taken from <a href="https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb">...</a>
      * @param wv
      * @return
      */
@@ -339,7 +339,7 @@ public class ChannelProperties {
     /**
      * Taken from Earl F. Glynn's web page:
      * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra
-     * Lab Report</a> Return a RGB array encoding a color from an input wavelength
+     * Lab Report</a> Return an RGB array encoding a color from an input wavelength
      * in nm
      */
     public static int[] waveLengthToRGB(double Wavelength) {

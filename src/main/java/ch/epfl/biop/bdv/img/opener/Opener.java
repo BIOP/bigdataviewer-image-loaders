@@ -37,10 +37,10 @@ import java.util.function.Supplier;
 
 /**
  * Interface for all specific openers.
- *
+ * <p>
  * Contains a list of common methods to retrieve necessary objects to load images on BDV
  * and create SpimData instances.
- *
+ * <p>
  * This interface has a parameter to be compatible with the different openers (BioFormats, OMERO).
  * It corresponds to the type of {@link ResourcePool}.
  *
@@ -81,7 +81,7 @@ public interface Opener<T> extends Closeable {
     /**
      * @return BDV compatible pixel type
      */
-    Type<? extends NumericType> getPixelType();
+    Type<? extends NumericType<?>> getPixelType();
 
 
     /**
@@ -110,7 +110,7 @@ public interface Opener<T> extends Closeable {
     /**
      * @return A string that identifies uniquely the raw pixel data of this
      * opener, and the way the raw data are opened
-     *
+     * <p>
      * This is used to avoid loading several times the same data. If rawDataKeys
      * are equals, and given the fact that the data is read only, the setup loaders
      * from duplicated data will be redirected to a single one.
@@ -120,7 +120,7 @@ public interface Opener<T> extends Closeable {
     OpenerMeta getMeta();
 
     /**
-     * Contains informations that are optionally initialized
+     * Contains information that are optionally initialized
      * This can speed up OMERO opener by avoiding unecessary requests
      */
     interface OpenerMeta {

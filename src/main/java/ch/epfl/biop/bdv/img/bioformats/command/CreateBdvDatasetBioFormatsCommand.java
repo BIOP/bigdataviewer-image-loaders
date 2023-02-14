@@ -63,7 +63,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	String plane_origin_convention = "CENTER";
 
 	@Parameter(type = ItemIO.OUTPUT)
-	AbstractSpimData spimdata;
+	AbstractSpimData<?> spimdata;
 
 	@Parameter
 	Context ctx;

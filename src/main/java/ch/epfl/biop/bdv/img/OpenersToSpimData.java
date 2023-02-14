@@ -57,7 +57,7 @@ import java.util.stream.IntStream;
 
 /**
  * Converting generic image structure (BioFormats, Omero, QuPath entries, OpenSlide or other)
- * into an Xml Dataset, compatible for
+ * into a Xml Dataset, compatible for
  * BigDataViewer and Fiji BIG Plugins
  * Limitation: Series are considered as Tiles,
  * no Illumination or Angle is considered
@@ -90,7 +90,7 @@ public class OpenersToSpimData {
      * @param openerSettings
      * @return
      */
-    protected AbstractSpimData getSpimDataInstance(List<OpenerSettings> openerSettings) {
+    protected AbstractSpimData<?> getSpimDataInstance(List<OpenerSettings> openerSettings) {
 
         // No Illumination
         Illumination dummy_ill = new Illumination(0);
@@ -248,7 +248,7 @@ public class OpenersToSpimData {
      * @param openersSettings
      * @return
      */
-    public static AbstractSpimData getSpimData(List<OpenerSettings> openersSettings) {
+    public static AbstractSpimData<?> getSpimData(List<OpenerSettings> openersSettings) {
         return new OpenersToSpimData().getSpimDataInstance(openersSettings);
     }
 
@@ -257,7 +257,7 @@ public class OpenersToSpimData {
      * @param openerSetting
      * @return
      */
-    public static AbstractSpimData getSpimData(OpenerSettings openerSetting) {
+    public static AbstractSpimData<?> getSpimData(OpenerSettings openerSetting) {
         ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();
         singleOpenerList.add(openerSetting);
         return OpenersToSpimData.getSpimData(singleOpenerList);

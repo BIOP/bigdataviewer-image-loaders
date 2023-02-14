@@ -93,7 +93,7 @@ public class OmeroHelper {
 		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
 		SecurityContext ctx = getSecurityContext(gateway);
 		Collection<Long> datasetIds = new ArrayList<>();
-		datasetIds.add(new Long(DatasetID));
+		datasetIds.add(DatasetID);
 		return browse.getImagesForDatasets(ctx, datasetIds);
 	}
 
@@ -123,8 +123,7 @@ public class OmeroHelper {
 			if (f.getType().equals(UnitsLength.class)) {
 				if (f.getName() != null) {
 					try {
-						if (f.getName().toUpperCase().equals(unit_string.trim()
-								.toUpperCase()))
+						if (f.getName().equalsIgnoreCase(unit_string.trim()))
 						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
 							// {
 							// Field found
@@ -268,7 +267,7 @@ public class OmeroHelper {
 			for(int i = 1; i<parts.length; i++) {
 				if (parts[i].contains("dataset")) {
 					String[] subParts = parts[i].split("\\|dataset");
-					long datasetID = Long.valueOf(subParts[0]);
+					long datasetID = Long.parseLong(subParts[0]);
 					BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
 					Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetID));
 					Iterator<ImageData> j = images.iterator();
@@ -279,7 +278,7 @@ public class OmeroHelper {
 					}
 				}
 			}
-			long datasetID = Long.valueOf(parts[parts.length-1]);
+			long datasetID = Long.parseLong(parts[parts.length-1]);
 			BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
 			Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetID));
 			Iterator<ImageData> j = images.iterator();
@@ -296,7 +295,7 @@ public class OmeroHelper {
 			int index = findIndexOfStringInStringArray(parts,"img_detail")+1;
 			imageIDs.add(Long.valueOf(parts[index]));
 
-			// case single or multiple image(s) link, pasted from iviewer (iviewer opened with the "open with.." option)
+			// case single or multiple image(s) link, pasted from iviewer (iviewer opened with the "open with" option)
 			// Single image example: https://hostname/iviewer/?images=4737&dataset=604
 			// Multiple images example: https://hostname/iviewer/?images=4736,4737,4738,4739
 		} else if (query.contains("images=")) {

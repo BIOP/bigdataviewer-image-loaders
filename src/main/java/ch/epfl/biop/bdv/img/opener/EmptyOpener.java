@@ -150,7 +150,7 @@ public class EmptyOpener implements Opener<Object> {
     }
 
     @Override
-    public Type<? extends NumericType> getPixelType() {
+    public Type<? extends NumericType<?>> getPixelType() {
         return new UnsignedByteType();
     }
 
@@ -227,9 +227,8 @@ public class EmptyOpener implements Opener<Object> {
             byte[] rawImage = EmptyOpener.getImage(message, 512, 512);
             zeRAI = factory.create(new long[]{512,512,1}, new UnsignedByteType(), cell -> {
                 int iPix = 0;
-                for (Iterator<UnsignedByteType> it = Views.flatIterable(cell).iterator(); it.hasNext(); ) {
-                    UnsignedByteType pixel = it.next();
-                    pixel.set(255-rawImage[iPix]);
+                for (UnsignedByteType pixel : Views.flatIterable(cell)) {
+                    pixel.set(255 - rawImage[iPix]);
                     iPix++;
                 }
             });

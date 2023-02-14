@@ -68,7 +68,7 @@ import java.util.function.Supplier;
  * data There are some limitations: only bioformats image server, rotated image
  * server and omero-raw image server are supported ( among probably other
  * limitations ). Also, editing files in the QuPath project after it has been
- * converted to an xml bdv dataset is not guaranteed to work.
+ * converted to a xml bdv dataset is not guaranteed to work.
  *
  * @author Rémy Dornier, EPFL, BIOP, 2022
  * @author Nicolas Chiaruttini, EPFL, BIOP, 2021
@@ -525,7 +525,7 @@ public class QuPathOpener<T> implements Opener<T> {
 	}
 
 	@Override
-	public Type<? extends NumericType> getPixelType() {
+	public Type<? extends NumericType<?>> getPixelType() {
 		return this.opener.getPixelType();
 	}
 
