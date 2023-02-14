@@ -30,9 +30,7 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

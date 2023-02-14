@@ -52,13 +52,13 @@ import java.util.function.Supplier;
 
 public class EmptyOpener implements Opener<Object> {
 
-    List<ChannelProperties> channelProperties = new ArrayList<>();
+    final List<ChannelProperties> channelProperties = new ArrayList<>();
     String imageName;
-    String message;
-    ResourcePool<Object> pool;
-    Dimensions[] dimensions;
+    final String message;
+    final ResourcePool<Object> pool;
+    final Dimensions[] dimensions;
 
-    OpenerMeta meta;
+    final OpenerMeta meta;
     final int sx = 512, sy = 512;
 
     public EmptyOpener(String imageName, int nChannels, String message, boolean skipMeta) {
@@ -185,7 +185,7 @@ public class EmptyOpener implements Opener<Object> {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         // Nothing to be done
     }
 

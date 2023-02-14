@@ -61,8 +61,8 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	final Map<Integer, OpenerSetupLoader<?,?,?>> setupLoaders = new HashMap<>();
 
 	// -------- setupLoader optimisation
-	Map<String, Opener> rawPixelDataChannelToOpener = new HashMap<>();
-	Map<String, OpenerSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
+	final Map<String, Opener> rawPixelDataChannelToOpener = new HashMap<>();
+	final Map<String, OpenerSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
 
 	// -------- How to open image (threads, cache)
 	protected final VolatileGlobalCellCache cache;

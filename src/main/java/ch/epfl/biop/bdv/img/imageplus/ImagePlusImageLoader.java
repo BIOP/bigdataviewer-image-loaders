@@ -148,7 +148,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 		return this.imp;
 	}
 
-	int timeShift;
+	final int timeShift;
 
 	public int getTimeShift() {
 		return timeShift;
@@ -207,7 +207,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 
 		@Override
 		public A loadArray(final int timepoint, final int setup, final int level,
-						   final int[] dimensions, final long[] min) throws InterruptedException
+						   final int[] dimensions, final long[] min)
 		{
 			final int channel = setup + 1;
 			final int slice = (int) min[2] + 1;

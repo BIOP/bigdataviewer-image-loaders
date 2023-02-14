@@ -35,7 +35,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({ "Unused", "CanBeFinal" })
+@SuppressWarnings({"Unused", "CanBeFinal", "unused"})
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
 	description = "Support Bio-Formats multiresolution API. Set colors based " +

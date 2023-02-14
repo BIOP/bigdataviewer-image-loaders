@@ -44,6 +44,7 @@ import java.util.List;
 /**
  */
 
+@SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath]")
 public class CreateBdvDatasetQuPathCommand implements Command

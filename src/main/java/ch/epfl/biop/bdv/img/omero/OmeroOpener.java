@@ -434,8 +434,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		SecurityContext ctx) throws Exception
 	{
 		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-		ImageData image = browse.getImage(ctx, imageID);
-		return image;
+		return browse.getImage(ctx, imageID);
 	}
 
 
@@ -660,7 +659,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		pool.shutDown(store -> {
 			try {
 				if (gateway.isConnected()) {
@@ -674,7 +673,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	public static class RawPixelsStorePool extends ResourcePool<RawPixelsStorePrx> {
 
-		Supplier<RawPixelsStorePrx> rpsSupplier;
+		final Supplier<RawPixelsStorePrx> rpsSupplier;
 
 		public RawPixelsStorePool(int size, Boolean dynamicCreation,
 								  Supplier<RawPixelsStorePrx> rawPixelStoreSupplier)

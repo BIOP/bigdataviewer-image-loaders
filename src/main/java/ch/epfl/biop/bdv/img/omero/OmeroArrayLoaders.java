@@ -24,8 +24,6 @@ package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
 import ch.epfl.biop.bdv.img.ResourcePool;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsSetupLoader;
-import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileIntArray;
@@ -278,126 +276,11 @@ public class OmeroArrayLoaders {
 			super(pixelStorePool, channel, nResolutionLevels, sx, sy, sz);
 		}
 
-		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
-		// so 4 bytes
-		/*@Override
-		public VolatileIntArray loadArray(int timepoint, int setup, int level,
-			int[] dimensions, long[] min) throws InterruptedException
-		{
-			try {
-				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
-				int minX = (int) min[0];
-				int minY = (int) min[1];
-				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], sx);
-				int maxY = Math.min(minY + dimensions[1], sy);
-				int maxZ = Math.min(minZ + dimensions[2], sz);
-				int w = maxX - minX;
-				int h = maxY - minY;
-				int d = maxZ - minZ;
-				int nElements = (w * h * d);
-
-				// read pixels
-				byte[] bytes;
-				if (d == 1) {
-					bytes = rawPixStore.getTile(minZ, channel, timepoint, minX, minY, w,
-						h);
-				}
-				else {
-					int nBytesPerPlane = nElements * 3;
-					bytes = new byte[nBytesPerPlane];
-					int offset = 0;
-					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel,
-							timepoint, minX, minY, w, h);
-						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
-							nBytesPerPlane);
-						offset += nBytesPerPlane;
-					}
-				}
-
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
-
-				// RGB specific transform
-				int[] ints = new int[nElements];
-				int idxPx = 0;
-				for (int i = 0; i < nElements; i++) {
-					ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
-						((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
-					idxPx += 3;
-				}
-				return new VolatileIntArray(ints, true);
-			}
-			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
-			}
-		}*/
-
-		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
-		// so 4 bytes
 		@Override
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
 										  int[] dimensions, long[] min) throws InterruptedException
 		{
-			try {
-				throw new UnsupportedOperationException("OMERO is not really supposed to give RGB images. But apparently that's the case. Please reach out to the developpers to fix this!");
-				/*
-				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
-				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
-				int minX = (int) min[0];
-				int minY = (int) min[1];
-				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], sx);
-				int maxY = Math.min(minY + dimensions[1], sy);
-				int maxZ = Math.min(minZ + dimensions[2], sz);
-				int w = maxX - minX;
-				int h = maxY - minY;
-				int d = maxZ - minZ;
-				int nElements = (w * h * d);
-				byte[] bytes;
-				int nBytesPerPlane = nElements * 3;
-
-				// read pixels
-				bytes = new byte[nBytesPerPlane];
-				int offset = 0;
-				for (int z = minZ; z < maxZ; z++) {
-					byte[] bytesCurrentPlane = rawPixStore.getTile(z, channel, timepoint, minX, minY,
-							w, h);;
-					System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
-							nBytesPerPlane);
-					offset += nBytesPerPlane;
-				}
-
-				boolean interleaved = false;//true;//rawPixStore.isInterleaved();
-
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
-
-				// RGB specific transform
-				int[] ints = new int[nElements];
-				int idxPx = 0;
-				if (interleaved) {
-					for (int i = 0; i < nElements; i++) {
-						ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
-								((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
-						idxPx += 3;
-					}
-				} else {
-					int bOffset = 2*nElements;
-					for (int i = 0; i < nElements; i++) {
-						ints[i] = ((bytes[idxPx] & 0xff) << 16 ) | ((bytes[idxPx+nElements] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
-						idxPx += 1;
-					}
-				}
-				return new VolatileIntArray(ints, true);*/
-			}
-			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
-			}
+			throw new IllegalStateException("OMERO is not really supposed to give RGB images. But apparently that's the case. Please reach out to the developers to fix this!");
 		}
 
 		@Override

@@ -65,10 +65,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 /**
@@ -148,9 +146,6 @@ public class QuPathToSpimData {
 				MinimalQuPathProject.class);
 
 			logger.debug("Opening QuPath project " + project.uri);
-
-			/*Set<QuPathImageLoader.QuPathBioFormatsSourceIdentifier> quPathSourceIdentifiers =
-				new HashSet<>();*/
 
 			Map<BioFormatsBdvOpener, IFormatReader> cachedReaders = new HashMap<>(); // Performance
 

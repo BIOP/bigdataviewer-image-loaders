@@ -149,7 +149,7 @@ public class BioFormatsHelper {
 	}
 
 	public static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
-		int iSerie, Unit u,
+		int iSerie, Unit<Length> u,
 		// Bioformats location fix
 		double[] positionPreTransformMA, double[] positionPostTransformMA,
 		Length positionReferenceFrameLength, boolean positionIsImageCenter,
@@ -599,7 +599,7 @@ public class BioFormatsHelper {
 						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
 							// {
 							// Field found
-							return (Unit) f.get(null); // Field is assumed to be static
+							return (Unit<Length>) f.get(null); // Field is assumed to be static
 						}
 					}
 					catch (Exception e) {

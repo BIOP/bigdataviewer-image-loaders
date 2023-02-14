@@ -21,7 +21,6 @@
  */
 package ch.epfl.biop;
 
-import IceInternal.Ex;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import ij.IJ;

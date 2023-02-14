@@ -25,7 +25,6 @@ package ch.epfl.biop.bdv.img.imageplus;
 import bdv.spimdata.SequenceDescriptionMinimal;
 import bdv.spimdata.SpimDataMinimal;
 import ij.ImagePlus;
-import ij.plugin.ChannelSplitter;
 import ij.process.LUT;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;

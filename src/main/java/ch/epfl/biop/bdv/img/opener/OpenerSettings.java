@@ -56,7 +56,7 @@ import java.util.Map;
  * */
 public class OpenerSettings {
 
-    transient static Logger logger = LoggerFactory.getLogger(OpenerSettings.class);
+    static Logger logger = LoggerFactory.getLogger(OpenerSettings.class);
 
     transient Context scijavaContext;
 
@@ -78,9 +78,7 @@ public class OpenerSettings {
     //---- How to open the dataset (block size, number of readers per image)
     int nReader = 10; // parallel reading : number of pixel readers allowed
     boolean defaultBlockSize = true; // The block size chosen is let to be defined by the opener implementation itself
-    //FinalInterval blockSize = new FinalInterval(new long[] { 0, 0,
-    //        0 }, new long[] { 512, 512, 1 }); // Default cache block size, if none is defined
-    int[] blockSize = new int[]{512,512,1};
+     int[] blockSize = new int[]{512,512,1};
 
     //-------- Channels options
     boolean splitRGB = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
@@ -270,12 +268,6 @@ public class OpenerSettings {
         splitRGB = flag;
         return this;
     }
-
-    // define unit
-    /*public OpenerSettings unit(UnitsLength u) {
-        this.unit = u.toString();
-        return this;
-    }*/
 
    public OpenerSettings unit(String u) {
        this.unit = u;

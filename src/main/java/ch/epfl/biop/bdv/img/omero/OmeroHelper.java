@@ -55,10 +55,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class OmeroHelper {
@@ -218,26 +216,6 @@ public class OmeroHelper {
 			if ((!success)&&(error!=null)) throw error;
 		}
 		return omeroSession;
-	}
-
-	/**
-	 * Minimal class saving all connection information and objects except username and password
-	 */
-	public static class GatewaySecurityContext {
-
-		public Gateway gateway;
-		public SecurityContext ctx;
-		public String host;
-		public int port;
-
-		public GatewaySecurityContext(String host, int port, Gateway gateway,
-			SecurityContext ctx)
-		{
-			this.gateway = gateway;
-			this.ctx = ctx;
-			this.host = host;
-			this.port = port;
-		}
 	}
 
 	/**

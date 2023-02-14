@@ -53,7 +53,7 @@ public class BioFormatsTools {
 		final int iSerie;
 		final int iChannel;
 		int emissionWl = 1;
-		public String chName;
+		public final String chName;
 		String pxType = "";
 		final boolean isRGB;
 

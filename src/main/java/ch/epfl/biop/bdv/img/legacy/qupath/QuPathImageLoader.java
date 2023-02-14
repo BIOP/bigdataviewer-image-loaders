@@ -74,11 +74,12 @@ public class QuPathImageLoader implements ViewerImgLoader,
 		QuPathImageLoader.class);
 
 	final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
+	@SuppressWarnings("CanBeFinal") // It's actually overriden
 	VolatileGlobalCellCache cache;
 	protected SharedQueue sq;
 	final Map<Integer, BioFormatsSetupLoader<?, ?, ?>> imgLoaders =
 		new ConcurrentHashMap<>();
-	Map<URI, BioFormatsBdvOpener> openerMap = new HashMap<>();
+	final Map<URI, BioFormatsBdvOpener> openerMap = new HashMap<>();
 
 	public final int numFetcherThreads;
 	public final int numPriorities;
@@ -291,7 +292,7 @@ public class QuPathImageLoader implements ViewerImgLoader,
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		openerMap.values().forEach(opener -> {
 			opener.getReaderPool().shutDown(reader -> {
 				try {

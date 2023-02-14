@@ -26,7 +26,7 @@ import net.imagej.ImageJ;
 
 public class SimpleIJLaunch {
 	// -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
-	static public void main(String... args) throws Exception {
+	static public void main(String... args) {
 		// Arrange
 		// create the ImageJ application context with all available services
 		final ImageJ ij = new ImageJ();

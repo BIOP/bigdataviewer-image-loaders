@@ -34,6 +34,7 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Connect",
         description = "Connect to an OMERO server", initializer = "init")

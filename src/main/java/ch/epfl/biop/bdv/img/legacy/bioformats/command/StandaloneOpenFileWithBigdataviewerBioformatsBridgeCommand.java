@@ -28,7 +28,6 @@ import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 
 import java.io.File;
 import java.util.ArrayList;

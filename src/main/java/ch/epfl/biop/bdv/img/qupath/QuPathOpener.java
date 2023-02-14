@@ -75,7 +75,7 @@ import java.util.function.Supplier;
  */
 public class QuPathOpener<T> implements Opener<T> {
 
-	protected static Logger logger = LoggerFactory.getLogger(
+	protected static final Logger logger = LoggerFactory.getLogger(
 			QuPathOpener.class);
 	final Opener<T> opener;
 	final MinimalQuPathProject.ImageEntry image;
@@ -108,7 +108,7 @@ public class QuPathOpener<T> implements Opener<T> {
 						// Optimisation : reuse existing openers
 						Map<String, Object> cachedObjects,
 						int defaultNumberOfChannels,
-						boolean skipMeta) throws Exception {
+						boolean skipMeta) throws UnsupportedOperationException {
 
 		MinimalQuPathProject project = OpenerHelper.memoize("opener.qupath.project."+dataLocation,
 				cachedObjects,

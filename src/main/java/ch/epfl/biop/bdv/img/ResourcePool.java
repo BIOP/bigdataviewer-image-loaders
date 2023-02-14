@@ -128,11 +128,11 @@ public abstract class ResourcePool<Resource> {
 	volatile boolean isClosed = false;
 
 	public synchronized void shutDown(Consumer<Resource> closer) {
-		if (isClosed == false) {
+		if (!isClosed) {
 			isClosed = true;
 			ArrayList<Resource> resources = new ArrayList<>(size);
 			pool.drainTo(resources);
-			resources.forEach(closer::accept);
+			resources.forEach(closer);
 		}
 	}
 
