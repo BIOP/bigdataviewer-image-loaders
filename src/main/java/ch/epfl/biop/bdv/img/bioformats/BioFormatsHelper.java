@@ -593,7 +593,7 @@ public class BioFormatsHelper {
 			if (f.getType().equals(Unit.class)) {
 				if (f.getName() != null) {
 					try {
-						if (f.getName().equalsIgnoreCase(unit_string.trim()) || ((Unit<Length>) (f.get(null))).getSymbol().equalsIgnoreCase(unit_string.trim()))
+						if (f.getName().equals(unit_string.trim()) || ((Unit<Length>) (f.get(null))).getSymbol().equals(unit_string.trim()))
 						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
 							// {
 							// Field found

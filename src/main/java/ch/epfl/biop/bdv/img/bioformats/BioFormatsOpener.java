@@ -47,7 +47,9 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import ome.units.UNITS;
 import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
@@ -193,8 +195,15 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			this.nChannels = this.omeMeta.getChannelCount(iSerie);
 			this.nMipMapLevels = reader.getResolutionCount();
 			this.nTimePoints = reader.getSizeT();
+
+			Unit<Length> u = BioFormatsHelper.getUnitFromString(unit);
+			if (u == null) {
+				logger.error("Could not find matching length unit from String: "+unit);
+				u = UNITS.REFERENCEFRAME;
+			}
+
 			this.voxelDimensions = BioFormatsHelper.getSeriesVoxelDimensions(this.omeMeta,
-					this.iSerie, BioFormatsHelper.getUnitFromString(unit), defaultVoxelUnit);
+					this.iSerie, u, defaultVoxelUnit);
 			this.isLittleEndian = reader.isLittleEndian();
 			this.isRGB = reader.isRGB();
 			this.format = reader.getFormat();

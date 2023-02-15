@@ -285,17 +285,17 @@ public class OpenerSettings {
     }
 
     public OpenerSettings millimeter() {
-        this.unit = UNITS.MILLIMETER.toString();//UnitsLength.MILLIMETER.toString();
+        this.unit = UNITS.MILLIMETER.getSymbol();//UnitsLength.MILLIMETER.toString();
         return this;
     }
 
     public OpenerSettings micrometer() {
-        this.unit = UNITS.MICROMETER.toString();//UnitsLength.MICROMETER.toString();
+        this.unit = UNITS.MICROMETER.getSymbol();//UnitsLength.MICROMETER.toString();
         return this;
     }
 
     public OpenerSettings nanometer() {
-        this.unit = UNITS.NANOMETER.toString();//UnitsLength.NANOMETER.toString();
+        this.unit = UNITS.NANOMETER.getSymbol();//UnitsLength.NANOMETER.toString();
         return this;
     }
 
