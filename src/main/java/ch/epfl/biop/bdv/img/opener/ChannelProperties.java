@@ -213,6 +213,7 @@ public class ChannelProperties {
                    ((iChannel+1)%3)==0?255:0,
                    ((iChannel+2)%3)==0?255:0,
                    255));
+           return this;
        }
 
        ChannelBinding cb = renderingDef.getChannelBinding(this.iChannel);
