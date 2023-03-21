@@ -206,7 +206,16 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setChannelColor(RenderingDef renderingDef){
-        ChannelBinding cb = renderingDef.getChannelBinding(this.iChannel);
+       if (renderingDef == null) {
+           logger.warn("No rendering definition found!");
+           this.color =  new ARGBType(ARGBType.rgba(
+                   (iChannel%3)==0?255:0,
+                   ((iChannel+1)%3)==0?255:0,
+                   ((iChannel+2)%3)==0?255:0,
+                   255));
+       }
+
+       ChannelBinding cb = renderingDef.getChannelBinding(this.iChannel);
 
        this.color =  new ARGBType(ARGBType.rgba(cb.getRed().getValue(), cb.getGreen()
                 .getValue(), cb.getBlue().getValue(), cb.getAlpha().getValue()));
@@ -280,6 +289,11 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setDynamicRange(RenderingDef rd){
+        if (rd == null) {
+            this.displayRangeMin = 0;
+            this.displayRangeMax = 0;
+            return this;
+        }
         this.displayRangeMin = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
         this.displayRangeMax = rd.getChannelBinding(this.iChannel).getInputEnd().getValue();
         return this;

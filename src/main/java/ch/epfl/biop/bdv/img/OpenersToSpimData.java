@@ -159,6 +159,7 @@ public class OpenersToSpimData {
                                 .get()) };
                     }
 
+
                     // set viewsetup attributes
                     opener.getMeta().getEntities(iCh).forEach(vs::setAttribute);
                     vs.setAttribute(ds);
