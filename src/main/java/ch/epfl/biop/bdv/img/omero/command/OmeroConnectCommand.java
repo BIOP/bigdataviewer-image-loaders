@@ -55,10 +55,10 @@ public class OmeroConnectCommand implements Command {
     @Parameter(label = "OMERO host")
     String host = "omero-server.epfl.ch";
 
-    @Parameter(label = "Enter your gaspar username")
+    @Parameter(label = "Enter your username")
     String username;
 
-    @Parameter(label = "Enter your gaspar password", style = "password",
+    @Parameter(label = "Enter your password", style = "password",
             persist = false)
     String password;
 
