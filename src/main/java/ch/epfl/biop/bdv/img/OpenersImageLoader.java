@@ -45,7 +45,7 @@ import java.util.stream.IntStream;
  * Generic class implementing how to load an image on BDV.
  * Only setup loaders depend on the opener type (BioFormats, OMERO, OpenSlide, and other)
  */
-public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable
+public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLoader, Closeable, CacheControlOverride
 {
 
 	final protected static Logger logger = LoggerFactory.getLogger(OpenersImageLoader.class);
@@ -65,7 +65,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	final Map<String, OpenerSetupLoader<?,?,?>> rawPixelDataChannelToSetupLoader = new HashMap<>();
 
 	// -------- How to open image (threads, cache)
-	protected final VolatileGlobalCellCache cache;
+	protected VolatileGlobalCellCache cache;
 	protected final SharedQueue sq;
 	public final int numFetcherThreads = 10;
 	public final int numPriorities = 4;
@@ -214,6 +214,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	}
 
 
+
 	@Override
 	public void close() {
 		openers.forEach(opener -> {
@@ -225,6 +226,12 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 		});
 		cache.clearCache();
 		sq.shutdown();
+	}
+
+	@Override
+	public void setCacheControl(VolatileGlobalCellCache cache)  {
+		this.cache.clearCache();
+		this.cache = cache;
 	}
 
 

@@ -26,6 +26,7 @@ import bdv.AbstractViewerSetupImgLoader;
 import bdv.ViewerImgLoader;
 import bdv.img.cache.CacheArrayLoader;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.CacheControlOverride;
 import ij.ImagePlus;
 import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
@@ -74,7 +75,7 @@ import java.util.function.Function;
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
 public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess>
-		implements ViewerImgLoader, TypedBasicImgLoader<T>
+		implements ViewerImgLoader, TypedBasicImgLoader<T>, CacheControlOverride
 {
 
 	public static
@@ -119,7 +120,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 
 	private final CacheArrayLoader<A> loader;
 
-	private final VolatileGlobalCellCache cache;
+	private VolatileGlobalCellCache cache;
 
 	private final long[] dimensions;
 
@@ -182,6 +183,12 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 	@Override
 	public VolatileGlobalCellCache getCacheControl() {
 		return cache;
+	}
+
+	@Override
+	public void setCacheControl(VolatileGlobalCellCache cache)  {
+		this.cache.clearCache();
+		this.cache = cache;
 	}
 
 	@Override
