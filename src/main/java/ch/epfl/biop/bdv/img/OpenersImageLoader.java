@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -230,6 +231,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 
 	@Override
 	public void setCacheControl(VolatileGlobalCellCache cache)  {
+		CacheControlOverride.Tools.shutdownCacheQueue(this.cache);
 		this.cache.clearCache();
 		this.cache = cache;
 	}

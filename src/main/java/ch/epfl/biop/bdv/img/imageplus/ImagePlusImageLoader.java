@@ -187,6 +187,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 
 	@Override
 	public void setCacheControl(VolatileGlobalCellCache cache)  {
+		CacheControlOverride.Tools.shutdownCacheQueue(this.cache);
 		this.cache.clearCache();
 		this.cache = cache;
 	}

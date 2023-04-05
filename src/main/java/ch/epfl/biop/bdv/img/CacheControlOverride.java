@@ -21,9 +21,28 @@
  */
 package ch.epfl.biop.bdv.img;
 
+import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
+
+import java.lang.reflect.Field;
 
 public interface CacheControlOverride {
 
     void setCacheControl(VolatileGlobalCellCache cache);
+
+    public static class Tools {
+        public static void shutdownCacheQueue(VolatileGlobalCellCache cache) {
+            try {
+                Field queueField = VolatileGlobalCellCache.class.getDeclaredField(
+                        "queue");
+                queueField.setAccessible(true);
+                SharedQueue queue = (SharedQueue) queueField.get(cache);
+                queue.shutdown(); // Kill the non-used thread
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
