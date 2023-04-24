@@ -22,9 +22,11 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import loci.formats.ChannelSeparator;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
+import loci.formats.in.ZeissCZIReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -40,7 +42,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -68,6 +74,7 @@ public class BioFormatsHelper {
 			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
 		} catch (Exception e) {
 			System.err.println("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
+			e.printStackTrace();
 		}
 
 		return nSeries;
@@ -608,6 +615,60 @@ public class BioFormatsHelper {
 		}
 		// Field not found
 		return null;
+	}
+
+	public static boolean hasCopyMethod(IFormatReader reader) {
+		if (!reader.getFormat().equals("Zeiss CZI")) {
+			return false;
+		}
+		return Arrays.stream(ZeissCZIReader.class.getMethods())
+				.map(Method::getName)
+				.anyMatch(name -> name.equals("copy"));
+	}
+
+	public static IFormatReader copy(IFormatReader reader) throws UnsupportedOperationException {
+		if (reader instanceof Memoizer) {
+			reader = ((Memoizer) reader).getReader();
+		}
+
+		boolean hasChannelSeparator = false;
+		if (reader instanceof ChannelSeparator) {
+			reader = ((ChannelSeparator) reader).getReader();
+			hasChannelSeparator = true;
+		}
+
+		if (!(reader instanceof ZeissCZIReader)) {
+			if (reader.getFormat().equals("Zeiss CZI")) {
+				// Rogntudju, we need to get to the reader
+				for (IFormatReader innerReader: reader.getUnderlyingReaders()) {
+					if (innerReader instanceof ZeissCZIReader) {
+						reader = innerReader;
+						break;
+					}
+				}
+				if (!(reader instanceof ZeissCZIReader)) {
+					throw new UnsupportedOperationException("Could not find underlying ZeissCZIReader");
+				}
+			} else {
+				throw new UnsupportedOperationException("Unsupported copy method for reader of format " + reader.getFormat());
+			}
+		}
+		Optional<Method> copyMethod = Arrays.stream(ZeissCZIReader.class.getMethods())
+				.filter(method -> method.getName().equals("copy")).findFirst();
+		if (copyMethod.isPresent()) {
+			try {
+				IFormatReader newReader = (IFormatReader) copyMethod.get().invoke(reader);
+				if (hasChannelSeparator) {
+					return new ChannelSeparator(newReader);
+				} else {
+					return newReader;
+				}
+			} catch (IllegalAccessException | InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			throw new UnsupportedOperationException("The reader "+reader+" has no copy method");
+		}
 	}
 
 }

@@ -161,6 +161,25 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
+			<!--<version>6.12.1-BIOP</version>-->
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-api</artifactId>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -178,6 +197,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -191,8 +211,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-
 
 		<!-- OME dependencies -->
 		<dependency>
@@ -236,6 +254,20 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
 		</dependency>
+
+		<!--<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-playground</artifactId>
+			<version>0.6.6</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-biop-tools</artifactId>
+			<version>0.5.12</version>
+			<scope>test</scope>
+		</dependency>-->
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>

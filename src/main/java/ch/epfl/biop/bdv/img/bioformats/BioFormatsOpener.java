@@ -114,6 +114,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final int idxFilename;
 	private final OpenerMeta meta;
 
+	IFormatReader model;
+
 	/**
 	 *
 	 * @param context
@@ -184,9 +186,11 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			return currentIndexFilename;
 		});
 
+		this.model = this.getNewReader();
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
 				cachedObjects,
-				() -> new ReaderPool(poolSize, true, this::getNewReader));
+				() -> new ReaderPool(poolSize, true,
+						this::getNewReader, model));
 
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
 			IFormatReader reader = pool.takeOrCreate();
@@ -483,11 +487,20 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 				e.printStackTrace();
 			}
 		});
+		if (model!=null) {
+			try {
+				model.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private static class ReaderPool extends ResourcePool<IFormatReader> {
 
 		final Supplier<IFormatReader> readerSupplier;
+		final IFormatReader model;
 
 		public ReaderPool(int size, Boolean dynamicCreation,
 						  Supplier<IFormatReader> readerSupplier)
@@ -495,10 +508,27 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			super(size, dynamicCreation);
 			createPool();
 			this.readerSupplier = readerSupplier;
+			model = null;
+		}
+
+		public ReaderPool(int size, Boolean dynamicCreation,
+						  Supplier<IFormatReader> readerSupplier,
+						  IFormatReader model)
+		{
+			super(size, dynamicCreation);
+			this.model = model;
+			createPool();
+			this.readerSupplier = readerSupplier;
 		}
 
 		@Override
 		public IFormatReader createObject() {
+			// Line below: optimisation for CZI reader and Lattice Light Sheet dataset
+			// It is complicated because it needs to work for the standard bio-formats version
+			// and for the modified bio-formats version with the lattice light sheet reader
+			if ((model!=null)&&(BioFormatsHelper.hasCopyMethod(model))) {
+				return BioFormatsHelper.copy(model);
+			}
 			return readerSupplier.get();
 		}
 	}
