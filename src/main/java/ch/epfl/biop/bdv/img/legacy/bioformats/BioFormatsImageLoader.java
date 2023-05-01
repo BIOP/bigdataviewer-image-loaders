@@ -175,6 +175,7 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException("Error in setup loader creation: " + e
 				.getMessage());
 		}

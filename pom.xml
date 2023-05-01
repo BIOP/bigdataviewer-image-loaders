@@ -140,6 +140,11 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
 		<bigdataviewer-spimdata-extras.version>0.3.1 </bigdataviewer-spimdata-extras.version>
+
+		<!-- only used in tests! -->
+		<bigdataviewer-playground.version>0.6.6</bigdataviewer-playground.version>
+		<bigdataviewer-biop-tools.version>0.5.12</bigdataviewer-biop-tools.version>
+
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
 
@@ -161,7 +166,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
-			<!--<version>6.12.1-BIOP</version>-->
+			<version>6.12.1-BIOP</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -179,7 +184,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-api</artifactId>
-			<!--<version>6.12.1-BIOP</version>-->
+			<version>6.12.1-BIOP</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -197,7 +202,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
-			<!--<version>6.12.1-BIOP</version>-->
+			<version>6.12.1-BIOP</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -255,19 +260,19 @@
 			<artifactId>bigdataviewer-core</artifactId>
 		</dependency>
 
-		<!--<dependency>
+		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-playground</artifactId>
-			<version>0.6.6</version>
+			<version>${bigdataviewer-playground.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
-			<version>0.5.12</version>
+			<version>${bigdataviewer-biop-tools.version}</version>
 			<scope>test</scope>
-		</dependency>-->
+		</dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>

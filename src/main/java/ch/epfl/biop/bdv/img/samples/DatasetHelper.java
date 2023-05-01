@@ -137,6 +137,7 @@ public class DatasetHelper {
 			return conn.getContentLength();
 		}
 		catch (IOException e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 		finally {

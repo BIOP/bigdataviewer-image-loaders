@@ -113,6 +113,7 @@ public class XmlIoBioFormatsImgLoader implements
 				numFetcherThreads, numPriorities);
 		}
 		catch (final Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

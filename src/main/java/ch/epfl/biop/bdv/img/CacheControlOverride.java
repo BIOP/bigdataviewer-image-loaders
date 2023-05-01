@@ -38,9 +38,8 @@ public interface CacheControlOverride {
                 queueField.setAccessible(true);
                 SharedQueue queue = (SharedQueue) queueField.get(cache);
                 queue.shutdown(); // Kill the non-used thread
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }

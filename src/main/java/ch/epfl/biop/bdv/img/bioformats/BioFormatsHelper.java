@@ -664,6 +664,7 @@ public class BioFormatsHelper {
 					return newReader;
 				}
 			} catch (IllegalAccessException | InvocationTargetException e) {
+				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
 		} else {
