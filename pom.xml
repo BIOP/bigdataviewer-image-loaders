@@ -166,7 +166,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
-			<version>6.12.1-BIOP</version>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -184,7 +184,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-api</artifactId>
-			<version>6.12.1-BIOP</version>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
