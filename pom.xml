@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>33.2.0</version>
+		<version>35.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -139,11 +139,11 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.3.1 </bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.3.2</bigdataviewer-spimdata-extras.version>
 
 		<!-- only used in tests! -->
-		<bigdataviewer-playground.version>0.6.6</bigdataviewer-playground.version>
-		<bigdataviewer-biop-tools.version>0.5.12</bigdataviewer-biop-tools.version>
+		<bigdataviewer-playground.version>0.7.0</bigdataviewer-playground.version>
+		<!--<bigdataviewer-biop-tools.version>0.5.12</bigdataviewer-biop-tools.version>-->
 
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
@@ -267,12 +267,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
 			<version>${bigdataviewer-biop-tools.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>

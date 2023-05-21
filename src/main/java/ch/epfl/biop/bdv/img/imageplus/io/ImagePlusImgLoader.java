@@ -30,6 +30,7 @@ import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
 import net.imglib2.Volatile;
+import net.imglib2.img.basictypeaccess.DataAccess;
 import net.imglib2.img.basictypeaccess.volatiles.VolatileAccess;
 import net.imglib2.type.NativeType;
 import org.jdom2.Element;
@@ -41,7 +42,7 @@ import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 @ImgLoaderIo(
 		format = "spimreconstruction.biop_virtualstackimageplusimageloader",
 		type = ImagePlusImageLoader.class)
-public class ImagePlusImgLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess>
+public class ImagePlusImgLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess & DataAccess>
 		implements XmlIoBasicImgLoader<ImagePlusImageLoader<T, V, A>>
 {
 

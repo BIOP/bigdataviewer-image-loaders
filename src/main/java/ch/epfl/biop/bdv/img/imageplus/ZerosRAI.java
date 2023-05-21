@@ -79,6 +79,11 @@ public class ZerosRAI<T extends NumericType<T>> implements
 		}
 
 		@Override
+		public RandomAccess<T> copy() {
+			return new ZerosRandomAccess();
+		}
+
+		@Override
 		public long getLongPosition(int d) {
 			return d;
 		}
@@ -153,20 +158,5 @@ public class ZerosRAI<T extends NumericType<T>> implements
 			return t;
 		}
 
-		@Override
-		public Sampler<T> copy() {
-			return new Sampler<T>() {
-
-				@Override
-				public T get() {
-					return t;
-				}
-
-				@Override
-				public Sampler<T> copy() {
-					return this;
-				}
-			};
-		}
 	}
 }

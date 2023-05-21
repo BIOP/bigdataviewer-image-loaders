@@ -36,6 +36,7 @@ import net.imglib2.Volatile;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.volatiles.CacheHints;
 import net.imglib2.cache.volatiles.LoadingStrategy;
+import net.imglib2.img.basictypeaccess.DataAccess;
 import net.imglib2.img.basictypeaccess.volatiles.VolatileAccess;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
@@ -74,7 +75,7 @@ import java.util.function.Function;
  * @param <A> volatile array access type
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
-public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess>
+public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends DataAccess & VolatileAccess>
 		implements ViewerImgLoader, TypedBasicImgLoader<T>, CacheControlOverride
 {
 
@@ -197,7 +198,7 @@ public class ImagePlusImageLoader<T extends NativeType<T>, V extends Volatile<T>
 		return setupImgLoaders.get(setupId);
 	}
 
-	static class VirtualStackArrayLoader<A> implements CacheArrayLoader<A> {
+	static class VirtualStackArrayLoader<A extends DataAccess> implements CacheArrayLoader<A> {
 
 		private final ImagePlus imp;
 

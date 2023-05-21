@@ -34,6 +34,7 @@ import net.imglib2.cache.volatiles.CacheHints;
 import net.imglib2.cache.volatiles.LoadingStrategy;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.img.basictypeaccess.DataAccess;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
@@ -50,8 +51,8 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A>
-	extends OpenerSetupLoader<T,V ,A>
+public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extends Volatile<T> & NumericType<V> & NativeType<V>, A extends DataAccess>
+	extends OpenerSetupLoader<T, V, A>
 {
 
 	final private static Logger logger = LoggerFactory.getLogger(OmeroSetupLoader.class);
