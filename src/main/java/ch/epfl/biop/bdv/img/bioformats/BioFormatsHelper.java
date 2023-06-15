@@ -23,9 +23,11 @@
 package ch.epfl.biop.bdv.img.bioformats;
 
 import loci.formats.ChannelSeparator;
+import loci.formats.FormatReader;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
+import loci.formats.ReaderWrapper;
 import loci.formats.in.ZeissCZIReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.sequence.VoxelDimensions;
@@ -41,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -618,12 +621,7 @@ public class BioFormatsHelper {
 	}
 
 	public static boolean hasCopyMethod(IFormatReader reader) {
-		if (!reader.getFormat().equals("Zeiss CZI")) {
-			return false;
-		}
-		return Arrays.stream(ZeissCZIReader.class.getMethods())
-				.map(Method::getName)
-				.anyMatch(name -> name.equals("copy"));
+		return reader.getFormat().equals("Zeiss CZI (Quick Start)");
 	}
 
 	public static IFormatReader copy(IFormatReader reader) throws UnsupportedOperationException {
@@ -637,24 +635,20 @@ public class BioFormatsHelper {
 			hasChannelSeparator = true;
 		}
 
-		if (!(reader instanceof ZeissCZIReader)) {
-			if (reader.getFormat().equals("Zeiss CZI")) {
-				// Rogntudju, we need to get to the reader
-				for (IFormatReader innerReader: reader.getUnderlyingReaders()) {
-					if (innerReader instanceof ZeissCZIReader) {
-						reader = innerReader;
-						break;
-					}
-				}
-				if (!(reader instanceof ZeissCZIReader)) {
-					throw new UnsupportedOperationException("Could not find underlying ZeissCZIReader");
-				}
-			} else {
-				throw new UnsupportedOperationException("Unsupported copy method for reader of format " + reader.getFormat());
-			}
+		if (reader instanceof ImageReader) {
+			ImageReader ir = (ImageReader) reader;
+			reader = ir.getReader();
 		}
-		Optional<Method> copyMethod = Arrays.stream(ZeissCZIReader.class.getMethods())
-				.filter(method -> method.getName().equals("copy")).findFirst();
+
+		if (reader instanceof ReaderWrapper) {
+			ReaderWrapper rw = (ReaderWrapper) reader;
+			reader = rw.getReader();
+		}
+
+		Optional<Method> copyMethod = Arrays.stream(reader.getClass().getMethods())
+				.filter(m -> m.getName().equals("copy") && m.getParameterCount()==0)
+				.findFirst();
+
 		if (copyMethod.isPresent()) {
 			try {
 				IFormatReader newReader = (IFormatReader) copyMethod.get().invoke(reader);
