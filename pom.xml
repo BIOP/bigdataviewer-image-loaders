@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>35.1.1</version>
+		<version>36.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-image-loaders</artifactId>
-	<version>0.5.1-SNAPSHOT</version>
+	<version>0.5.2-SNAPSHOT</version>
 
 	<name>Biop bigdataviewer image loaders</name>
 	<description>Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)</description>
@@ -139,10 +139,10 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.3.2</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
 
 		<!-- only used in tests! -->
-		<bigdataviewer-playground.version>0.7.0</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
 		<!--<bigdataviewer-biop-tools.version>0.5.12</bigdataviewer-biop-tools.version>-->
 
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
