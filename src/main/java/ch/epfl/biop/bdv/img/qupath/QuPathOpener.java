@@ -130,7 +130,20 @@ public class QuPathOpener<T> implements Opener<T> {
 		// get the rotation angle if the image has been loaded in qupath with the
 		// rotation command
 		while ((mostInnerBuilder.builderType.equals("rotated")) || (mostInnerBuilder.builderType.equals("pyramidize"))) {
+
+			// We keep the most outer pixel calibration to apply it to the most inner retrieved builder
+			// STORE PIX CAL, with null check
+			MinimalQuPathProject.PixelCalibrations pixelCalibration = null;
+			if (mostInnerBuilder.metadata!=null) pixelCalibration = mostInnerBuilder.metadata.pixelCalibration;
+
 			mostInnerBuilder = mostInnerBuilder.builder;
+
+			// RESTORE PIX CAL, with null check
+			if (pixelCalibration!=null) {
+				if (mostInnerBuilder.metadata!=null) {
+					mostInnerBuilder.metadata.pixelCalibration = pixelCalibration;
+				}
+			}
 		}
 
 		if (mostInnerBuilder.builderType.equals("Empty")) {
@@ -252,7 +265,13 @@ public class QuPathOpener<T> implements Opener<T> {
 
 				@Override
 				public AffineTransform3D getTransform() {
-					return opener.getMeta().getTransform();
+					if (image.serverBuilder != null &&
+							image.serverBuilder.metadata != null &&
+							image.serverBuilder.metadata.pixelCalibration != null){
+						MinimalQuPathProject.PixelCalibrations pixelCalibration = image.serverBuilder.metadata.pixelCalibration;
+						// QuPath modified pixel size
+						return QuPathOpener.getTransform(pixelCalibration, unit, opener.getMeta().getTransform(), opener.getVoxelDimensions());
+					} else return opener.getMeta().getTransform(); // Bio-Formats pixel size
 				}
 			};
 		} else meta = null;
