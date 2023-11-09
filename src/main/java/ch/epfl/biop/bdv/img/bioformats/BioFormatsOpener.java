@@ -338,6 +338,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	public IFormatReader getNewReader() {
 		logger.debug("Getting new reader for " + dataLocation);
 		IFormatReader reader = new ImageReader();
+
 		reader.setFlattenedResolutions(false);
 		if (splitRGBChannels) {
 			reader = new ChannelSeparator(reader);
