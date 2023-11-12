@@ -80,7 +80,6 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.unit(unit)
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
-								.cornerPositionConvention()
 								.context(ctx));
 			}
 		}

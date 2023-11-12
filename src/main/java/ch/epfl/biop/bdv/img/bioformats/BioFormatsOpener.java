@@ -120,7 +120,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final int idxFilename;
 	private final OpenerMeta meta;
 
-	Map<String, String> readerOptions = new LinkedHashMap<>();
+	private final Map<String, String> readerOptions;
 
 	IFormatReader model;
 
@@ -174,53 +174,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 		// ------------
 
-		// Parse options into metadata options
-		try {
-			String[] opts = options.split(" ");
-			int i = 0;
-			while (i<opts.length) {
-				if (opts[i].equals("--bfOptions")) {
-					i++;
-					String[] kv = opts[i].split("=");
-					if (kv.length!=2) {
-						kv = opts[i+1].split("\\u003d");
-					}
-					if (kv.length==2) {
-						if (kv[0].startsWith("-")) {
-							kv[0] = kv[0].substring(1);
-						}
-						readerOptions.put(kv[0], kv[1]);
-					}
-				}
-				i++;
-			}
-		} catch (Exception e) {
-			System.err.println("Could not parse bio formats args: "+options);
-			e.printStackTrace();
-		}
-		/*
-		MetadataOptions metadataOptions = imageReader.getMetadataOptions();
-		var readerOptions = args.readerOptions;
-		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
-			for (var option : readerOptions.entrySet()) {
-				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
-			}
-		}
-		this.options = options;
-
-		DynamicMetadataOptions options = new DynamicMetadataOptions();
-		if (opt!=null) {
-			try {
-				options = new Gson().fromJson(opt, DynamicMetadataOptions.class);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		@Option(names = {"--bfOptions"}, description = "Bio-Formats reader options")
-		Map<String, String> readerOptions = new LinkedHashMap<>();
-		*/
-		// -------------
+		this.readerOptions = bfOptionsToMap(options);
 
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
@@ -399,6 +353,36 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		} catch (DependencyException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static Map<String, String> bfOptionsToMap(String options) {
+
+		Map<String, String> readerOptions = new LinkedHashMap<>();
+		// Parse options into metadata options
+		try {
+			String[] opts = options.split(" ");
+			int i = 0;
+			while (i<opts.length) {
+				if (opts[i].equals("--bfOptions")) {
+					i++;
+					String[] kv = opts[i].split("=");
+					if (kv.length!=2) {
+						kv = opts[i+1].split("\\u003d");
+					}
+					if (kv.length==2) {
+						if (kv[0].startsWith("-")) {
+							kv[0] = kv[0].substring(1);
+						}
+						readerOptions.put(kv[0], kv[1]);
+					}
+				}
+				i++;
+			}
+		} catch (Exception e) {
+			System.err.println("Could not parse bio formats args: "+options);
+			e.printStackTrace();
+		}
+		return readerOptions;
 	}
 
 	/**

@@ -22,14 +22,19 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatReader;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
 import loci.formats.ReaderWrapper;
+import loci.formats.in.DynamicMetadataOptions;
+import loci.formats.in.MetadataOptions;
 import loci.formats.in.ZeissCZIReader;
 import loci.formats.meta.IMetadata;
+import loci.formats.services.OMEXMLService;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -49,6 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -60,19 +66,53 @@ public class BioFormatsHelper {
 	final protected static Logger logger = LoggerFactory.getLogger(
 		BioFormatsHelper.class);
 
+
+	// create OME-XML metadata store
+	static ServiceFactory factory;
+	static OMEXMLService service;
+
+	static {
+		try {
+			factory = new ServiceFactory();
+			service = factory.getInstance(OMEXMLService.class);
+		} catch (DependencyException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	// TODO : avoid creating more than one reader on initialization
 	public static int getNSeries(File f){
+		return getNSeries(f, "");
+	}
+
+	public static int getNSeries(File f, String options){
 		logger.debug("Getting opener for file f " + f.getAbsolutePath());
 		IFormatReader reader = new ImageReader();
 		reader.setFlattenedResolutions(false);
-		Memoizer memo = new Memoizer(reader);
+		Map<String, String> readerOptions = BioFormatsOpener.bfOptionsToMap(options);
+		MetadataOptions metadataOptions = reader.getMetadataOptions();
+		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
+			// We need to set an xml metadata backend or else a Dummy metadata store is created and
+			// all metadata are discarded
+			try {
+				reader.setMetadataStore(service.createOMEXMLMetadata());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			for (Map.Entry<String,String> option : readerOptions.entrySet()) {
+				logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
+				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
+			}
+		}
+
+		if (!readerOptions.isEmpty()) reader = new Memoizer(reader); // memoize
 		int nSeries = 0;
 		try {
 			logger.debug("setId for reader " + f.getAbsolutePath());
 			StopWatch watch = new StopWatch();
 			watch.start();
-			memo.setId(f.getAbsolutePath());
-			nSeries = memo.getSeriesCount();
+			reader.setId(f.getAbsolutePath());
+			nSeries = reader.getSeriesCount();
 			watch.stop();
 			logger.debug("id set in " + (int) (watch.getTime() / 1000) + " s");
 		} catch (Exception e) {
