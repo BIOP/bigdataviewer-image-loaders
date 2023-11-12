@@ -30,12 +30,18 @@ import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
+import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.Memoizer;
+import loci.formats.in.DynamicMetadataOptions;
+import loci.formats.in.MetadataOptions;
 import loci.formats.meta.IMetadata;
+import loci.formats.services.OMEXMLService;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
@@ -50,7 +56,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import ome.xml.model.enums.PixelType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.slf4j.Logger;
@@ -60,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -114,6 +120,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final int idxFilename;
 	private final OpenerMeta meta;
 
+	Map<String, String> readerOptions = new LinkedHashMap<>();
+
 	IFormatReader model;
 
 	/**
@@ -158,10 +166,61 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			// Optimisation : reuse from existing openers
 			Map<String, Object> cachedObjects,
 			int defaultNumberOfChannels,
-			boolean skipMeta
+			boolean skipMeta,
+			String options
 	) throws Exception {
 
 		if (iSerie<0) throw new IllegalStateException("Invalid series number for file "+dataLocation+" iSerie = "+iSerie+" requested");
+
+		// ------------
+
+		// Parse options into metadata options
+		try {
+			String[] opts = options.split(" ");
+			int i = 0;
+			while (i<opts.length) {
+				if (opts[i].equals("--bfOptions")) {
+					i++;
+					String[] kv = opts[i].split("=");
+					if (kv.length!=2) {
+						kv = opts[i+1].split("\\u003d");
+					}
+					if (kv.length==2) {
+						if (kv[0].startsWith("-")) {
+							kv[0] = kv[0].substring(1);
+						}
+						readerOptions.put(kv[0], kv[1]);
+					}
+				}
+				i++;
+			}
+		} catch (Exception e) {
+			System.err.println("Could not parse bio formats args: "+options);
+			e.printStackTrace();
+		}
+		/*
+		MetadataOptions metadataOptions = imageReader.getMetadataOptions();
+		var readerOptions = args.readerOptions;
+		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
+			for (var option : readerOptions.entrySet()) {
+				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
+			}
+		}
+		this.options = options;
+
+		DynamicMetadataOptions options = new DynamicMetadataOptions();
+		if (opt!=null) {
+			try {
+				options = new Gson().fromJson(opt, DynamicMetadataOptions.class);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		@Option(names = {"--bfOptions"}, description = "Bio-Formats reader options")
+		Map<String, String> readerOptions = new LinkedHashMap<>();
+		*/
+		// -------------
 
 		this.dataLocation = dataLocation;
 		this.iSerie = iSerie;
@@ -171,7 +230,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		String buildRawPixelDataKey = "opener.bioformats"
 						+"."+splitRGBChannels
 						+"."+dataLocation
-						+"."+iSerie;
+						+"."+iSerie
+						+"."+options;
 
 		if (!useDefaultXYBlockSize) {
 			buildRawPixelDataKey += "."+ Arrays.toString(cacheBlockSize);
@@ -181,22 +241,22 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 		this.filename = new File(dataLocation).getName();
 		Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
-		this.idxFilename = memoize("opener.bioformats.fileindex."+dataLocation, cachedObjects, () -> {
+		this.idxFilename = memoize("opener.bioformats.fileindex."+dataLocation+"."+options, cachedObjects, () -> {
 			cachedObjects.put("opener.bioformats.currentfileindex", currentIndexFilename + 1 );
 			return currentIndexFilename;
 		});
 
 		this.model = this.getNewReader();
-		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation,
+		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options,
 				cachedObjects,
 				() -> new ReaderPool(poolSize, true,
 						this::getNewReader, model));
-
+		int pixelType;
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
 			IFormatReader reader = pool.takeOrCreate();
 			reader.setSeries(iSerie);
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
-			this.nChannels = this.omeMeta.getChannelCount(iSerie);
+			nChannels = reader.getSizeC();
 			this.nMipMapLevels = reader.getResolutionCount();
 			this.nTimePoints = reader.getSizeT();
 
@@ -222,15 +282,17 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 				reader.setResolution(level);
 				this.dimensions[level] = getDimension(reader.getSizeX(), reader.getSizeY(), reader.getSizeZ());
 			}
+			pixelType = reader.getPixelType();
 			pool.recycle(reader);
 		}
 
-		this.t = BioFormatsOpener.getBioformatsBdvSourceType(this.omeMeta.getPixelsType(iSerie), this.isRGB, iSerie);
+		this.t = BioFormatsOpener.getBioformatsBdvSourceType(pixelType, this.isRGB, iSerie);
 
 		if (!skipMeta) {
 
 			AffineTransform3D rootTransform = BioFormatsHelper.getSeriesRootTransform(
 					this.omeMeta, //metadata
+					model,
 					iSerie, // serie
 					BioFormatsHelper.getUnitFromString(unit), // unit
 					positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
@@ -326,6 +388,18 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		}
 	}
 
+	// create OME-XML metadata store
+	static ServiceFactory factory;
+	static OMEXMLService service;
+
+	static {
+		try {
+			factory = new ServiceFactory();
+			service = factory.getInstance(OMEXMLService.class);
+		} catch (DependencyException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	/**
 	 * Build a new IFormatReader to retrieve all pixels and channels information of an image opened
@@ -338,19 +412,44 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	public IFormatReader getNewReader() {
 		logger.debug("Getting new reader for " + dataLocation);
 		IFormatReader reader = new ImageReader();
-
 		reader.setFlattenedResolutions(false);
+		MetadataOptions metadataOptions = reader.getMetadataOptions();
+		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
+			// We need to set an xml metadata backend or else a Dummy metadata store is created and
+			// all metadata are discarded
+			try {
+				reader.setMetadataStore(service.createOMEXMLMetadata());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			for (Map.Entry<String,String> option : readerOptions.entrySet()) {
+				logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
+				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
+			}
+		}
+
 		if (splitRGBChannels) {
 			reader = new ChannelSeparator(reader);
 		}
-		Memoizer memo = new Memoizer(reader);
-		try {
-			memo.setId(dataLocation);
+
+		if (readerOptions.isEmpty()) { // Can't memoize with bf Options
+			Memoizer memo = new Memoizer(reader);
+			try {
+				memo.setId(dataLocation);
+			} catch (FormatException | IOException e) {
+				e.printStackTrace();
+			}
+			return memo;
+		} else {
+			try {
+				reader.setId(dataLocation);
+			}
+			catch (FormatException | IOException e) {
+				e.printStackTrace();
+			}
+			return reader;
 		}
-		catch (FormatException | IOException e) {
-			e.printStackTrace();
-		}
-		return memo;
+
 	}
 
 	/**
@@ -361,11 +460,11 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	 * @return the bdv compatible pixel type
 	 * @throws UnsupportedOperationException
 	 */
-	private static Type<? extends NumericType<?>> getBioformatsBdvSourceType(PixelType pt, boolean isReaderRGB,
+	private static Type<? extends NumericType<?>> getBioformatsBdvSourceType(int pt, boolean isReaderRGB,
 																		  int image_index) throws UnsupportedOperationException
 	{
 		if (isReaderRGB) {
-			if (pt == PixelType.UINT8) {
+			if (pt == FormatTools.UINT8) {
 				return new ARGBType();
 			}
 			else {
@@ -373,16 +472,16 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 		}
 		else {
-			if (pt == PixelType.UINT8) {
+			if (pt == FormatTools.UINT8) {
 				return new UnsignedByteType();
 			}
-			if (pt == PixelType.UINT16) {
+			if (pt == FormatTools.UINT16) {
 				return new UnsignedShortType();
 			}
-			if (pt == PixelType.INT32) {
+			if (pt == FormatTools.INT32) {
 				return new IntType();
 			}
-			if (pt == PixelType.FLOAT) {
+			if (pt == FormatTools.FLOAT) {
 				return new FloatType();
 			}
 		}

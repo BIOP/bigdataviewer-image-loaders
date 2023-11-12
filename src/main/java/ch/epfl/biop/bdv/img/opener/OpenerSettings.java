@@ -29,7 +29,6 @@ import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-//import omero.model.enums.UnitsLength;
 import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -337,6 +336,11 @@ public class OpenerSettings {
         return this;
     }
 
+    public OpenerSettings addOptions(String options) {
+        opt = options;
+        return this;
+    }
+
     transient boolean skipMeta = false;
 
     public OpenerSettings skipMeta() {
@@ -392,7 +396,8 @@ public class OpenerSettings {
                         // Channel options
                         splitRGB,
                         cachedObjects,
-                        nChannels, skipMeta
+                        nChannels, skipMeta,
+                        opt
                 );
                 break;
             case IMAGEJ:

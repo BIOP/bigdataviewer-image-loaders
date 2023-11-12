@@ -158,7 +158,8 @@ public class BioFormatsHelper {
 		return vox;
 	}
 
-	public static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
+	protected static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
+		IFormatReader reader,
 		int iSerie, Unit<Length> u,
 		// Bioformats location fix
 		double[] positionPreTransformMA, double[] positionPostTransformMA,
@@ -192,7 +193,7 @@ public class BioFormatsHelper {
 			voxSizePostTransform.set(voxSizePostTransformMA);
 		}
 
-		return getSeriesRootTransform(omeMeta, iSerie, u,
+		return getSeriesRootTransform(omeMeta, reader, iSerie, u,
 			// Bioformats location fix
 			positionPreTransform, positionPostTransform, positionReferenceFrameLength,
 			positionIsImageCenter,
@@ -203,6 +204,7 @@ public class BioFormatsHelper {
 	}
 
 	public static AffineTransform3D getSeriesRootTransform(IMetadata omeMeta,
+		IFormatReader reader,
 		int iSerie, Unit<Length> u,
 		// Bioformats location fix
 		AffineTransform3D positionPreTransform,
@@ -239,7 +241,7 @@ public class BioFormatsHelper {
 		Length[] pos = getSeriesPositionAsLengths(omeMeta, iSerie);
 		double[] p = new double[3];
 
-		Dimensions dims = getSeriesDimensions(omeMeta, iSerie);
+		Dimensions dims = getSeriesDimensions(omeMeta, reader, iSerie);
 
 		for (int iDimension = 0; iDimension < 3; iDimension++) { // X:0; Y:1; Z:2
 			if ((pos[iDimension].unit() != null) && (pos[iDimension].unit()
@@ -362,14 +364,16 @@ public class BioFormatsHelper {
 		return voxelDimensions;
 	}
 
-	public static Dimensions getSeriesDimensions(IMetadata omeMeta, int iSerie) {
+	public static Dimensions getSeriesDimensions(IMetadata omeMeta, IFormatReader reader, int iSerie) {
 		// Always set 3d to allow for Big Stitcher compatibility
 
 		int numDimensions = 3;
+		omeMeta.getPixelsSizeX(iSerie);
+		reader.setSeries(iSerie);
 
-		int sX = omeMeta.getPixelsSizeX(iSerie).getNumberValue().intValue();
-		int sY = omeMeta.getPixelsSizeY(iSerie).getNumberValue().intValue();
-		int sZ = omeMeta.getPixelsSizeZ(iSerie).getNumberValue().intValue();
+		int sX = reader.getSizeX();
+		int sY = reader.getSizeY();
+		int sZ = reader.getSizeZ();
 
 		long[] dims = new long[3];
 

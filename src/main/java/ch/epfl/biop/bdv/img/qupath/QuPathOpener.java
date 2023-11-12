@@ -172,6 +172,8 @@ public class QuPathOpener<T> implements Opener<T> {
 
 						int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series") + 1;
 
+						String joinedArgs = String.join(" ", mostInnerBuilder.args);
+
 						this.opener = (Opener<T>) new BioFormatsOpener(
 								context,
 								filePath,
@@ -191,7 +193,8 @@ public class QuPathOpener<T> implements Opener<T> {
 								splitRGBChannels,
 								cachedObjects,
 								defaultNumberOfChannels,
-								skipMeta);
+								skipMeta,
+								joinedArgs);
 					}
 
 					logger.debug("BioFormats Opener for image " + this.image.imageName);
@@ -218,7 +221,7 @@ public class QuPathOpener<T> implements Opener<T> {
 				}
 			} catch (Exception e) {
 				logger.error("URI Syntax error " + e.getMessage());
-				//e.printStackTrace();
+				e.printStackTrace();
 				throw new UnsupportedOperationException(e.getMessage());
 			}
 		} else {
