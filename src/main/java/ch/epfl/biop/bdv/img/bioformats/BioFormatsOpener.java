@@ -210,7 +210,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			IFormatReader reader = pool.takeOrCreate();
 			reader.setSeries(iSerie);
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
-			nChannels = reader.getSizeC();
+			nChannels = this.omeMeta.getChannelCount(iSerie);//reader.getSizeC();
 			this.nMipMapLevels = reader.getResolutionCount();
 			this.nTimePoints = reader.getSizeT();
 
