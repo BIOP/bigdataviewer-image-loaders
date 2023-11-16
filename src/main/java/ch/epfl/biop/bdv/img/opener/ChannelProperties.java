@@ -21,6 +21,7 @@
  */
 package ch.epfl.biop.bdv.img.opener;
 
+import IceInternal.Ex;
 import com.google.gson.Gson;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
@@ -102,12 +103,16 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setEmissionWavelength(int iSerie, IMetadata metadata){
-        if (metadata.getChannelEmissionWavelength(iSerie, iChannel) != null) {
-            this.emissionWavelength = metadata.getChannelEmissionWavelength(iSerie, iChannel)
-                    .value(UNITS.NANOMETER).intValue();
-        }
-        else{
-            this.emissionWavelength = -1;
+        try {
+            if (metadata.getChannelEmissionWavelength(iSerie, iChannel) != null) {
+                this.emissionWavelength = metadata.getChannelEmissionWavelength(iSerie, iChannel)
+                        .value(UNITS.NANOMETER).intValue();
+            } else {
+                this.emissionWavelength = -1;
+            }
+        } catch (Exception e) {
+            logger.warn("Error: "+e.getMessage()+" caught when trying to get the channel emission wavelength");
+            emissionWavelength = -1;
         }
         return this;
     }
@@ -136,12 +141,16 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setExcitationWavelength(int iSerie, IMetadata metadata){
-        if (metadata.getChannelExcitationWavelength(iSerie, iChannel) != null) {
-            this.excitationWavelength = metadata.getChannelExcitationWavelength(iSerie, iChannel)
-                    .value(UNITS.NANOMETER).intValue();
-        }
-        else{
-            this.excitationWavelength = -1;
+        try {
+            if (metadata.getChannelExcitationWavelength(iSerie, iChannel) != null) {
+                this.excitationWavelength = metadata.getChannelExcitationWavelength(iSerie, iChannel)
+                        .value(UNITS.NANOMETER).intValue();
+            } else {
+                this.excitationWavelength = -1;
+            }
+        } catch (Exception e) {
+            logger.warn("Error: "+e.getMessage()+" caught when trying to get the channel excitation wavelength.");
+            excitationWavelength = -1;
         }
         return this;
     }
@@ -171,30 +180,34 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setChannelColor(int iSerie, IMetadata metadata){
-            ome.xml.model.primitives.Color c = metadata.getChannelColor(iSerie, this.iChannel);
-            if (c != null) {
-                logger.debug("c = [" + c.getRed() + "," + c.getGreen() + "," + c
-                        .getBlue() + "]");
-                this.color = new ARGBType(ARGBType.rgba(c.getRed(), c.getGreen(), c.getBlue(),
-                        255));
-            }
-            else {
-                // in case channelColor is called before emissisonWavelength
-                if(this.emissionWavelength == -1)
-                    setEmissionWavelength(iSerie,metadata);
-                if (this.emissionWavelength != -1) {
-                    int emission = this.emissionWavelength;
+            try {
+                ome.xml.model.primitives.Color c = metadata.getChannelColor(iSerie, this.iChannel);
+                if (c != null) {
+                    logger.debug("c = [" + c.getRed() + "," + c.getGreen() + "," + c
+                            .getBlue() + "]");
+                    this.color = new ARGBType(ARGBType.rgba(c.getRed(), c.getGreen(), c.getBlue(),
+                            255));
+                } else {
+                    // in case channelColor is called before emission Wavelength
+                    if (this.emissionWavelength == -1)
+                        setEmissionWavelength(iSerie, metadata);
+                    if (this.emissionWavelength != -1) {
+                        int emission = this.emissionWavelength;
 
-                    logger.debug("emission = " + emission);
-                    Color cAwt = getColorFromWavelength(emission);
-                    this.color = new ARGBType(ARGBType.rgba(cAwt.getRed(), cAwt.getGreen(), cAwt
-                            .getBlue(), 255));
+                        logger.debug("emission = " + emission);
+                        Color cAwt = getColorFromWavelength(emission);
+                        this.color = new ARGBType(ARGBType.rgba(cAwt.getRed(), cAwt.getGreen(), cAwt
+                                .getBlue(), 255));
+                    } else {
+                        // Default colors based on iSerie index
+                        this.color = new ARGBType(ARGBType.rgba(255 * loopR[this.iChannel % 7], 255 *
+                                loopG[this.iChannel % 7], 255 * loopB[this.iChannel % 7], 255));
+                    }
                 }
-                else {
-                    // Default colors based on iSerie index
-                    this.color = new ARGBType(ARGBType.rgba(255 * loopR[this.iChannel % 7], 255 *
-                            loopG[this.iChannel % 7], 255 * loopB[this.iChannel % 7], 255));
-                }
+            } catch (Exception e) {
+                logger.warn("Error: "+e.getMessage()+" caught when trying to get the channel color");
+                this.color = new ARGBType(ARGBType.rgba(255 * loopR[this.iChannel % 7], 255 *
+                        loopG[this.iChannel % 7], 255 * loopB[this.iChannel % 7], 255));
             }
             return this;
     }
@@ -250,8 +263,13 @@ public class ChannelProperties {
      * @return
      */
     public ChannelProperties setChannelName(int iSerie, IMetadata metadata){
-
-        String channelName = metadata.getChannelName(iSerie, this.iChannel);
+        String channelName;
+        try {
+            channelName = metadata.getChannelName(iSerie, this.iChannel);
+        } catch (Exception e) {
+            logger.warn("Error: "+e.getMessage()+" caught when trying to get the channel name");
+            channelName = null;
+        }
         if (channelName != null && !channelName.equals("")) {
             this.name = metadata.getChannelName(iSerie, this.iChannel);
         }
