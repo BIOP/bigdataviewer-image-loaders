@@ -397,18 +397,21 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		logger.debug("Getting new reader for " + dataLocation);
 		IFormatReader reader = new ImageReader();
 		reader.setFlattenedResolutions(false);
-		MetadataOptions metadataOptions = reader.getMetadataOptions();
-		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
-			// We need to set an xml metadata backend or else a Dummy metadata store is created and
-			// all metadata are discarded
-			try {
-				reader.setMetadataStore(service.createOMEXMLMetadata());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			for (Map.Entry<String,String> option : readerOptions.entrySet()) {
-				logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
-				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
+
+		if (!readerOptions.isEmpty()) {
+			MetadataOptions metadataOptions = reader.getMetadataOptions();
+			if (metadataOptions instanceof DynamicMetadataOptions) {
+				// We need to set an xml metadata backend or else a Dummy metadata store is created and
+				// all metadata are discarded
+				try {
+					reader.setMetadataStore(service.createOMEXMLMetadata());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				for (Map.Entry<String,String> option : readerOptions.entrySet()) {
+					logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
+					((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
+				}
 			}
 		}
 
