@@ -168,13 +168,20 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		// get the ArrayLoader corresponding to the pixelType
 		if (t instanceof UnsignedByteType) {
 			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
-					readerPool, iChannel, iSeries);
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
+							readerPool, iChannel, iSeries);
 		}
 		else if (t instanceof UnsignedShortType) {
-			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-					readerPool, iChannel, iSeries, isLittleEndian);
+			if (opener.to16bit()) {
+				// the data is originally 8 bits
+				loader =
+						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteToUnsignedShortArrayLoader(
+								readerPool, iChannel, iSeries);
+			} else {
+				loader =
+						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
+								readerPool, iChannel, iSeries, isLittleEndian);
+			}
 		}
 		else if (t instanceof FloatType) {
 			loader =

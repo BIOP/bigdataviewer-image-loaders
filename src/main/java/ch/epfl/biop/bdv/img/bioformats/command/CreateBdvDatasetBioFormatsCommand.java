@@ -58,6 +58,9 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	@Parameter(label = "Split RGB channels")
 	boolean split_rgb_channels = false;
 
+	@Parameter(label = "Convert 8 bits to 16 bits")
+	boolean to_16_bits = false;
+
 	@Parameter(required = false,
 			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
@@ -80,6 +83,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.unit(unit)
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
+								.to16bits(to_16_bits)
 								.context(ctx));
 			}
 		}

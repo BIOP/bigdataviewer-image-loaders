@@ -39,5 +39,7 @@ public class SimpleIJLaunch {
 		System.out.println("bf version = "+VersionUtils.getVersion(ZeissCZIReader.class));
 		ij.ui().showUI();
 		//
+
+
 	}
 }

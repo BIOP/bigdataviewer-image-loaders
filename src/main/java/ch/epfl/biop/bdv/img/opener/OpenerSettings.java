@@ -82,6 +82,9 @@ public class OpenerSettings {
     //-------- Channels options
     boolean splitRGB = false; // Should be true for 16 bits RGB channels like we have in CZI, Imglib2, the library used after, do not have a specific type class for 16 bits RGB pixels
 
+    // -------- Conversion option (bio-formats exclusively, from 8 bits to 16 bits)
+    boolean to16bits = false;
+
     // ---- Opener core options
     OpenerType type = OpenerType.UNDEF;
     String location = "";
@@ -185,6 +188,11 @@ public class OpenerSettings {
         at3D.set(positionPreTransformMatrixArray);
         at3D.scale(1, -1, 1);
         positionPreTransformMatrixArray = at3D.getRowPackedCopy();
+        return this;
+    }
+
+    public OpenerSettings to16bits(boolean to16bits) {
+        this.to16bits = to16bits;
         return this;
     }
 
@@ -397,6 +405,7 @@ public class OpenerSettings {
                         splitRGB,
                         cachedObjects,
                         nChannels, skipMeta,
+                        to16bits,
                         opt
                 );
                 break;
