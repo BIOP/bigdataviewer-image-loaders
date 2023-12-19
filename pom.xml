@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>36.0.0</version>
+		<version>37.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -142,7 +142,7 @@
 		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
 
 		<!-- only used in tests! -->
-		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.8.1</bigdataviewer-playground.version>
 		<bigdataviewer-biop-tools.version>0.7.3</bigdataviewer-biop-tools.version>
 
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
