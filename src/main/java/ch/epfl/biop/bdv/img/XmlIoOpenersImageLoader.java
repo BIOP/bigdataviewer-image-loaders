@@ -29,6 +29,7 @@ import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
+import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Element;
 import org.scijava.util.VersionUtils;
 
@@ -55,9 +56,9 @@ public class XmlIoOpenersImageLoader implements
 	/**
 	 * Write QuPathImageOpener class in a xml file
 	 * 
-	 * @param imgLoader
-	 * @param basePath
-	 * @return
+	 * @param imgLoader image loader object that will be serialized
+	 * @param basePath unused
+	 * @return a xml element corresponding to the serialisation of the image loader
 	 */
 	@Override
 	public Element toXml(OpenersImageLoader imgLoader, File basePath) {
@@ -76,10 +77,10 @@ public class XmlIoOpenersImageLoader implements
 	 * Read the xml file, fill OpenerSettings class, create each opener and
 	 * write the corresponding QuPathImageLoader
 	 * 
-	 * @param elem
-	 * @param basePath
-	 * @param sequenceDescription
-	 * @return
+	 * @param elem the xml element used to deserialize the loader
+	 * @param basePath unused
+	 * @param sequenceDescription description of the sequence, passed to the contructor of the image loader
+	 * @return the deserialized image loader
 	 */
 	@Override
 	public OpenersImageLoader fromXml(Element elem, File basePath,
@@ -125,10 +126,36 @@ public class XmlIoOpenersImageLoader implements
 				FixFilePathsCommand.message_in = message_in;
 				File[] out = (File[]) Services.commandService.run(FixFilePathsCommand.class, true,
 						"invalidFilePaths", in).get().getOutput("fixedFilePaths");
+
+				// Some validation
+
+				// 1. Do we have the same number of files ?
 				if (out.length!=in.length) {
 					System.err.println("You did not enter the requested number of files");
 					return;
 				}
+
+				// 2. Do all files exist
+				for (File file: out) {
+					if (!file.exists()) {
+						System.err.println("The file "+file.getAbsolutePath()+" does not exists!");
+						return;
+					}
+				}
+
+				// 3. Do the files have the same extension ?
+				for (int iFile = 0; iFile<in.length; iFile++) {
+					File fileIn = new File(in[iFile]);
+					File fileOut = out[iFile];
+					String extensionIn = FilenameUtils.getExtension(fileIn.getAbsolutePath());
+					String extensionOut = FilenameUtils.getExtension(fileOut.getAbsolutePath());
+					if (!extensionIn.equals(extensionOut)) {
+						System.err.println("You replaced the file "+fileIn.getAbsolutePath()+" by the file "+fileOut.getAbsolutePath()+" but\n +" +
+								" they do not have the same extension ("+extensionIn+" vs"+extensionOut+")");
+						 return;
+					}
+				}
+
 				Map<String, String> oldToNew = new HashMap<>();
 				for (int i = 0;i<in.length;i++) {
 					oldToNew.put(in[i], out[i].getAbsolutePath());

@@ -23,9 +23,7 @@
 package ch.epfl.biop;
 
 import loci.common.DebugTools;
-import loci.formats.in.ZeissCZIReader;
 import net.imagej.ImageJ;
-import org.scijava.util.VersionUtils;
 
 public class SimpleIJLaunch {
 	// -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
@@ -36,10 +34,8 @@ public class SimpleIJLaunch {
 		DebugTools.enableLogging("DEBUG");
 		//DebugTools.enableLogging("INFO");
 		//SwingUtilities.invokeAndWait(() ->);
-		System.out.println("bf version = "+VersionUtils.getVersion(ZeissCZIReader.class));
+		//System.out.println("bf version = "+VersionUtils.getVersion(ZeissCZIReader.class));
 		ij.ui().showUI();
-		//
-
 
 	}
 }

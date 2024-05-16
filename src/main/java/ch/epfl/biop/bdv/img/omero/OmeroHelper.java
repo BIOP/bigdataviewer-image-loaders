@@ -41,20 +41,12 @@ import org.scijava.Context;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -69,7 +61,7 @@ public class OmeroHelper {
 	 * @param userName OMERO User
 	 * @param password Password for OMERO User
 	 * @return OMERO gateway (Gateway for simplifying access to an OMERO server)
-	 * @throws DSOutOfServiceException
+	 * @throws DSOutOfServiceException exception is the connection cannot proceed
 	 */
 	public static Gateway omeroConnect(String hostname, int port, String userName,
 		String password) throws DSOutOfServiceException
@@ -114,7 +106,7 @@ public class OmeroHelper {
 	 * Look into Fields of BioFormats UNITS class that matches the input string
 	 * Return the corresponding Unit Field Case insensitive
 	 *
-	 * @param unit_string
+	 * @param unit_string a string representation of a length unit
 	 * @return corresponding BF Unit object
 	 */
 	public static UnitsLength getUnitsLengthFromString(String unit_string) {
@@ -140,56 +132,7 @@ public class OmeroHelper {
 		return null;
 	}
 
-	/**
-	 * Minimal Graphical interface that catches user's name and password. Host and port are set by default
-	 * but can be changed if necessary.
-	 * @return connection information (host, port, username, password)
-	 */
-	public static String[] getOmeroConnectionInputParameters()
-	{
-
-		// build the gui
-		JTextField host = new JTextField("omero-server.epfl.ch", 20);
-		JSpinner port = new JSpinner();
-		port.setValue(4064);
-		JTextField username = new JTextField(50);
-		JPasswordField jpf = new JPasswordField(24);
-
-		// build the main window
-		JPanel myPanel = new JPanel();
-		myPanel.setLayout(new BoxLayout(myPanel, BoxLayout.Y_AXIS));
-		myPanel.add(new JLabel("host"));
-		myPanel.add(host);
-		myPanel.add(Box.createVerticalStrut(15)); // a spacer
-		myPanel.add(new JLabel("port"));
-		myPanel.add(port);
-		myPanel.add(Box.createVerticalStrut(15)); // a spacer
-		myPanel.add(new JLabel("Username"));
-		myPanel.add(username);
-		myPanel.add(Box.createVerticalStrut(15)); // a spacer
-		myPanel.add(new JLabel("Password"));
-		myPanel.add(jpf);
-
-		// get results
-		int result = JOptionPane.showConfirmDialog(null, myPanel,
-			"Please enter OMERO connection input parameters",
-			JOptionPane.OK_CANCEL_OPTION);
-		if (result == JOptionPane.OK_OPTION) {
-			ArrayList<String> omeroParameters = new ArrayList<>();
-			omeroParameters.add(host.getText());
-			omeroParameters.add(port.getValue().toString());
-			omeroParameters.add(username.getText());
-			char[] chArray = jpf.getPassword();
-			omeroParameters.add(new String(chArray));
-			Arrays.fill(chArray, (char) 0);
-
-			String[] omeroParametersArray = new String[omeroParameters.size()];
-			return omeroParameters.toArray(omeroParametersArray);
-		}
-		return null;
-	}
-
-	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws DSOutOfServiceException {
+	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
 		OMEROService omeroService = context.getService(OMEROService.class);
 
 		OMEROServer server = new OMEROServer(host, 4064);
@@ -201,7 +144,7 @@ public class OmeroHelper {
 			System.err.println("The OMERO session for "+host+" needs to be initialized");
 			CommandService command = context.getService(CommandService.class);
 			boolean success = false;
-			DSOutOfServiceException error = null;
+			Exception error;
 			try {
 				OmeroConnectCommand.message_in = "Please enter your "+host+" credentials:";
 				CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
@@ -211,6 +154,7 @@ public class OmeroHelper {
 			} catch (Exception commandException) {
 				commandException.printStackTrace();
 				omeroSession = null;
+				error = commandException;
 			}
 			if ((!success)&&(error!=null)) throw error;
 		}
@@ -269,7 +213,7 @@ public class OmeroHelper {
 					String[] subParts = parts[i].split("\\|dataset");
 					long datasetID = Long.parseLong(subParts[0]);
 					BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-					Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetID));
+					Collection<ImageData> images = browse.getImagesForDatasets(ctx, Collections.singletonList(datasetID));
 					Iterator<ImageData> j = images.iterator();
 					ImageData image;
 					while (j.hasNext()) {
@@ -280,7 +224,7 @@ public class OmeroHelper {
 			}
 			long datasetID = Long.parseLong(parts[parts.length-1]);
 			BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-			Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetID));
+			Collection<ImageData> images = browse.getImagesForDatasets(ctx, Collections.singletonList(datasetID));
 			Iterator<ImageData> j = images.iterator();
 			ImageData image;
 			while (j.hasNext()) {

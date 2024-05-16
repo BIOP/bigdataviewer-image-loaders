@@ -65,7 +65,6 @@ import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -165,7 +164,16 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		URL url = new URL(datalocation);
 		host = url.getHost();
 
-		OMEROSession session = OmeroHelper.getGatewayAndSecurityContext(context, host);
+		// We don't want to ask again and again and again credentials if it failed once. Thus we memoize the potential error
+		if (cachedObjects.containsKey("opener.omero.connect."+host+".error")) throw new RuntimeException("Connection to OMERO failed");
+
+		OMEROSession session = null;
+		try {
+			session = OmeroHelper.getGatewayAndSecurityContext(context, host);
+		} catch (Exception e) {
+			cachedObjects.put("opener.omero.connect."+host+".error", e);
+			exception = e;
+		}
 
 		if (exception != null) throw exception;
 
@@ -529,10 +537,10 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	/**
 	 *
-	 * @param t
+	 * @param t an instance of the pixel type
 	 * @return volatile pixel type from t
 	 */
-	private Volatile getVolatileOf(NumericType t) {
+	private static Volatile<?> getVolatileOf(NumericType<?> t) {
 		if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
 
 		if (t instanceof IntType) return new VolatileIntType();
@@ -542,6 +550,9 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		if (t instanceof FloatType) return new VolatileFloatType();
 
 		if (t instanceof ARGBType) return new VolatileARGBType();
+
+		System.err.println("Volatile type of pixel type "+t.getClass().getName()+" not found!");
+
 		return null;
 	}
 
@@ -618,7 +629,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	@Override
 	public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
 		return new OmeroSetupLoader(this,
-				channelIdx, setupIdx, (NumericType) this.getPixelType(), this.getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
+				channelIdx, setupIdx, (NumericType) this.getPixelType(), getVolatileOf((NumericType) this.getPixelType()), cacheSupplier);
 	}
 
 	@Override
