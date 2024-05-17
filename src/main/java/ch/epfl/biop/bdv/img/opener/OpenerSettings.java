@@ -27,7 +27,6 @@ import ch.epfl.biop.bdv.img.pyramidize.PyramidizeOpener;
 import ch.epfl.biop.bdv.img.qupath.QuPathOpener;
 import com.google.gson.Gson;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.RealType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -437,19 +436,17 @@ public class OpenerSettings {
 
         // Condition: RealType, size XY above a threshold, and no multiresolution already exists
         if (autoPyramidize) {
-            if (opener.getPixelType() instanceof RealType) { // TODO: improve and support ARGB as well
-                if ((opener.getDimensions()[0].dimension(0)>THRESHOLD_PYRAMIDIZE_PIX)
-                        &&(opener.getDimensions()[1].dimension(1)>THRESHOLD_PYRAMIDIZE_PIX)) {
-                    if (opener.getNumMipmapLevels()==1) {
-                        return new PyramidizeOpener<>(opener);
-                    }
+            if ((opener.getDimensions()[0].dimension(0)>THRESHOLD_PYRAMIDIZE_PIX)
+                    &&(opener.getDimensions()[0].dimension(1)>THRESHOLD_PYRAMIDIZE_PIX)) {
+                if (opener.getNumMipmapLevels()==1) {
+                    return new PyramidizeOpener(opener);
                 }
             }
         } else {
             if (opener instanceof QuPathOpener) {
                 boolean pyramidize = ((QuPathOpener<?>) opener).getPyramidize();
-                if ((pyramidize)&&(opener.getPixelType() instanceof RealType)&&(opener.getNumMipmapLevels()==1)) {
-                    return new PyramidizeOpener<>(opener);
+                if ((pyramidize)&&(opener.getNumMipmapLevels()==1)) {
+                    return new PyramidizeOpener(opener);
                 }
             }
         }

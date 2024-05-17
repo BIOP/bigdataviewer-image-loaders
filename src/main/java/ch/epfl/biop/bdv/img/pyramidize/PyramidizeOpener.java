@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.img.pyramidize;
 
-import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
 import ch.epfl.biop.bdv.img.ResourcePool;
@@ -20,8 +19,6 @@ public class PyramidizeOpener<T> implements Opener<T> {
     final int nResolutionLevels;
 
     Dimensions[] dimensions;
-
-    final static SharedQueue queue = new SharedQueue(2*(Runtime.getRuntime().availableProcessors()-1), 12); // TODO: avoid using this
 
     public PyramidizeOpener(Opener<T> origin) {
         this.origin = origin;
@@ -46,8 +43,6 @@ public class PyramidizeOpener<T> implements Opener<T> {
             currentDimY = currentDimY / 2;
             dimensions[level] = getDimension(currentDimX, currentDimY, currentDimZ);
         }
-
-        //queue = new SharedQueue(nResolutionLevels, Runtime.getRuntime().availableProcessors()-1);
 
     }
 
@@ -116,7 +111,7 @@ public class PyramidizeOpener<T> implements Opener<T> {
 
     @Override
     public OpenerSetupLoader<?, ?, ?> getSetupLoader(int channelIdx, int setupIdx, Supplier<VolatileGlobalCellCache> cacheSupplier) {
-        return new PyramidizeSetupLoader<>(this, channelIdx, setupIdx, cacheSupplier, queue);
+        return new PyramidizeSetupLoader<>(this, channelIdx, setupIdx, cacheSupplier);
     }
 
     @Override
