@@ -23,9 +23,11 @@ package ch.epfl.biop.bdv.img.opener;
 
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
 import ch.epfl.biop.bdv.img.omero.OmeroOpener;
+import ch.epfl.biop.bdv.img.pyramidize.PyramidizeOpener;
 import ch.epfl.biop.bdv.img.qupath.QuPathOpener;
 import com.google.gson.Gson;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.RealType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -84,6 +86,11 @@ public class OpenerSettings {
 
     // -------- Conversion option (bio-formats exclusively, from 8 bits to 16 bits)
     boolean to16bits = false;
+
+    // -------- Automatically compute pyramidal levels of large images
+    boolean autoPyramidize = true;
+    public static int THRESHOLD_PYRAMIDIZE_PIX = 1024;
+
 
     // ---- Opener core options
     OpenerType type = OpenerType.UNDEF;
@@ -356,6 +363,11 @@ public class OpenerSettings {
         return this;
     }
 
+    public OpenerSettings pyramidize(boolean flag) {
+        this.autoPyramidize = flag;
+        return this;
+    }
+
     public Opener<?> create(Map<String, Object> cachedObjects) throws Exception {
         Opener<?> opener;
         switch (this.type) {
@@ -421,6 +433,25 @@ public class OpenerSettings {
 
         if (opener.getNChannels()!=-1) {
             nChannels = opener.getNChannels();
+        }
+
+        // Condition: RealType, size XY above a threshold, and no multiresolution already exists
+        if (autoPyramidize) {
+            if (opener.getPixelType() instanceof RealType) { // TODO: improve and support ARGB as well
+                if ((opener.getDimensions()[0].dimension(0)>THRESHOLD_PYRAMIDIZE_PIX)
+                        &&(opener.getDimensions()[1].dimension(1)>THRESHOLD_PYRAMIDIZE_PIX)) {
+                    if (opener.getNumMipmapLevels()==1) {
+                        return new PyramidizeOpener<>(opener);
+                    }
+                }
+            }
+        } else {
+            if (opener instanceof QuPathOpener) {
+                boolean pyramidize = ((QuPathOpener<?>) opener).getPyramidize();
+                if ((pyramidize)&&(opener.getPixelType() instanceof RealType)&&(opener.getNumMipmapLevels()==1)) {
+                    return new PyramidizeOpener<>(opener);
+                }
+            }
         }
 
         return opener;

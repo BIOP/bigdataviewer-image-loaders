@@ -57,6 +57,10 @@ public class CreateBdvDatasetBioFormatsCommand implements
 
 	@Parameter(label = "Split RGB channels")
 	boolean split_rgb_channels = false;
+
+	@Parameter(label = "Compute image pyramid for large images without multiresolution (recommended)")
+	boolean auto_pyramidize = true;
+
 	@Parameter(required = false,
 			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
@@ -79,6 +83,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.unit(unit)
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
+								.pyramidize(auto_pyramidize)
 								.context(ctx));
 			}
 		}

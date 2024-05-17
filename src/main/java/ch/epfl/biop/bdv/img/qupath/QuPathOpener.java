@@ -130,6 +130,10 @@ public class QuPathOpener<T> implements Opener<T> {
 		// get the rotation angle if the image has been loaded in qupath with the
 		// rotation command
 		while ((mostInnerBuilder.builderType.equals("rotated")) || (mostInnerBuilder.builderType.equals("pyramidize"))) {
+			if (mostInnerBuilder.builderType.equals("pyramidize")) {
+				// Notify the opener builder that pyramidisation should take place
+				setPyramidize(true);
+			}
 
 			// We keep the most outer pixel calibration to apply it to the most inner retrieved builder
 			// STORE PIX CAL, with null check
@@ -279,6 +283,19 @@ public class QuPathOpener<T> implements Opener<T> {
 				}
 			};
 		} else meta = null;
+	}
+
+	boolean pyramidize;
+	private void setPyramidize(boolean pyramidize) {
+		this.pyramidize = pyramidize;
+	}
+
+	/**
+	 * Uses to retrieve the fact that a QuPath entry should be auto-pyramidized
+	 * @return whether the underlying ImageServer is wrapped in a pyramidized one
+	 */
+	public boolean getPyramidize() {
+		return this.pyramidize;
 	}
 
 	public static MinimalQuPathProject getQuPathProject(Context ctx, String dataLocation) {

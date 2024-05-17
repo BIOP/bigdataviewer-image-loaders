@@ -311,6 +311,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-playground</artifactId>
+			<version>0.10.1</version>
+		</dependency>
+
 		<!-- <dependency> if you want to test the alternative CZI reader
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
