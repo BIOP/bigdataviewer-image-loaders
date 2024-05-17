@@ -87,7 +87,7 @@ public class OpenerSettings {
     boolean to16bits = false;
 
     // -------- Automatically compute pyramidal levels of large images
-    boolean autoPyramidize = true;
+    boolean autoPyramidize = false;
     public static int THRESHOLD_PYRAMIDIZE_PIX = 1024;
 
 

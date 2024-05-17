@@ -285,7 +285,7 @@ public class QuPathOpener<T> implements Opener<T> {
 		} else meta = null;
 	}
 
-	boolean pyramidize;
+	boolean pyramidize = false;
 	private void setPyramidize(boolean pyramidize) {
 		this.pyramidize = pyramidize;
 	}
