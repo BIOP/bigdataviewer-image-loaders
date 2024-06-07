@@ -118,7 +118,9 @@ public class DatasetHelper {
         // URL = https://zenodo.org/records/6553641
         String targetDir = cachedSampleDir.getAbsolutePath()+File.separator+"records"+File.separator+"6553641"+File.separator+"files"+File.separator;
         String urlBrainSlices = "https://zenodo.org/records/6553641/files/";
-        if (!new File(targetDir+"Slide_0"+i+".vsi").exists()) dlUnzip(urlBrainSlices+"Slide_00.zip", targetDir);
+        String fName = "Slide_0"+i+".vsi";
+        if (!new File(targetDir+fName).exists())
+            dlUnzip(urlBrainSlices+fName, targetDir);
         return targetDir;
     }
 
