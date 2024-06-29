@@ -662,7 +662,29 @@ public class BioFormatsHelper {
 	}
 
 	public static boolean hasCopyMethod(IFormatReader reader) {
-		return reader.getFormat().equals("Zeiss CZI (Quick Start)");
+		if (reader instanceof Memoizer) {
+			reader = ((Memoizer) reader).getReader();
+		}
+
+		if (reader instanceof ChannelSeparator) {
+			reader = ((ChannelSeparator) reader).getReader();
+		}
+
+		if (reader instanceof ImageReader) {
+			ImageReader ir = (ImageReader) reader;
+			reader = ir.getReader();
+		}
+
+		if (reader instanceof ReaderWrapper) {
+			ReaderWrapper rw = (ReaderWrapper) reader;
+			reader = rw.getReader();
+		}
+
+		Optional<Method> copyMethod = Arrays.stream(reader.getClass().getMethods())
+				.filter(m -> m.getName().equals("copy") && m.getParameterCount()==0)
+				.findFirst();
+
+		return copyMethod.isPresent();
 	}
 
 	public static IFormatReader copy(IFormatReader reader) throws UnsupportedOperationException {

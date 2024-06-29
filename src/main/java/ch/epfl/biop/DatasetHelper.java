@@ -120,7 +120,7 @@ public class DatasetHelper {
         String urlBrainSlices = "https://zenodo.org/records/6553641/files/";
         String fName = "Slide_0"+i+".vsi";
         if (!new File(targetDir+fName).exists())
-            dlUnzip(urlBrainSlices+fName, targetDir);
+            dlUnzip(urlBrainSlices+"Slide_0"+i+".zip", targetDir);
         return targetDir;
     }
 
