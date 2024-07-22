@@ -144,6 +144,7 @@
 		<!-- only used in tests! -->
 		<bigdataviewer-playground.version>0.8.1</bigdataviewer-playground.version>
 		<bigdataviewer-biop-tools.version>0.7.3</bigdataviewer-biop-tools.version>
+		<bf.version>8.0.0-SNAPSHOT</bf.version>
 
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
@@ -166,6 +167,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
+			<version>${bf.version}</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -183,6 +185,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-api</artifactId>
+			<version>${bf.version}</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -200,6 +203,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
+			<version>${bf.version}</version>
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->

@@ -101,70 +101,80 @@ public class PyramidizeSetupLoader<T extends NumericType<T> & NativeType<T>, V e
             mmResolutions[iLevel][2] = 1;
         }
 
+    }
 
-        T t = (T) opener.getPixelType();
+    volatile boolean hasBeenInitialised = false;
 
+    void ensureInitialisation() {
+        // delayed initialisation to allow the override of the cache
+        if (hasBeenInitialised) return;
+        // here: not initialisation
+        synchronized (this) {
+            if (hasBeenInitialised) return;
 
-        PyramidizeArrayLoaders.PyramidizeArrayLoader loader;
-        if (t instanceof UnsignedByteType) {
-            loader = new PyramidizeArrayLoaders.PyramidizeByteArrayLoader(this);
-        } else if (t instanceof UnsignedShortType) {
-            loader = new PyramidizeArrayLoaders.PyramidizeShortArrayLoader(this);
-        } else if (t instanceof FloatType) {
-            loader = new PyramidizeArrayLoaders.PyramidizeFloatArrayLoader(this);
-        } else if (t instanceof IntType) {
-            loader = new PyramidizeArrayLoaders.PyramidizeIntArrayLoader(this);
-        } else if (t instanceof ARGBType) {
-            loader = new PyramidizeArrayLoaders.PyramidizeARGBArrayLoader(this);
-        } else {
-            throw new UnsupportedOperationException("Pixel type " + t.getClass()
-                    .getName() + " unsupported in " + PyramidizeSetupLoader.class
-                    .getName());
-        }
+            T t = (T) opener.getPixelType();
 
-        for (int tp = 0; tp< opener.getNTimePoints(); tp++) {
-            raiTL.add(new ArrayList<>());
-            raiTLV.add(new ArrayList<>());
-
-            for (int level = 1; level< opener.nResolutionLevels; level++) {
-                int tileSizeLevel = tileSize(level);
-                final int[] cellDimensions = new int[]{ tileSizeLevel, tileSizeLevel, 1 };
-                final RandomAccessibleInterval<T> raiBelow;
-                if (level==1) {
-                    raiBelow = getImage(tp,0);
-                } else {
-                    raiBelow = raiTL.get(tp).get(level-2);
-                }
-                long[] newDimensions = new long[3];
-                newDimensions[0] = raiBelow.dimensionsAsLongArray()[0]/2;
-                newDimensions[1] = raiBelow.dimensionsAsLongArray()[1]/2;
-                newDimensions[2] = raiBelow.dimensionsAsLongArray()[2];
-                CellGrid grid = new CellGrid(newDimensions, cellDimensions);
-
-                int priority = opener.nResolutionLevels - level;
-                CacheHints cacheHints = new CacheHints(LoadingStrategy.BLOCKING,
-                        priority, false);
-
-                raiTL.get(tp).add(cacheSupplier.get().createImg(grid, tp, setup, level,
-                        cacheHints, (CacheArrayLoader<A>) loader, type));
-
-                priority = opener.nResolutionLevels - level;
-                cacheHints = new CacheHints(LoadingStrategy.BUDGETED,
-                        priority, false);
-
-                raiTLV.get(tp).add(cacheSupplier.get().createImg(grid, tp, setup, level,
-                        cacheHints, (CacheArrayLoader<A>) loader, volatileType));
-
+            PyramidizeArrayLoaders.PyramidizeArrayLoader loader;
+            if (t instanceof UnsignedByteType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeByteArrayLoader(this);
+            } else if (t instanceof UnsignedShortType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeShortArrayLoader(this);
+            } else if (t instanceof FloatType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeFloatArrayLoader(this);
+            } else if (t instanceof IntType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeIntArrayLoader(this);
+            } else if (t instanceof ARGBType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeARGBArrayLoader(this);
+            } else {
+                throw new UnsupportedOperationException("Pixel type " + t.getClass()
+                        .getName() + " unsupported in " + PyramidizeSetupLoader.class
+                        .getName());
             }
+
+            for (int tp = 0; tp< opener.getNTimePoints(); tp++) {
+                raiTL.add(new ArrayList<>());
+                raiTLV.add(new ArrayList<>());
+
+                for (int level = 1; level< opener.nResolutionLevels; level++) {
+                    int tileSizeLevel = tileSize(level);
+                    final int[] cellDimensions = new int[]{ tileSizeLevel, tileSizeLevel, 1 };
+                    final RandomAccessibleInterval<T> raiBelow;
+                    if (level==1) {
+                        raiBelow = getImage(tp,0);
+                    } else {
+                        raiBelow = raiTL.get(tp).get(level-2);
+                    }
+                    long[] newDimensions = new long[3];
+                    newDimensions[0] = raiBelow.dimensionsAsLongArray()[0]/2;
+                    newDimensions[1] = raiBelow.dimensionsAsLongArray()[1]/2;
+                    newDimensions[2] = raiBelow.dimensionsAsLongArray()[2];
+                    CellGrid grid = new CellGrid(newDimensions, cellDimensions);
+
+                    int priority = opener.nResolutionLevels - level;
+                    CacheHints cacheHints = new CacheHints(LoadingStrategy.BLOCKING,
+                            priority, false);
+
+                    raiTL.get(tp).add(cacheSupplier.get().createImg(grid, tp, setup, level,
+                            cacheHints, (CacheArrayLoader<A>) loader, type));
+
+                    priority = opener.nResolutionLevels - level;
+                    cacheHints = new CacheHints(LoadingStrategy.BUDGETED,
+                            priority, false);
+
+                    raiTLV.get(tp).add(cacheSupplier.get().createImg(grid, tp, setup, level,
+                            cacheHints, (CacheArrayLoader<A>) loader, volatileType));
+
+                }
+            }
+            hasBeenInitialised = true;
+            loader.init();
         }
-
-        loader.init();
-
     }
 
     @Override
     public RandomAccessibleInterval<V> getVolatileImage(int timepointId, int level, ImgLoaderHint... hints) {
         if (level == 0) return level0SetupLoader.getVolatileImage(timepointId, level, hints);
+        ensureInitialisation();
         return raiTLV.get(timepointId).get(level-1);
     }
 
@@ -176,6 +186,7 @@ public class PyramidizeSetupLoader<T extends NumericType<T> & NativeType<T>, V e
     @Override
     public RandomAccessibleInterval<T> getImage(int timepointId, int level, ImgLoaderHint... hints) {
         if (level==0) return level0SetupLoader.getImage(timepointId, level, hints);
+        ensureInitialisation();
         return raiTL.get(timepointId).get(level-1);
     }
 
