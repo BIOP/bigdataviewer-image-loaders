@@ -98,6 +98,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	// -------- Pixels characteristics
 	private final boolean isLittleEndian;
 	private final boolean isRGB;
+	private final boolean hasAlphaChannel;
 	private final VoxelDimensions voxelDimensions;
 	private final Type<? extends NumericType<?>> t;
 
@@ -237,6 +238,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					this.iSerie, u, defaultVoxelUnit);
 			this.isLittleEndian = reader.isLittleEndian();
 			this.isRGB = reader.isRGB();
+			this.hasAlphaChannel = reader.getSizeC() == 4;
 			this.format = reader.getFormat();
 
 			this.cellDimensions = new int[] {
@@ -607,6 +609,10 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	}
 
 	boolean to16Bits = false;
+
+	public boolean hasAlphaChannel() {
+		return hasAlphaChannel;
+	}
 
 	private static class ReaderPool extends ResourcePool<IFormatReader> {
 

@@ -196,7 +196,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		else if (t instanceof ARGBType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
-					readerPool, iChannel, iSeries);
+					readerPool, iChannel, iSeries, opener.hasAlphaChannel());
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()

@@ -270,11 +270,13 @@ public class BioFormatsArrayLoaders {
 	public static class BioFormatsRGBArrayLoader extends BioformatsArrayLoader
 		implements CacheArrayLoader<VolatileIntArray>
 	{
-
+		final boolean hasAlphaChannel;
+		
 		protected BioFormatsRGBArrayLoader(ResourcePool<IFormatReader> readerPool,
-			int channel, int iSeries)
+			int channel, int iSeries, boolean hasAlphaChannel)
 		{
 			super(readerPool, channel, iSeries);
+			this.hasAlphaChannel = hasAlphaChannel;
 		}
 
 		// Annoying because bioformats returns 3 bytes, while imglib2 requires ARGB,
@@ -306,7 +308,7 @@ public class BioFormatsArrayLoaders {
 							w, h);
 				}
 				else {
-					int nBytesPerPlane = nElements * 3;
+					/*int nBytesPerPlane = nElements * (hasAlphaChannel ? 4 : 3);
 					bytes = new byte[nBytesPerPlane];
 					int offset = 0;
 					for (int z = minZ; z < maxZ; z++) {
@@ -315,7 +317,8 @@ public class BioFormatsArrayLoaders {
 						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
 								nBytesPerPlane);
 						offset += nBytesPerPlane;
-					}
+					}*/
+					throw new UnsupportedOperationException("RGB image block of size above 1 unsupported");
 				}
 				boolean interleaved = reader.isInterleaved();
 
@@ -326,12 +329,23 @@ public class BioFormatsArrayLoaders {
 				int[] ints = new int[nElements];
 				int idxPx = 0;
 				if (interleaved) {
-					for (int i = 0; i < nElements; i++) {
-						ints[i] = ((0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
-								((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
-						idxPx += 3;
+					if (hasAlphaChannel) {
+						for (int i = 0; i < nElements; i++) {
+							ints[i] = (((255 - bytes[idxPx + 3]) & 0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
+									((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
+							idxPx += 4;
+						}
+					} else {
+						for (int i = 0; i < nElements; i++) {
+							ints[i] = (0xff << 24) | ((bytes[idxPx] & 0xff) << 16) |
+									((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
+							idxPx += 3;
+						}
 					}
 				} else {
+					if (hasAlphaChannel) {
+						throw new UnsupportedOperationException("Non interleaved ARGB pixels unsupported");
+					}
 					int bOffset = 2*nElements;
 					for (int i = 0; i < nElements; i++) {
 						ints[i] = ((bytes[idxPx] & 0xff) << 16 ) | ((bytes[idxPx+nElements] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
