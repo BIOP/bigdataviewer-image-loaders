@@ -95,7 +95,9 @@ public class OpenerSettings {
     OpenerType type = OpenerType.UNDEF;
     String location = "";
 
-    // ---- For BioFormats: series index
+    // ---- For BioFormats: use memoization
+    final public static String BF_MEMO_KEY = "use_bfmemo";
+
     // ---- For QuPath: entryID
     int id = -1;
 
@@ -352,6 +354,13 @@ public class OpenerSettings {
 
     public OpenerSettings addOptions(String options) {
         opt = options;
+        return this;
+    }
+
+    public OpenerSettings useBFMemo(boolean flag) {
+        if (!flag) { // Set by default
+            opt = opt + " --bfOptions " + BF_MEMO_KEY + "=false";
+        }
         return this;
     }
 

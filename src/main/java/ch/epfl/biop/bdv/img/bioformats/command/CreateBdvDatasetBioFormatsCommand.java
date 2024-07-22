@@ -65,6 +65,9 @@ public class CreateBdvDatasetBioFormatsCommand implements
 			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
 
+	@Parameter(label = "Check to disable memoisation (not recommended)")
+	boolean disable_memo = false;
+
 	@Parameter(type = ItemIO.OUTPUT)
 	AbstractSpimData<?> spimdata;
 
@@ -74,7 +77,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	public void run() {
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (File f : files) {
-			int nSeries = BioFormatsHelper.getNSeries(f);
+			int nSeries = BioFormatsHelper.getNSeries(f, disable_memo? " --bfOptions " + OpenerSettings.BF_MEMO_KEY + "=false": "" );
 			for (int i = 0; i < nSeries; i++) {
 				openerSettings.add(
 						OpenerSettings.BioFormats()
@@ -84,6 +87,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
 								.pyramidize(auto_pyramidize)
+								.useBFMemo(!disable_memo)
 								.context(ctx));
 			}
 		}

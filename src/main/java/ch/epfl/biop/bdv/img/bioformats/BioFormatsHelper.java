@@ -22,6 +22,7 @@
 
 package ch.epfl.biop.bdv.img.bioformats;
 
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
@@ -88,6 +89,7 @@ public class BioFormatsHelper {
 		reader.setFlattenedResolutions(false);
 		Map<String, String> readerOptions = BioFormatsOpener.bfOptionsToMap(options);
 		MetadataOptions metadataOptions = reader.getMetadataOptions();
+		boolean memoize = true;
 		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
 			// We need to set an xml metadata backend or else a Dummy metadata store is created and
 			// all metadata are discarded
@@ -97,12 +99,16 @@ public class BioFormatsHelper {
 				e.printStackTrace();
 			}
 			for (Map.Entry<String,String> option : readerOptions.entrySet()) {
+				if (option.getKey().equals(OpenerSettings.BF_MEMO_KEY)) {
+					// We ignore this: it's an option specific to the opener
+					memoize = Boolean.getBoolean(option.getValue());
+				}
 				logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
 				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
 			}
 		}
 
-		if (!readerOptions.isEmpty()) reader = new Memoizer(reader); // memoize
+		if (memoize) reader = new Memoizer(reader); // memoize
 		int nSeries = 0;
 		try {
 			logger.debug("setId for reader " + f.getAbsolutePath());

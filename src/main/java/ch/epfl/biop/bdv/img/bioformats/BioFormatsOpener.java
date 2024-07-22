@@ -30,6 +30,7 @@ import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
@@ -92,6 +93,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final String format;
 	private final IMetadata omeMeta;
 	private final String dataLocation;
+	private final boolean memoize;
 
 	// -------- Pixels characteristics
 	private final boolean isLittleEndian;
@@ -193,6 +195,16 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		}
 
 		this.rawPixelDataKey = buildRawPixelDataKey;
+
+		// Reads potential disabling of memoization
+		if (readerOptions.containsKey(OpenerSettings.BF_MEMO_KEY)) {
+			memoize = Boolean.getBoolean(readerOptions.get(OpenerSettings.BF_MEMO_KEY));
+		} else {
+			memoize = true;
+		}
+
+		logger.debug("Unique key for bio-formats opener: "+rawPixelDataKey);
+		logger.debug("Using memoization for bio-formats opener: "+memoize);
 
 		this.filename = new File(dataLocation).getName();
 		Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
@@ -365,17 +377,17 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			String[] opts = options.split(" ");
 			int i = 0;
 			while (i<opts.length) {
-				if (opts[i].equals("--bfOptions")) {
+				if (opts[i].trim().equals("--bfOptions")) {
 					i++;
 					String[] kv = opts[i].split("=");
 					if (kv.length!=2) {
 						kv = opts[i+1].split("\\u003d");
 					}
 					if (kv.length==2) {
-						if (kv[0].startsWith("-")) {
-							kv[0] = kv[0].substring(1);
+						if (kv[0].trim().startsWith("-")) {
+							kv[0] = kv[0].substring(1).trim();
 						}
-						readerOptions.put(kv[0], kv[1]);
+						readerOptions.put(kv[0], kv[1].trim());
 					}
 				}
 				i++;
@@ -421,7 +433,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			reader = new ChannelSeparator(reader);
 		}
 
-		if (readerOptions.isEmpty()) { // Can't memoize with bf Options
+		if (memoize) { // Can't memoize with bf Options
 			Memoizer memo = new Memoizer(reader);
 			try {
 				memo.setId(dataLocation);
