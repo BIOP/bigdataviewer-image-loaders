@@ -374,7 +374,6 @@ public class BioFormatsHelper {
 		VoxelDimensions voxelDimensions;
 
 		{
-			assert numDimensions == 3;
 			voxelDimensions = new VoxelDimensions() {
 
 				final Unit<Length> targetUnit = u;
@@ -632,16 +631,11 @@ public class BioFormatsHelper {
 		return arrayOfIndexes;
 	}
 
-	final static int[] loopR = { 1, 0, 0, 1, 1, 1, 0 };
-	final static int[] loopG = { 0, 1, 0, 1, 1, 0, 1 };
-	final static int[] loopB = { 0, 0, 1, 1, 0, 1, 1 };
-
-
 	/**
 	 * Look into Fields of BioFormats UNITS class that matches the input string
 	 * Return the corresponding Unit Field Case insensitive
 	 * 
-	 * @param unit_string
+	 * @param unit_string a unit specified as a string
 	 * @return corresponding BF Unit object
 	 */
 	public static Unit<Length> getUnitFromString(String unit_string) {

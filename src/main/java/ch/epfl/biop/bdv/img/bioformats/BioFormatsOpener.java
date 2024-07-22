@@ -347,7 +347,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		String fileNameWithoutExtension = FilenameUtils.removeExtension(new File(dataLocation).getName());
 		fileNameWithoutExtension = fileNameWithoutExtension.replace(".ome", ""); // above only removes .tif
 
-		if (imageName == null || imageName.equals("")) {
+		if (imageName == null || imageName.isEmpty()) {
 			imageName = fileNameWithoutExtension;
 			return imageName + "-s" + iSerie;
 		}
