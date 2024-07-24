@@ -24,6 +24,8 @@ package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
+import ch.epfl.biop.bdv.img.entity.Field;
+import ch.epfl.biop.bdv.img.entity.Plate;
 import ch.epfl.biop.bdv.img.opener.ChannelProperties;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.ResourcePool;
@@ -57,6 +59,9 @@ import net.imglib2.type.numeric.real.FloatType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import ome.xml.meta.OMEXMLMetadataRoot;
+import ome.xml.model.Well;
+import ome.xml.model.WellSample;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.slf4j.Logger;
@@ -66,9 +71,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
@@ -124,8 +131,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final OpenerMeta meta;
 
 	private final Map<String, String> readerOptions;
-
-	IFormatReader model;
 
 	/**
 	 *
@@ -214,11 +219,17 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			return currentIndexFilename;
 		});
 
-		this.model = this.getNewReader();
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options,
 				cachedObjects,
-				() -> new ReaderPool(poolSize, true,
-						this::getNewReader, model));
+				() -> {
+                    try {
+                        return new ReaderPool(poolSize, true,
+                                this::getNewReader, dataLocation.toUpperCase().trim().endsWith(".CZI") ); // Create base reader only for czi files
+                    } catch (Exception e) {
+						e.printStackTrace();
+                        throw new RuntimeException(e);
+                    }
+                });
 		int pixelType;
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
 			IFormatReader reader = pool.takeOrCreate();
@@ -262,7 +273,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 			AffineTransform3D rootTransform = BioFormatsHelper.getSeriesRootTransform(
 					this.omeMeta, //metadata
-					model,
 					iSerie, // serie
 					BioFormatsHelper.getUnitFromString(unit), // unit
 					positionPreTransformMatrixArray, // AffineTransform3D for positionPreTransform,
@@ -294,6 +304,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					ArrayList<Entity> entityList = new ArrayList<>();
 					entityList.add(new FileName(idxFilename, filename));
 					entityList.add(new SeriesIndex(iSerie));
+					addPlateInfo(entityList, options, iSerie, cachedObjects);
 					return entityList;
 				}
 
@@ -309,6 +320,67 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 			};
 		} else meta = null;
+	}
+
+	private void addPlateInfo(ArrayList<Entity> entityList,
+									 String options,
+									 int iSerie,
+									 Map<String, Object> cachedObjects) {
+		if (omeMeta.getPlateCount() == 0 ) return; // No plate information
+
+		// Check that we can read information
+		if (omeMeta.getPlateCount() > 1) {
+			logger.warn("Plate information ignored: only bio-formats containing single wells are supported");
+			return;
+		}
+
+		if (!(omeMeta.getRoot() instanceof OMEXMLMetadataRoot)) {
+			logger.warn("Can't detect plate information since ome meta root is not of class OMEXMLMetadataRoot");
+			return;
+		}
+
+		OMEXMLMetadataRoot r = (OMEXMLMetadataRoot) omeMeta.getRoot();
+		ome.xml.model.Plate plate = r.getPlate(0);
+
+		// Gets a unique identifier for the plate
+
+		Integer currentPlateIndex = memoize("opener.bioformats.currentplateindex", cachedObjects, () -> 0);
+		int idxPlate = memoize("opener.bioformats.plateIndex."+dataLocation+"."+options, cachedObjects, () -> {
+			cachedObjects.put("opener.bioformats.currentplateindex", currentPlateIndex + 1 );
+			return currentPlateIndex;
+		});
+
+		entityList.add(new Plate(idxPlate, plate.getName()));
+
+		Map<Integer, WellSample> idToWellSample = memoize("opener.bioformats.idtowell."+dataLocation+"."+options, cachedObjects, () -> {
+			Map<Integer, WellSample> idToWS = new HashMap<>();
+			plate.copyWellList().forEach(well -> well.copyWellSampleList().forEach(ws -> {
+				if (ws.getLinkedImage()!=null) {
+					if (ws.getLinkedImage().getID()!=null) {
+						// "Image:0"
+						idToWS.put(Integer.parseInt(ws.getLinkedImage().getID().split(":")[1]), ws);
+					}
+				}
+			}));
+			return idToWS;
+		});
+
+		if (idToWellSample.containsKey(iSerie)) {
+			WellSample ws = idToWellSample.get(iSerie);
+			System.out.println("ws="+ws.getID());
+			// WellSample:0:0:2
+			int id = Integer.parseInt(ws.getID().split(":")[3]);
+			entityList.add(new Field(id));
+			if (ws.getWell()!=null) {
+				Well w = ws.getWell();
+				entityList.add(
+						new ch.epfl.biop.bdv.img.entity.Well(
+								Integer.parseInt(w.getID().split(":")[2]),
+								(char)(w.getRow().getValue()+'A')+Integer.toString(w.getColumn().getValue()+1),
+						w.getRow().getValue(), w.getColumn().getValue()));
+			}
+		}
+
 	}
 
 	/**
@@ -435,7 +507,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			reader = new ChannelSeparator(reader);
 		}
 
-		if (memoize) { // Can't memoize with bf Options
+		if (memoize) {
 			Memoizer memo = new Memoizer(reader);
 			try {
 				memo.setId(dataLocation);
@@ -590,14 +662,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 				e.printStackTrace();
 			}
 		});
-		if (model!=null) {
-			try {
-				model.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
-			}
-		}
 	}
 
 	/**
@@ -620,22 +684,15 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		final IFormatReader model;
 
 		public ReaderPool(int size, Boolean dynamicCreation,
-						  Supplier<IFormatReader> readerSupplier)
-		{
+						  Supplier<IFormatReader> readerSupplier, boolean createBase) throws Exception {
 			super(size, dynamicCreation);
 			createPool();
 			this.readerSupplier = readerSupplier;
-			model = null;
-		}
-
-		public ReaderPool(int size, Boolean dynamicCreation,
-						  Supplier<IFormatReader> readerSupplier,
-						  IFormatReader model)
-		{
-			super(size, dynamicCreation);
-			this.model = model;
-			createPool();
-			this.readerSupplier = readerSupplier;
+			if (createBase) {
+				model = this.takeOrCreate();
+			} else {
+				model = null;
+			}
 		}
 
 		@Override
@@ -648,5 +705,19 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 			return readerSupplier.get();
 		}
+
+		@Override
+		public synchronized void shutDown(Consumer<IFormatReader> closer) {
+			if (model!=null) {
+				try {
+					recycle(model);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				closer.accept(model);
+			}
+			super.shutDown(closer);
+		}
+
 	}
 }

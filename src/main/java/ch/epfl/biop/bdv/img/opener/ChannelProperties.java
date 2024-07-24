@@ -21,7 +21,6 @@
  */
 package ch.epfl.biop.bdv.img.opener;
 
-import IceInternal.Ex;
 import com.google.gson.Gson;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
