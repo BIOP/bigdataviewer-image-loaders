@@ -142,9 +142,8 @@
 		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
 
 		<!-- only used in tests! -->
-		<bigdataviewer-playground.version>0.8.1</bigdataviewer-playground.version>
-		<bigdataviewer-biop-tools.version>0.7.3</bigdataviewer-biop-tools.version>
-		<bf.version>7.3.1</bf.version>
+		<!--bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
+		<bigdataviewer-biop-tools.version>0.10.0</bigdataviewer-biop-tools.version-->
 
 		<!-- <scijava.app.directory>C:/Fiji_template</scijava.app.directory> -->
 		<!-- <scijava.app.subdirectory>plugins/BIOP</scijava.app.subdirectory> -->
@@ -167,7 +166,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
-			<version>${bf.version}</version>
+			<!--version>${bf.version}</version-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -185,7 +184,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-api</artifactId>
-			<version>${bf.version}</version>
+			<!--version>${bf.version}</version-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -203,7 +202,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
-			<version>${bf.version}</version>
+			<!--version>${bf.version}</version-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -289,12 +288,12 @@
 
 		<!-- test dependencies -->
 
-		<dependency>
+		<!--dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
 			<version>${bigdataviewer-biop-tools.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -308,12 +307,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-playground</artifactId>
 			<version>${bigdataviewer-playground.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 
 		<!-- <dependency> if you want to test the alternative CZI reader
 			<groupId>ch.epfl.biop</groupId>
