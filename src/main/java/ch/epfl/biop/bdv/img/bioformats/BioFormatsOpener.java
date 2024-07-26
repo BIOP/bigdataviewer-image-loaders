@@ -232,7 +232,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
                 });
 		int pixelType;
 		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
-			IFormatReader reader = pool.takeOrCreate();
+			IFormatReader reader = pool.acquire();
 			reader.setSeries(iSerie);
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
 			nChannels = this.omeMeta.getChannelCount(iSerie);//reader.getSizeC();
@@ -689,7 +689,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			createPool();
 			this.readerSupplier = readerSupplier;
 			if (createBase) {
-				model = this.takeOrCreate();
+				model = this.acquire();
 			} else {
 				model = null;
 			}
