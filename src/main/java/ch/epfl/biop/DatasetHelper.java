@@ -45,6 +45,22 @@ public class DatasetHelper {
 
     public static final File cachedSampleDir = new File(System.getProperty("user.home"),"CachedSamples");
 
+
+    final public static String JPG_RGB =
+            "https://biop.epfl.ch/img/splash/physicsTemporal_byRGUIETcrop.jpg";
+    final public static String OLYMPUS_OIR =
+            "https://downloads.openmicroscopy.org/images/Olympus-OIR/etienne/venus%20stack.ome.tif";
+    final public static String VSI =
+            "https://github.com/NicoKiaru/TestImages/raw/master/VSI/Fluo3DFluoImage2Channels_01.vsi";
+    final public static String LIF =
+            "https://downloads.openmicroscopy.org/images/Leica-LIF/michael/PR2729_frameOrderCombinedScanTypes.lif";
+    final public static String TIF_TIMELAPSE_3D =
+            "https://github.com/NicoKiaru/TestImages/raw/master/CElegans/dub-0.5xy-TP1-22.tif";
+    final public static String ND2_20X =
+            "https://github.com/NicoKiaru/TestImages/raw/master/ND2/20x_g5_a1.nd2";
+    final public static String ND2_60X =
+            "https://github.com/NicoKiaru/TestImages/raw/master/ND2/60x_g5_a1.nd2";
+
     public static File urlToFile(URL url, Function<String, String> decoder) {
         try {
             File file_out = new File(cachedSampleDir,decoder.apply(url.getFile()));
@@ -102,6 +118,33 @@ public class DatasetHelper {
                 ((HttpURLConnection)conn).disconnect();
             }
         }
+    }
+
+    public static Thread ASyncDL(String str) {
+        Thread thread = new Thread(() -> getDataset(str));
+        thread.start();
+        return thread;
+    }
+
+    public static String getSampleVSIDataset() {
+        Thread t0 = ASyncDL(VSI);
+        Thread t1 = ASyncDL(
+                "https://github.com/NicoKiaru/TestImages/raw/master/VSI/_Fluo3DFluoImage2Channels_01_/stack1/frame_t_0.ets");
+        Thread t2 = ASyncDL(
+                "https://github.com/NicoKiaru/TestImages/raw/master/VSI/_Fluo3DFluoImage2Channels_01_/stack10001/frame_t_0.ets");
+        Thread t3 = ASyncDL(
+                "https://github.com/NicoKiaru/TestImages/raw/master/VSI/_Fluo3DFluoImage2Channels_01_/stack10004/frame_t_0.ets");
+        try {
+            t0.join();
+            t1.join();
+            t2.join();
+            t3.join();
+        }
+        catch (Exception e) {
+
+            e.printStackTrace();
+        }
+        return getDataset(VSI).getAbsolutePath();
     }
 
     public static String dowloadBrainVSIDataset() throws IOException {

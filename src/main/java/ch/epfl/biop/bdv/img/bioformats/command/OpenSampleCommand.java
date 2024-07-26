@@ -22,10 +22,10 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
+import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
