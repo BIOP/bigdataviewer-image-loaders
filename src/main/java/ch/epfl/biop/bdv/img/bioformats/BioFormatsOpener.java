@@ -54,6 +54,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import ome.units.UNITS;
@@ -558,6 +559,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 			if (pt == FormatTools.FLOAT) {
 				return new FloatType();
+			}
+			if (pt == FormatTools.UINT32) {
+				return new UnsignedIntType();
 			}
 		}
 		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
