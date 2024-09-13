@@ -207,7 +207,10 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		rawPixelDataKey = "opener.omero."+host+"."+omeroImageID;
 
 		// create a new reader pool
-		this.pool = memoize("opener.omero.pool."+host+"."+imageID, cachedObjects, () -> new RawPixelsStorePool(poolSize, true, this::getNewStore));
+		this.pool = memoize("opener.omero.pool."+host+"."+imageID, cachedObjects, () -> {
+			logger.debug("Creating pool for "+"opener.omero.pool."+host+"."+imageID);
+			return new RawPixelsStorePool(poolSize, true, this::getNewStore);
+		});
 
 		// get the current pixel store
 		{
@@ -224,8 +227,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 			if (this.nMipmapLevels == 1) {
 				imageSize.put(0, new int[] { pixels.getSizeX(), pixels.getSizeY(), pixels.getSizeZ() });
 				tileSize = imageSize;
-			}
-			else {
+			} else {
 				tileSize = new HashMap<>();
 				logger.debug("Get image size and tile sizes...");
 				Instant start = Instant.now();
@@ -384,7 +386,6 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 				}
 			};
 		} else meta = null;
-
 	}
 
 
@@ -690,7 +691,6 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 								  Supplier<RawPixelsStorePrx> rawPixelStoreSupplier)
 		{
 			super(size, dynamicCreation);
-			createPool();
 			this.rpsSupplier = rawPixelStoreSupplier;
 		}
 

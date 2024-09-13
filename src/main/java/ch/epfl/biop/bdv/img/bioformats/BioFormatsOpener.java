@@ -223,6 +223,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options,
 				cachedObjects,
 				() -> {
+					logger.debug("Creating pool for "+"opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options);
                     try {
                         return new ReaderPool(poolSize, true,
                                 this::getNewReader, dataLocation.toUpperCase().trim().endsWith(".CZI") ); // Create base reader only for czi files
@@ -690,7 +691,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		public ReaderPool(int size, Boolean dynamicCreation,
 						  Supplier<IFormatReader> readerSupplier, boolean createBase) throws Exception {
 			super(size, dynamicCreation);
-			createPool();
 			this.readerSupplier = readerSupplier;
 			if (createBase) {
 				model = this.acquire();

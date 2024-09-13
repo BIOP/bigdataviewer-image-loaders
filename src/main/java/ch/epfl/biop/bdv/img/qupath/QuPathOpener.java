@@ -174,14 +174,22 @@ public class QuPathOpener<T> implements Opener<T> {
 
 					} else {
 
-						int indexOfSeriesId = mostInnerBuilder.args.indexOf("--series") + 1;
+						int idxSeriesK = mostInnerBuilder.args.indexOf("--series");
+						int idxSeriesV = idxSeriesK + 1;
 
-						String joinedArgs = String.join(" ", mostInnerBuilder.args);
+						// Removes --series i from the options because otherwise this creates a reader pool per
+						// image file series instead of per image file only
+
+						List<String> filteredArgs = new ArrayList<>(mostInnerBuilder.args);
+						filteredArgs.remove(idxSeriesK);
+						filteredArgs.remove(idxSeriesK);
+
+						String joinedArgs = String.join(" ", filteredArgs);
 
 						this.opener = (Opener<T>) new BioFormatsOpener(
 								context,
 								filePath,
-								Integer.parseInt(mostInnerBuilder.args.get(indexOfSeriesId)),
+								Integer.parseInt(mostInnerBuilder.args.get(idxSeriesV)),
 								// Location of the image
 								new AffineTransform3D().getRowPackedCopy(),
 								new AffineTransform3D().getRowPackedCopy(),

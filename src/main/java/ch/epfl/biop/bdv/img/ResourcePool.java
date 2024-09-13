@@ -55,10 +55,6 @@ public abstract class ResourcePool<Resource> {
 	private int createdObjects = 0;
 	final private int size;
 
-	protected ResourcePool(int size) {
-		this(size, false);
-	}
-
 	protected ResourcePool(int size, Boolean dynamicCreation) {
 		// Enable the fairness; otherwise, some threads may wait forever.
 		pool = new ArrayBlockingQueue<>(size, true);
