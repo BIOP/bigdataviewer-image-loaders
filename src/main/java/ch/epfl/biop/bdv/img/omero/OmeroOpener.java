@@ -175,7 +175,10 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 			exception = e;
 		}
 
-		if (exception != null) throw exception;
+		if (exception != null) {
+			// avoid asking again and again connection credentials
+			throw exception;
+		}
 
 		this.gateway = session.getGateway();
 		this.securityContext = session.getSecurityContext();
@@ -230,22 +233,19 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 			} else {
 				tileSize = new HashMap<>();
 				logger.debug("Get image size and tile sizes...");
-				Instant start = Instant.now();
-				ResolutionDescription[] resDesc = rawPixStore.getResolutionDescriptions();
-				Instant finish = Instant.now();
-				logger.debug("Done! Time elapsed : " + Duration.between(start,
-					finish));
 				int tileSizeX = rawPixStore.getTileSize()[0];
 				int tileSizeY = rawPixStore.getTileSize()[1];
+				int bytesWidth = rawPixStore.getByteWidth();
 
 				for (int level = 0; level < this.nMipmapLevels; level++) {
 					int[] sizes = new int[3];
-					sizes[0] = resDesc[level].sizeX;
-					sizes[1] = resDesc[level].sizeY;
+                    rawPixStore.setResolutionLevel(this.nMipmapLevels - level - 1);
+					sizes[0] = rawPixStore.getRowSize() / bytesWidth;
+					sizes[1] = (int) ( (rawPixStore.getPlaneSize() / sizes[0]) / bytesWidth );
 					sizes[2] = pixels.getSizeZ();
 					int[] tileSizes = new int[2];
-					tileSizes[0] = Math.min(tileSizeX, resDesc[this.nMipmapLevels - 1].sizeX);
-					tileSizes[1] = Math.min(tileSizeY, resDesc[this.nMipmapLevels - 1].sizeY);
+					tileSizes[0] = Math.min(tileSizeX, sizes[0]);
+					tileSizes[1] = Math.min(tileSizeY, sizes[1]);
 					imageSize.put(level, sizes);
 					tileSize.put(level, tileSizes);
 				}

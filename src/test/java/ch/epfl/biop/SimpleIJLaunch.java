@@ -30,9 +30,10 @@ public class SimpleIJLaunch {
 	static public void main(String... args) {
 		// Arrange
 		// create the ImageJ application context with all available services
+
+		//DebugTools.enableLogging("INFO");
 		final ImageJ ij = new ImageJ();
 		DebugTools.enableLogging("DEBUG");
-		//DebugTools.enableLogging("INFO");
 		//SwingUtilities.invokeAndWait(() ->);
 		//System.out.println("bf version = "+VersionUtils.getVersion(ZeissCZIReader.class));
 		ij.ui().showUI();

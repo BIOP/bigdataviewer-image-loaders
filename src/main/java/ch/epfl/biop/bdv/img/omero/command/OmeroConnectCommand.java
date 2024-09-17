@@ -79,7 +79,7 @@ public class OmeroConnectCommand implements Command {
             password = "";
             logger.info("Session active : " + omeroSession.getGateway().isConnected());
             omeroSession.getSecurityContext().setServerInformation(new ServerInformation(host));
-            success = true;
+            success = omeroSession.getGateway().isConnected();
         } catch (Exception e) {
             error = e;
             logger.error(e.getMessage());
