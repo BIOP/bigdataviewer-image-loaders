@@ -710,15 +710,20 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			return readerSupplier.get();
 		}
 
+		volatile boolean modelHasBeenRecycled = false;
+
 		@Override
 		public synchronized void shutDown(Consumer<IFormatReader> closer) {
-			if (model!=null) {
-				try {
-					recycle(model);
-				} catch (Exception e) {
-					e.printStackTrace();
+			if (!modelHasBeenRecycled) {
+				modelHasBeenRecycled = true;
+				if (model != null) {
+					try {
+						recycle(model);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					closer.accept(model);
 				}
-				closer.accept(model);
 			}
 			super.shutDown(closer);
 		}
