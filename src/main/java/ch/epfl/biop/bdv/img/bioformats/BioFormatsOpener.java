@@ -54,6 +54,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import ome.units.UNITS;
@@ -222,6 +223,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options,
 				cachedObjects,
 				() -> {
+					logger.debug("Creating pool for "+"opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options);
                     try {
                         return new ReaderPool(poolSize, true,
                                 this::getNewReader, dataLocation.toUpperCase().trim().endsWith(".CZI") ); // Create base reader only for czi files
@@ -559,6 +561,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			if (pt == FormatTools.FLOAT) {
 				return new FloatType();
 			}
+			if (pt == FormatTools.UINT32) {
+				return new UnsignedIntType();
+			}
 		}
 		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
 				image_index + ": " + pt);
@@ -686,7 +691,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		public ReaderPool(int size, Boolean dynamicCreation,
 						  Supplier<IFormatReader> readerSupplier, boolean createBase) throws Exception {
 			super(size, dynamicCreation);
-			createPool();
 			this.readerSupplier = readerSupplier;
 			if (createBase) {
 				model = this.acquire();
@@ -706,15 +710,20 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			return readerSupplier.get();
 		}
 
+		volatile boolean modelHasBeenRecycled = false;
+
 		@Override
 		public synchronized void shutDown(Consumer<IFormatReader> closer) {
-			if (model!=null) {
-				try {
-					recycle(model);
-				} catch (Exception e) {
-					e.printStackTrace();
+			if (!modelHasBeenRecycled) {
+				modelHasBeenRecycled = true;
+				if (model != null) {
+					try {
+						recycle(model);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					closer.accept(model);
 				}
-				closer.accept(model);
 			}
 			super.shutDown(closer);
 		}

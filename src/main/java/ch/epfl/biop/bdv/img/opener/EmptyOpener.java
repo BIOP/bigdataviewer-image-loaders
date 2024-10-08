@@ -73,7 +73,7 @@ public class EmptyOpener implements Opener<Object> {
             channelProperties.add(channel);
         }
 
-        pool = new ResourcePool<Object>(2) {
+        pool = new ResourcePool<Object>(2, true) {
             @Override
             protected Object createObject() {
                 return new Object();

@@ -54,7 +54,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 		CreateBdvDatasetQuPathCommand.class);
 
 	@Parameter
-	File quPathProject;
+	File qupath_project;
 
 	@Parameter
 	Context context;
@@ -83,7 +83,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 		try {
 			// Deserialize the QuPath project
-			JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject.toURI()));
+			JsonObject projectJson = ProjectIO.loadRawProject(new File(qupath_project.toURI()));
 			Gson gson = new Gson();
 			MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
 			logger.debug("Opening QuPath project " + project.uri);
@@ -95,7 +95,7 @@ public class CreateBdvDatasetQuPathCommand implements Command
 				OpenerSettings openerSettings =
 						OpenerSettings.QuPath()
 								.splitRGBChannels(split_rgb_channels)
-								.location(quPathProject.getAbsolutePath())
+								.location(qupath_project.getAbsolutePath())
 								.setEntry(image.entryID)
 								.unit(unit)
 								.positionConvention(plane_origin_convention)
@@ -108,8 +108,8 @@ public class CreateBdvDatasetQuPathCommand implements Command
 
 			spimData = OpenersToSpimData.getSpimData(openerSettingsList);
 
-			if (datasetname.equals("")) {
-				datasetname = quPathProject.getParentFile().getName();
+			if (datasetname.isEmpty()) {
+				datasetname = qupath_project.getParentFile().getName();
 			}
 
 		} catch (Exception e) {

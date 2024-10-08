@@ -45,6 +45,7 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.AbstractIntegerType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.slf4j.Logger;
@@ -197,6 +198,11 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
 					readerPool, iChannel, iSeries, opener.hasAlphaChannel());
+		}
+		else if (t instanceof UnsignedIntType) {
+			loader =
+				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
+						readerPool, iChannel, iSeries, opener.hasAlphaChannel());
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()

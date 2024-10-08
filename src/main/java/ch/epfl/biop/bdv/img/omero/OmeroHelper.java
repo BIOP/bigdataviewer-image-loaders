@@ -40,6 +40,8 @@ import org.apache.commons.lang.StringUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -52,6 +54,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class OmeroHelper {
+
+	protected static final Logger logger = LoggerFactory.getLogger(OmeroHelper.class);
 
 	/**
 	 * OMERO connection with credentials and simpleLogger
@@ -134,31 +138,40 @@ public class OmeroHelper {
 
 	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
 		OMEROService omeroService = context.getService(OMEROService.class);
-
 		OMEROServer server = new OMEROServer(host, 4064);
-
-		OMEROSession omeroSession;
 		try {
-			omeroSession = omeroService.session(server);
+			return omeroService.session(server);
 		} catch (Exception e) {
-			System.err.println("The OMERO session for "+host+" needs to be initialized");
+			logger.info("The OMERO session for "+host+" needs to be initialized");
 			CommandService command = context.getService(CommandService.class);
 			boolean success = false;
-			Exception error;
-			try {
-				OmeroConnectCommand.message_in = "Please enter your "+host+" credentials:";
-				CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
-				success = (Boolean) module.getOutput("success");
-				omeroSession = (OMEROSession) module.getOutput("omeroSession");
-				error = (DSOutOfServiceException) module.getOutput("error");
-			} catch (Exception commandException) {
-				commandException.printStackTrace();
-				omeroSession = null;
-				error = commandException;
+			int iAttempt = 0;
+			int nAttempts = 3;
+			String lastErrorMessage = "";
+			while ((iAttempt<nAttempts) && (!success)) {
+				iAttempt++;
+				Exception error;
+				try {
+					if (lastErrorMessage.isEmpty()) {
+						OmeroConnectCommand.message_in = "<html>Please enter your " + host + " credentials:</html>";
+					} else {
+						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + host + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
+					}
+					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
+					success = (Boolean) module.getOutput("success");
+					OMEROSession omeroSession = (OMEROSession) module.getOutput("omeroSession");
+					if (success) return omeroSession;
+					error = (Exception) module.getOutput("error");
+					if (error!=null) {
+						lastErrorMessage = error.getMessage();
+					}
+				} catch (Exception commandException) {
+					error = commandException;
+				}
+				if ((!success) && (iAttempt == nAttempts)) throw error;
 			}
-			if ((!success)&&(error!=null)) throw error;
 		}
-		return omeroSession;
+		return null;
 	}
 
 	/**

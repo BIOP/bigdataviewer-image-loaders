@@ -39,7 +39,6 @@ public class ReaderPool extends ResourcePool<IFormatReader> {
 		Supplier<IFormatReader> readerSupplier)
 	{
 		super(size, dynamicCreation);
-		createPool();
 		this.readerSupplier = readerSupplier;
 	}
 
