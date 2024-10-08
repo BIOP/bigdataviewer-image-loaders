@@ -493,7 +493,7 @@ public class QuPathToSpimData {
 			sd.setImgLoader(new QuPathImageLoader(quPathProject, openerModel, sd,
 				openerModel.nFetcherThread, openerModel.numPriorities));
 
-			final SpimData spimData = new SpimData(null, sd, new ViewRegistrations(
+			final SpimData spimData = new SpimData((File) null, sd, new ViewRegistrations(
 				registrations));
 			return spimData;
 		}
