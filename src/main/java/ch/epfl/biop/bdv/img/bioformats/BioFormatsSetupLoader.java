@@ -44,6 +44,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.AbstractIntegerType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -183,8 +184,18 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
 								readerPool, iChannel, iSeries, isLittleEndian);
 			}
-		}
-		else if (t instanceof FloatType) {
+		} else if (t instanceof ShortType) {
+			if (opener.to16bit()) {
+				// the data is originally 8 bits
+				throw new UnsupportedOperationException("Pixel type " + t.getClass()
+						.getName() + " conversion to 16 bits unsupported in " + BioFormatsSetupLoader.class
+						.getName());
+			} else {
+				loader =
+						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsShortArrayLoader(
+								readerPool, iChannel, iSeries, isLittleEndian);
+			}
+		} else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
 					readerPool, iChannel, iSeries, isLittleEndian);

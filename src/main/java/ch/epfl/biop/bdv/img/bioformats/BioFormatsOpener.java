@@ -53,6 +53,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -563,6 +564,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 			if (pt == FormatTools.UINT32) {
 				return new UnsignedIntType();
+			}
+			if (pt == FormatTools.INT16) {
+				return new ShortType();
 			}
 		}
 		throw new UnsupportedOperationException("Unhandled pixel type for serie " +
