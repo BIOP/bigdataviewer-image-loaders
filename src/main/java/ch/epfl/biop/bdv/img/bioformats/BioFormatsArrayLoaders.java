@@ -196,6 +196,75 @@ public class BioFormatsArrayLoaders {
 	}
 
 	/**
+	 * Class explaining how to read and load pixels of type : unsigned short (16 bits)
+	 */
+	public static class BioFormatsShortArrayLoader extends
+			BioformatsArrayLoader implements CacheArrayLoader<VolatileShortArray>
+	{
+
+		final ByteOrder byteOrder;
+
+		protected BioFormatsShortArrayLoader(ResourcePool<IFormatReader> readerPool,
+													 int channel, int iSeries, boolean littleEndian)
+		{
+			super(readerPool, channel, iSeries);
+			if (littleEndian) {
+				byteOrder = ByteOrder.LITTLE_ENDIAN;
+			}
+			else {
+				byteOrder = ByteOrder.BIG_ENDIAN;
+			}
+		}
+
+		@Override
+		public VolatileShortArray loadArray(int timepoint, int setup, int level,
+											int[] dimensions, long[] min) throws InterruptedException
+		{
+			try {
+				// get the reader
+				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
+				reader.setResolution(level);
+				int minX = (int) min[0];
+				int minY = (int) min[1];
+				int minZ = (int) min[2];
+				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
+				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
+				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int w = maxX - minX;
+				int h = maxY - minY;
+				int d = maxZ - minZ;
+				int nElements = (w * h * d);
+
+				// read pixels
+				ByteBuffer buffer = ByteBuffer.allocate(nElements * 2);
+				for (int z = minZ; z < maxZ; z++) {
+					byte[] bytes = reader.openBytes(reader.getIndex(z, channel, timepoint), minX, minY,
+							w, h);
+					buffer.put(bytes);
+				}
+
+				// release the reader
+				readerPool.recycle(reader);
+
+				// unsigned short specific transform
+				short[] shorts = new short[nElements];
+				buffer.flip();
+				buffer.order(byteOrder).asShortBuffer().get(shorts);
+				return new VolatileShortArray(shorts, true);
+			}
+			catch (Exception e) {
+				throw new InterruptedException(e.getMessage());
+			}
+		}
+
+		@Override
+		public int getBytesPerElement() {
+			return 2;
+		}
+	}
+
+	/**
 	 * Class explaining how to read and load pixels of type : float (32 bits)
 	 */
 	public static class BioFormatsFloatArrayLoader extends BioformatsArrayLoader

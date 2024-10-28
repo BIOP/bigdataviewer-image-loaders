@@ -286,7 +286,7 @@ public class BioFormatsToSpimData {
 			sd.setImgLoader(new BioFormatsImageLoader(openers, sd, openers.get(
 				0).nFetcherThread, openers.get(0).numPriorities));
 
-			return new SpimData(null, sd, new ViewRegistrations(registrations));
+			return new SpimData((File) null, sd, new ViewRegistrations(registrations));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

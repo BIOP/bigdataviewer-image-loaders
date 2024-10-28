@@ -185,7 +185,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 		List<Long> imageIDs = OmeroHelper.getImageIDs(datalocation, gateway, securityContext);
 
-		if (imageIDs.size()==0) throw new IllegalStateException("Could not found an image ID in url "+datalocation);
+		if (imageIDs.isEmpty()) throw new IllegalStateException("Could not found an image ID in url "+datalocation);
 		if (imageIDs.size()>1) throw new UnsupportedOperationException("Could not open multiple Omero IDs in a single URL, split them.");
 
 		long imageID = imageIDs.get(0);

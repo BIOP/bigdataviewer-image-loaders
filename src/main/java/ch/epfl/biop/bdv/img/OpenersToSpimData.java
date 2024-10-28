@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spimdata.util.Displaysettings;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -208,7 +209,7 @@ public class OpenersToSpimData {
             // create spimdata
             SequenceDescription sd = new SequenceDescription(new TimePoints(timePoints), viewSetups, null, new MissingViews(missingViews));
             sd.setImgLoader(new OpenersImageLoader(openerSettings, openers, sd));
-            return new SpimData(null, sd, new ViewRegistrations(registrations));
+            return new SpimData((File) null, sd, new ViewRegistrations(registrations));
         }
         catch (Exception e) {
             e.printStackTrace();
