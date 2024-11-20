@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-image-loaders</artifactId>
-	<version>0.8.8-SNAPSHOT</version>
+	<version>0.8.8</version>
 
 	<name>Biop bigdataviewer image loaders</name>
 	<description>Various image loaders for bigdataviewer (Bio-Formats, Omero, QuPath)</description>
@@ -121,7 +121,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/BIOP/bigdataviewer-image-loaders</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-image-loaders</developerConnection>
-		<tag>HEAD</tag>
+		<tag>bigdataviewer-image-loaders-0.8.8</tag>
 		<url>https://github.com/BIOP/bigdataviewer-image-loaders</url>
 	</scm>
 	
