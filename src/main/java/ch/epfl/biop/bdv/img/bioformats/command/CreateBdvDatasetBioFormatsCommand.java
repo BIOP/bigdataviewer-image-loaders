@@ -65,7 +65,7 @@ public class CreateBdvDatasetBioFormatsCommand implements
 			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
 
-	@Parameter(label = "Check to disable memoisation (not recommended)")
+	@Parameter(label = "Check to disable memoization (not recommended)")
 	boolean disable_memo = false;
 
 	@Parameter(type = ItemIO.OUTPUT)

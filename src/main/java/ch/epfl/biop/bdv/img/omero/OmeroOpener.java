@@ -175,6 +175,8 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 			exception = e;
 		}
 
+		assert session!=null;
+
 		if (exception != null) {
 			// avoid asking again and again connection credentials
 			throw exception;
@@ -291,7 +293,13 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 
 			List<ChannelData> channelMetadata = gateway.getFacility(MetadataFacility.class).getChannelData(securityContext, imageID);
-			RenderingDef renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
+			RenderingDef renderingDef = null;
+
+			try {
+				renderingDef = gateway.getRenderingSettingsService(securityContext).getRenderingSettings(pixelsID);
+			} catch (Exception e) {
+				logger.error("Couldn't get rendering definition.");
+			}
 
 			boolean isRGB = this.nChannels == 3 && this.pixelType instanceof UnsignedByteType; // Humhum bof! TODO
 
@@ -307,7 +315,8 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 							"join fetch info.exposureTime as et " + "where info.pixels.id=" + pixels
 							.getId(), null);
 
-			if (objectinfos.size() != 0) {
+			if (!objectinfos.isEmpty()) {
+
 				// one plane per (c,z,t) combination: we assume that X and Y stage
 				// positions are the same in all planes and therefore take the 1st plane
 				PlaneInfo planeinfo = (PlaneInfo) (objectinfos.get(0));

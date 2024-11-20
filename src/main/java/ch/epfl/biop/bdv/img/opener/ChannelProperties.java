@@ -309,7 +309,7 @@ public class ChannelProperties {
     public ChannelProperties setDynamicRange(RenderingDef rd){
         if (rd == null) {
             this.displayRangeMin = 0;
-            this.displayRangeMax = 0;
+            this.displayRangeMax = 255;
             return this;
         }
         this.displayRangeMin = rd.getChannelBinding(this.iChannel).getInputStart().getValue();
@@ -447,7 +447,7 @@ public class ChannelProperties {
     @Override
     public int hashCode() {
         return this.name.hashCode() * this.pixelType.getClass().hashCode() * emissionWavelength * excitationWavelength *
-                (iChannel + 1) * this.color.hashCode() * this.nChannels;
+                (iChannel + 1) * 1/*this.color.hashCode()*/ * this.nChannels;
     }
 
     @Override
