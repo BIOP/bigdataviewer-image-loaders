@@ -225,7 +225,27 @@ public class QuPathOpener<T> implements Opener<T> {
 								cachedObjects,
 								defaultNumberOfChannels, skipMeta);
 
-						logger.debug("OMERO-RAW Opener for image " + this.image.imageName);
+						logger.debug("OMERO-RAW Opener (BIOP) for image " + this.image.imageName);
+					} else if (mostInnerBuilder.providerClassName.equals(
+							"qupath.ext.omero.core.imageserver.OmeroImageServerBuilder")) {
+
+						if (!mostInnerBuilder.args.contains("Ice")) {
+							throw new UnsupportedOperationException("Unsupported " +
+									mostInnerBuilder.providerClassName +
+									" because it is not using the Ice API");
+						}
+
+						this.opener = (Opener<T>) new OmeroOpener(
+								context,
+								URLDecoder.decode(mostInnerBuilder.uri.toString(), "UTF-8"),
+								//mostInnerBuilder.uri.toString(),
+								poolSize,
+								unit,
+								positionIsImageCenter,
+								cachedObjects,
+								defaultNumberOfChannels, skipMeta);
+
+						logger.debug("OMERO-ICE Opener for image " + this.image.imageName);
 					} else {
 						throw new UnsupportedOperationException("Unsupported " +
 								mostInnerBuilder.providerClassName +
