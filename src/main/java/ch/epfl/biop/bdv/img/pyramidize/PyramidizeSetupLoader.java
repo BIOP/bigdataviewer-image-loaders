@@ -22,6 +22,7 @@
 package ch.epfl.biop.bdv.img.pyramidize;
 
 import bdv.img.cache.CacheArrayLoader;
+import bdv.img.cache.VolatileCachedCellImg;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
@@ -39,7 +40,9 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -116,8 +119,12 @@ public class PyramidizeSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 
             PyramidizeArrayLoaders.PyramidizeArrayLoader loader;
             if (t instanceof UnsignedByteType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeUnsignedByteArrayLoader(this);
+            } else if (t instanceof ByteType) {
                 loader = new PyramidizeArrayLoaders.PyramidizeByteArrayLoader(this);
             } else if (t instanceof UnsignedShortType) {
+                loader = new PyramidizeArrayLoaders.PyramidizeUnsignedShortArrayLoader(this);
+            } else if (t instanceof ShortType) {
                 loader = new PyramidizeArrayLoaders.PyramidizeShortArrayLoader(this);
             } else if (t instanceof FloatType) {
                 loader = new PyramidizeArrayLoaders.PyramidizeFloatArrayLoader(this);

@@ -127,6 +127,62 @@ public class BioFormatsArrayLoaders {
 	}
 
 	/**
+	 * Class explaining how to read and load pixels of type : Unsigned Byte (8 bits)
+	 */
+	protected static class BioFormatsByteArrayLoader extends
+			BioformatsArrayLoader implements CacheArrayLoader<VolatileByteArray>
+	{
+
+		protected BioFormatsByteArrayLoader(ResourcePool<IFormatReader> readerPool,
+													int channel, int iSeries)
+		{
+			super(readerPool, channel, iSeries);
+		}
+
+		@Override
+		public VolatileByteArray loadArray(int timepoint, int setup, int level,
+										   int[] dimensions, long[] min) throws InterruptedException
+		{
+			try {
+				// get the reader
+				IFormatReader reader = readerPool.acquire();
+				reader.setSeries(iSeries);
+				reader.setResolution(level);
+				int minX = (int) min[0];
+				int minY = (int) min[1];
+				int minZ = (int) min[2];
+				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
+				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
+				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+				int w = maxX - minX;
+				int h = maxY - minY;
+				int d = maxZ - minZ;
+				int nElements = (w * h * d);
+
+				// read pixels
+				ByteBuffer buffer = ByteBuffer.allocate(nElements);
+				for (int z = minZ; z < maxZ; z++) {
+					byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
+							timepoint), minX, minY, w, h);
+					buffer.put(bytesCurrentPlane);
+				}
+
+				// release the reader
+				readerPool.recycle(reader);
+				return new VolatileByteArray(buffer.array(), true);
+			}
+			catch (Exception e) {
+				throw new InterruptedException(e.getMessage());
+			}
+		}
+
+		@Override
+		public int getBytesPerElement() {
+			return 1;
+		}
+	}
+
+	/**
 	 * Class explaining how to read and load pixels of type : unsigned short (16 bits)
 	 */
 	public static class BioFormatsUnsignedShortArrayLoader extends

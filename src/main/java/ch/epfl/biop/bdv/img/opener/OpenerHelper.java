@@ -33,14 +33,22 @@ import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.Volatile;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedIntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileARGBType;
+import net.imglib2.type.volatiles.VolatileByteType;
+import net.imglib2.type.volatiles.VolatileDoubleType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.type.volatiles.VolatileIntType;
+import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.type.volatiles.VolatileUnsignedByteType;
+import net.imglib2.type.volatiles.VolatileUnsignedIntType;
 import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,16 +75,22 @@ public class OpenerHelper {
      * @return volatile pixel type from t
      */
     static public Volatile getVolatileOf(NumericType t) {
+
+        if (t instanceof ByteType) return new VolatileByteType();
+        if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
+
+        if (t instanceof ShortType) return new VolatileShortType();
         if (t instanceof UnsignedShortType) return new VolatileUnsignedShortType();
 
         if (t instanceof IntType) return new VolatileIntType();
-
-        if (t instanceof UnsignedByteType) return new VolatileUnsignedByteType();
+        if (t instanceof UnsignedIntType) return new VolatileUnsignedIntType();
 
         if (t instanceof FloatType) return new VolatileFloatType();
+        if (t instanceof DoubleType) return new VolatileDoubleType();
 
         if (t instanceof ARGBType) return new VolatileARGBType();
-        return null;
+
+        throw new UnsupportedOperationException("Could not find the volatile equivalent of pixel type "+t.getClass().getName());
     }
 
 

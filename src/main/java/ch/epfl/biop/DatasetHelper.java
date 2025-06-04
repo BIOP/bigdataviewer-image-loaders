@@ -74,7 +74,7 @@ public class DatasetHelper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

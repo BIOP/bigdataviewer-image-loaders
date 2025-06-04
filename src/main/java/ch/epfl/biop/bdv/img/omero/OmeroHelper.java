@@ -171,7 +171,7 @@ public class OmeroHelper {
 				if ((!success) && (iAttempt == nAttempts)) throw error;
 			}
 		}
-		return null;
+		throw new RuntimeException("Could not get OMERO session");
 	}
 
 	/**

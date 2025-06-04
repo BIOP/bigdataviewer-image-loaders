@@ -43,6 +43,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.AbstractIntegerType;
+import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -168,12 +169,22 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 
 		// get the ArrayLoader corresponding to the pixelType
+		// UnsignedByteType
+		// ShortType
+		// UnsignedShortType
+		// FloatType
+		// ARGBType
+		// IntType
+		// UnsignedIntType
 		if (t instanceof UnsignedByteType) {
 			loader =
 					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
 							readerPool, iChannel, iSeries);
-		}
-		else if (t instanceof UnsignedShortType) {
+		} else if (t instanceof ByteType) {
+			loader =
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsByteArrayLoader(
+							readerPool, iChannel, iSeries);
+		} else if (t instanceof UnsignedShortType) {
 			if (opener.to16bit()) {
 				// the data is originally 8 bits
 				loader =

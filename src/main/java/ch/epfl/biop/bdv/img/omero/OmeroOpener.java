@@ -198,7 +198,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 				return getPixelsDataFromOmeroID(imageID, gateway, securityContext);
 			} catch (Exception e) {
 				exception = e;
-				return null;
+				throw new RuntimeException(e);
 			}
 		});
 		if (exception != null) throw exception;
