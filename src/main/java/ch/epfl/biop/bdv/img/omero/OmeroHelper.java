@@ -43,6 +43,13 @@ import org.scijava.command.CommandService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -157,7 +164,7 @@ public class OmeroHelper {
 					} else {
 						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + host + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
 					}
-					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", host).get();
+					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", getIceHost(host)).get();
 					success = (Boolean) module.getOutput("success");
 					OMEROSession omeroSession = (OMEROSession) module.getOutput("omeroSession");
 					if (success) return omeroSession;
@@ -172,6 +179,25 @@ public class OmeroHelper {
 			}
 		}
 		throw new RuntimeException("Could not get OMERO session");
+	}
+
+	public static String getIceHost(String host) throws IOException {
+		String urlString = (host.startsWith("http") ? host : "https://" + host) + "/api/v0/servers/";
+		URL url = new URL(urlString);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		StringBuilder response = new StringBuilder();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			response.append(line);
+		}
+		reader.close();
+
+		JsonObject root = JsonParser.parseString(response.toString()).getAsJsonObject();
+		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
+		return server.get("host").getAsString();
 	}
 
 	/**
