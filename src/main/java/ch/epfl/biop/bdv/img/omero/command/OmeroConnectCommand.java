@@ -62,6 +62,7 @@ public class OmeroConnectCommand implements Command {
             persist = false)
     String password;
 
+    @Parameter(label = "OMERO Ice port")
     int port = 4064;
 
     @Parameter(type = ItemIO.OUTPUT)

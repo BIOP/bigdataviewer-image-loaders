@@ -164,7 +164,7 @@ public class OmeroHelper {
 					} else {
 						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + host + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
 					}
-					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", getIceHost(host)).get();
+					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", getIceHost(host), "port", getIcePort(host)).get();
 					success = (Boolean) module.getOutput("success");
 					OMEROSession omeroSession = (OMEROSession) module.getOutput("omeroSession");
 					if (success) return omeroSession;
@@ -198,6 +198,25 @@ public class OmeroHelper {
 		JsonObject root = JsonParser.parseString(response.toString()).getAsJsonObject();
 		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
 		return server.get("host").getAsString();
+	}
+
+	public static int getIcePort(String host) throws IOException {
+		String urlString = (host.startsWith("http") ? host : "https://" + host) + "/api/v0/servers/";
+		URL url = new URL(urlString);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		StringBuilder response = new StringBuilder();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			response.append(line);
+		}
+		reader.close();
+
+		JsonObject root = JsonParser.parseString(response.toString()).getAsJsonObject();
+		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
+		return server.get("port").getAsInt();
 	}
 
 	/**
