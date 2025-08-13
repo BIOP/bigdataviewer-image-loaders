@@ -145,11 +145,12 @@ public class OmeroHelper {
 
 	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
 		OMEROService omeroService = context.getService(OMEROService.class);
-		OMEROServer server = new OMEROServer(host, 4064);
+		OMEROHost oh = getOMEROInfos(host);
+		OMEROServer server = new OMEROServer(oh.iceHost, 4064);
 		try {
 			return omeroService.session(server);
 		} catch (Exception e) {
-			logger.info("The OMERO session for "+host+" needs to be initialized");
+			logger.info("The OMERO session for "+ oh.webHost+" needs to be initialized");
 			CommandService command = context.getService(CommandService.class);
 			boolean success = false;
 			int iAttempt = 0;
@@ -160,11 +161,13 @@ public class OmeroHelper {
 				Exception error;
 				try {
 					if (lastErrorMessage.isEmpty()) {
-						OmeroConnectCommand.message_in = "<html>Please enter your " + host + " credentials:</html>";
+						OmeroConnectCommand.message_in = "<html>Please enter your " + oh.webHost + " credentials:</html>";
 					} else {
-						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + host + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
+						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + oh.webHost + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
 					}
-					CommandModule module = command.run(OmeroConnectCommand.class, true, "host", getIceHost(host), "port", getIcePort(host)).get();
+					CommandModule module = command.run(OmeroConnectCommand.class, true,
+							"host", oh.iceHost,
+							"port", oh.port).get();
 					success = (Boolean) module.getOutput("success");
 					OMEROSession omeroSession = (OMEROSession) module.getOutput("omeroSession");
 					if (success) return omeroSession;
@@ -181,11 +184,35 @@ public class OmeroHelper {
 		throw new RuntimeException("Could not get OMERO session");
 	}
 
-	public static String getIceHost(String host) throws IOException {
+	static class OMEROHost {
+		String webHost;
+		String iceHost;
+		int port;
+	}
+
+	static OMEROHost getOMEROInfos(String host) throws IOException { // host could be for ICE or not
+		OMEROHost oh = new OMEROHost();
+		if (host.contains("-server")) {
+			oh.webHost = host.replace("-server", "");
+		} else {
+			oh.webHost = host;
+		}
+		oh.iceHost = queryIceHost(oh.webHost);
+		oh.port = queryIcePort(oh.webHost);
+		return oh;
+	}
+
+	private static String queryIceHost(String host) throws IOException {
 		String urlString = (host.startsWith("http") ? host : "https://" + host) + "/api/v0/servers/";
 		URL url = new URL(urlString);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
+		conn.setConnectTimeout(3000); // 3 seconds connection timeout
+		conn.setReadTimeout(3000);    // 3 seconds read timeout
+
+		if (conn.getResponseCode() != 200) {
+			throw new IOException("HTTP " + conn.getResponseCode());
+		}
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		StringBuilder response = new StringBuilder();
@@ -200,11 +227,17 @@ public class OmeroHelper {
 		return server.get("host").getAsString();
 	}
 
-	public static int getIcePort(String host) throws IOException {
+	private static int queryIcePort(String host) throws IOException {
 		String urlString = (host.startsWith("http") ? host : "https://" + host) + "/api/v0/servers/";
 		URL url = new URL(urlString);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
+		conn.setConnectTimeout(1000); // 1 second connection timeout
+		conn.setReadTimeout(1000);    // 1 second read timeout
+
+		if (conn.getResponseCode() != 200) {
+			throw new IOException("HTTP " + conn.getResponseCode());
+		}
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		StringBuilder response = new StringBuilder();
