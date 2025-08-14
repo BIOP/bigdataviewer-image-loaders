@@ -58,6 +58,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class OmeroHelper {
@@ -190,7 +192,12 @@ public class OmeroHelper {
 		int port;
 	}
 
-	static OMEROHost getOMEROInfos(String host) throws IOException { // host could be for ICE or not
+	// Host memoization
+	static Map<String, OMEROHost> memoOmero = new HashMap<>();
+
+	static synchronized OMEROHost getOMEROInfos(String host) throws IOException { // host could be for ICE or not
+		if (memoOmero.containsKey(host)) return memoOmero.get(host);
+
 		OMEROHost oh = new OMEROHost();
 		if (host.contains("-server")) {
 			oh.webHost = host.replace("-server", "");
@@ -199,6 +206,7 @@ public class OmeroHelper {
 		}
 		oh.iceHost = queryIceHost(oh.webHost);
 		oh.port = queryIcePort(oh.webHost);
+		memoOmero.put(host, oh);
 		return oh;
 	}
 
@@ -224,7 +232,13 @@ public class OmeroHelper {
 
 		JsonObject root = JsonParser.parseString(response.toString()).getAsJsonObject();
 		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
-		return server.get("host").getAsString();
+		String retrievedHost = server.get("host").getAsString();
+		if (retrievedHost.equals("localhost")) {
+			System.err.println("Weird ICE host: localhost, deflecting to the original host name");
+			return host;
+		} else {
+			return retrievedHost;
+		}
 	}
 
 	private static int queryIcePort(String host) throws IOException {
