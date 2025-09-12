@@ -140,6 +140,8 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
 		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
+		<OMEZarrReader.version>0.6.0</OMEZarrReader.version>
+		<quick-start-czi-reader.version>0.2.5</quick-start-czi-reader.version>
 
 		<!-- only used in tests! -->
 		<!--bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
@@ -157,6 +159,14 @@
 		<repository>
 			<id>scijava.public</id>
 			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>repo</name>
+			<url>https://artifacts.openmicroscopy.org/artifactory/repo</url>
 		</repository>
 	</repositories>
 
@@ -317,8 +327,24 @@
 		<dependency> <!-- if you want to test the alternative CZI reader -->
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
-			<version>0.2.5</version>
+			<version>${quick-start-czi-reader.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>OMEZarrReader</artifactId>
+			<version>${OMEZarrReader.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

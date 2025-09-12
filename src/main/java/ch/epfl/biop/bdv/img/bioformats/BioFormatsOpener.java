@@ -79,6 +79,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
 
@@ -476,6 +478,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		return readerOptions;
 	}
 
+	private static final Pattern ZARR_FILE_PATTERN = Pattern.compile("\\.zarr/?(\\d+/?)?$");
 	/**
 	 * Build a new IFormatReader to retrieve all pixels and channels information of an image opened
 	 * with BioFormats.
@@ -486,7 +489,32 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	 */
 	public IFormatReader getNewReader() {
 		logger.debug("Getting new reader for " + dataLocation);
-		IFormatReader reader = new ImageReader();
+		IFormatReader reader;
+		// Copied from QuPath logic: https://github.com/qupath/qupath/blob/f9c7622c899653b52ebd6f586b038a8fcf193372/qupath-extension-bioformats/src/main/java/qupath/lib/images/servers/bioformats/BioFormatsImageServer.java#L1298C4-L1305C5
+		Matcher zarrMatcher = ZARR_FILE_PATTERN.matcher(dataLocation.toLowerCase());
+		if (new File(dataLocation).isDirectory() || zarrMatcher.find()) {
+			try {
+				Class<?> zarrReaderClass = Class.forName("loci.formats.in.ZarrReader"); // Avoid import in case the dependency is not there
+				reader = (IFormatReader) zarrReaderClass.getDeclaredConstructor().newInstance();
+
+				if (dataLocation.startsWith("https")) {
+					Object metadataOptions = reader.getMetadataOptions();
+					if (metadataOptions instanceof DynamicMetadataOptions) {
+						DynamicMetadataOptions zarrOptions = (DynamicMetadataOptions) metadataOptions;
+						zarrOptions.set("omezarr.alt_store", dataLocation);
+					}
+				}
+			} catch (ClassNotFoundException e) {
+				logger.error("Attempt to open OME ZARR Dataset but the package is not installed. Please check https://github.com/ome/ZarrReader to get it installed");
+				return null;
+			} catch (Exception e) {
+				logger.error("Failed to initialize ZarrReader: " + e.getMessage());
+				return null; // Fallback
+			}
+		} else {
+			reader = new ImageReader();
+		}
+
 		reader.setFlattenedResolutions(false);
 
 		if (!readerOptions.isEmpty()) {
