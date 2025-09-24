@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -122,8 +123,12 @@ public class BioFormatsHelper {
 			System.err.println("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
 			e.printStackTrace();
 		}
-
-		return nSeries;
+        try {
+            reader.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return nSeries;
 	}
 
 	public static Length[] getSeriesPositionAsLengths(IMetadata omeMeta,
