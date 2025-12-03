@@ -30,7 +30,6 @@ import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.VoxelDimensions;
-import net.imagej.omero.OMEROSession;
 import net.imglib2.Dimensions;
 import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -167,7 +166,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		// We don't want to ask again and again and again credentials if it failed once. Thus we memoize the potential error
 		if (cachedObjects.containsKey("opener.omero.connect."+host+".error")) throw new RuntimeException("Connection to OMERO failed");
 
-		OMEROSession session = null;
+		IOMEROSession session = null;
 		try {
 			session = OmeroHelper.getGatewayAndSecurityContext(context, host);
 		} catch (Exception e) {

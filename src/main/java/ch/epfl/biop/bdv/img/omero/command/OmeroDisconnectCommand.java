@@ -21,9 +21,9 @@
  */
 package ch.epfl.biop.bdv.img.omero.command;
 
-import net.imagej.omero.OMEROServer;
+import ch.epfl.biop.bdv.img.omero.IOMEROSession;
+import ch.epfl.biop.bdv.img.omero.OmeroHelper;
 import net.imagej.omero.OMEROService;
-import net.imagej.omero.OMEROSession;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -54,11 +54,18 @@ public class OmeroDisconnectCommand implements Command {
 
     public void run() {
         try {
-            OMEROSession session = omeroService.session(new OMEROServer(host, true));
-            logger.info("Session active ? : " + session.getGateway().isConnected());
+            if (!OmeroHelper.hasCachedSession(host)) {
+                logger.warn("No session with the host "+host+" was found.");
+                success = false;
+                return;
+            }
+            IOMEROSession session = OmeroHelper.getCachedOMEROSession(host);
             if (session.getGateway().isConnected()) {
                 session.getGateway().disconnect();
+            } else {
+                logger.info("Session on host "+host+" was already disconnected.");
             }
+            OmeroHelper.removeCachedSession(host);
             success = true;
         } catch (Exception e) {
             error = e;

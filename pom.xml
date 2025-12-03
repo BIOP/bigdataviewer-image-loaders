@@ -168,6 +168,10 @@
 			<name>repo</name>
 			<url>https://artifacts.openmicroscopy.org/artifactory/repo</url>
 		</repository>
+		<repository>
+			<id>gred-releases</id>
+			<url>https://artifacts.igred.fr/releases</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -243,6 +247,12 @@
 		<dependency>
 			<groupId>org.openmicroscopy</groupId>
 			<artifactId>ome-xml</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>fr.igred</groupId>
+			<artifactId>simple-omero-client</artifactId>
+			<version>5.19.0</version>
 		</dependency>
 
 		<dependency>

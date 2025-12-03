@@ -21,11 +21,11 @@
  */
 package ch.epfl.biop.bdv.img.omero.command;
 
-import net.imagej.omero.OMEROCredentials;
-import net.imagej.omero.OMEROServer;
+import ch.epfl.biop.bdv.img.omero.IOMEROSession;
+import ch.epfl.biop.bdv.img.omero.OmeroHelper;
 import net.imagej.omero.OMEROService;
-import net.imagej.omero.OMEROSession;
 import omero.gateway.ServerInformation;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
@@ -50,6 +50,12 @@ public class OmeroConnectCommand implements Command {
     String message = "Please enter your OMERO credentials";
 
     @Parameter
+    Context ctx;
+
+    @Parameter(label = "OMERO Session type")
+    OmeroHelper.OMEROSessionType type;
+
+    @Parameter
     OMEROService omeroService;
 
     @Parameter(label = "OMERO host")
@@ -66,7 +72,7 @@ public class OmeroConnectCommand implements Command {
     int port = 4064;
 
     @Parameter(type = ItemIO.OUTPUT)
-    OMEROSession omeroSession;
+    IOMEROSession omeroSession;
 
     @Parameter(type = ItemIO.OUTPUT)
     Boolean success;
@@ -76,7 +82,7 @@ public class OmeroConnectCommand implements Command {
 
     public void run() {
         try {
-            omeroSession = omeroService.session(new OMEROServer(host,port), new OMEROCredentials(username, password));
+            omeroSession = OmeroHelper.getOMEROSession(type, host, port, username, password.toCharArray(), ctx);
             password = "";
             logger.info("Session active : " + omeroSession.getGateway().isConnected());
             omeroSession.getSecurityContext().setServerInformation(new ServerInformation(host));

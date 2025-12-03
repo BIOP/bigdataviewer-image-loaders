@@ -23,12 +23,14 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.omero.command.OmeroConnectCommand;
+import fr.igred.omero.Client;
+import net.imagej.omero.OMEROCredentials;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
-import net.imagej.omero.OMEROSession;
 import omero.gateway.Gateway;
 import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
+import omero.gateway.ServerInformation;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
 import omero.gateway.facility.BrowseFacility;
@@ -50,6 +52,7 @@ import java.net.HttpURLConnection;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -145,45 +148,44 @@ public class OmeroHelper {
 		return null;
 	}
 
-	public static OMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
-		OMEROService omeroService = context.getService(OMEROService.class);
+	public static IOMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
 		OMEROHost oh = getOMEROInfos(host);
-		OMEROServer server = new OMEROServer(oh.iceHost, 4064);
-		try {
-			return omeroService.session(server);
-		} catch (Exception e) {
-			logger.info("The OMERO session for "+ oh.webHost+" needs to be initialized");
-			CommandService command = context.getService(CommandService.class);
-			boolean success = false;
-			int iAttempt = 0;
-			int nAttempts = 3;
-			String lastErrorMessage = "";
-			while ((iAttempt<nAttempts) && (!success)) {
-				iAttempt++;
-				Exception error;
-				try {
-					if (lastErrorMessage.isEmpty()) {
-						OmeroConnectCommand.message_in = "<html>Please enter your " + oh.webHost + " credentials:</html>";
-					} else {
-						OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + oh.webHost + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
-					}
-					CommandModule module = command.run(OmeroConnectCommand.class, true,
-							"host", oh.iceHost,
-							"port", oh.port).get();
-					success = (Boolean) module.getOutput("success");
-					OMEROSession omeroSession = (OMEROSession) module.getOutput("omeroSession");
-					if (success) return omeroSession;
-					error = (Exception) module.getOutput("error");
-					if (error!=null) {
-						lastErrorMessage = error.getMessage();
-					}
-				} catch (Exception commandException) {
-					error = commandException;
+
+		if (hasCachedSession(host)) return getCachedOMEROSession(host);
+
+		logger.info("The OMERO session for "+ oh.webHost+" needs to be initialized");
+		CommandService command = context.getService(CommandService.class);
+		boolean success = false;
+		int iAttempt = 0;
+		int nAttempts = 3;
+		String lastErrorMessage = "";
+
+		while ((iAttempt<nAttempts) && (!success)) {
+			iAttempt++;
+			Exception error;
+			try {
+				if (lastErrorMessage == null || lastErrorMessage.isEmpty()) {
+					OmeroConnectCommand.message_in = "<html>Please enter your " + oh.webHost + " credentials:</html>";
+				} else {
+					OmeroConnectCommand.message_in = "<html>Error:"+lastErrorMessage+"<br> Please re-enter your " + oh.webHost + " credentials ("+iAttempt+"/"+nAttempts+"):</html>";
 				}
-				if ((!success) && (iAttempt == nAttempts)) throw error;
+				CommandModule module = command.run(OmeroConnectCommand.class, true,
+						"host", oh.iceHost,
+						"port", oh.port).get();
+				success = (Boolean) module.getOutput("success");
+				IOMEROSession omeroSession = (IOMEROSession) module.getOutput("omeroSession");
+				if (success) return omeroSession;
+				error = (Exception) module.getOutput("error");
+				if (error!=null) {
+					lastErrorMessage = error.getMessage();
+				}
+			} catch (Exception commandException) {
+				error = commandException;
 			}
+			if ((!success) && (iAttempt == nAttempts)) throw error;
 		}
-		throw new RuntimeException("Could not get OMERO session");
+
+		throw  new RuntimeException("Could not create OMERO Session for host "+host);
 	}
 
 	static class OMEROHost {
@@ -207,7 +209,91 @@ public class OmeroHelper {
 		oh.iceHost = queryIceHost(oh.webHost);
 		oh.port = queryIcePort(oh.webHost);
 		memoOmero.put(host, oh);
+		memoOmero.put(oh.webHost, oh);
+		memoOmero.put(oh.iceHost, oh);
 		return oh;
+	}
+
+	public enum OMEROSessionType {
+		IMAGEJ_OMERO, SIMPLE_OMERO_CLIENT
+	}
+
+	public synchronized static IOMEROSession getOMEROSession(OMEROSessionType type,
+															 String host,
+															 int port,
+															 String username,
+															 char[] password,
+															 @Nullable Context ctx) throws Exception {
+		IOMEROSession session;
+
+		if (hasCachedSession(host)) {
+			session = getCachedOMEROSession(host);
+			switch (type) {
+				case IMAGEJ_OMERO:
+					if (!(session instanceof OMEROSessionImageJAdapter)) {
+						System.out.println("A session of a different type already exist! You can't create a session of a different type without removing it");
+					}
+					break;
+				case SIMPLE_OMERO_CLIENT:
+					if (!(session instanceof OMEROSessionSimpleOMEROClientAdapter)) {
+						System.out.println("A session of a different type already exist! You can't create a session of a different type without removing it");
+					}
+					break;
+			}
+			if (session.getGateway().isConnected()) {
+				return session;
+			} // Otherwise we need to recreate the session
+		}
+
+		switch (type) {
+			case IMAGEJ_OMERO:
+				assert ctx != null;
+				OMEROService omeroService = ctx.getService(OMEROService.class);
+				session = new OMEROSessionImageJAdapter(omeroService.session(new OMEROServer(host,port), new OMEROCredentials(username, new String(password))));
+				break;
+			case SIMPLE_OMERO_CLIENT:
+				Client client = new Client();
+				client.connect(host, port, username, password );
+				session = new OMEROSessionSimpleOMEROClientAdapter(client);
+				break;
+			default:
+				throw new RuntimeException("OMERO Session type not recognized "+type);
+		}
+		logger.info("Session active : " + session.getGateway().isConnected());
+		session.getSecurityContext().setServerInformation(new ServerInformation(host));
+		registerOMEROSession(session, host);
+		return session;
+	}
+
+	static Map<String, IOMEROSession> cachedSession = new HashMap<>();
+
+	public synchronized static IOMEROSession getCachedOMEROSession(String host) {
+		OMEROHost infos = memoOmero.get(host);
+		IOMEROSession session = cachedSession.get(infos.webHost);
+
+		if (!session.getGateway().isConnected()) {
+			System.out.println("A cached session is retrieved but has been disconnected!");
+		}
+		return session;
+	}
+
+	public static synchronized void registerOMEROSession(IOMEROSession session, String host) throws IOException {
+		OMEROHost infos = memoOmero.get(host);
+		cachedSession.put(infos.webHost, session);
+	}
+
+	public static void removeCachedSession(String host) {
+		OMEROHost infos = memoOmero.get(host);
+		cachedSession.remove(infos.webHost);
+	}
+
+	public synchronized static boolean hasCachedSession(String host) {
+		if (memoOmero.containsKey(host)) {
+			OMEROHost infos = memoOmero.get(host);
+			return cachedSession.containsKey(infos.webHost);
+		} else {
+			return false;
+		}
 	}
 
 	private static String queryIceHost(String host) throws IOException {
