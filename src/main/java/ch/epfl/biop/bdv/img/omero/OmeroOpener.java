@@ -49,7 +49,6 @@ import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import ome.model.units.BigResult;
 import omero.ServerError;
 import omero.api.RawPixelsStorePrx;
-import omero.api.ResolutionDescription;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSOutOfServiceException;
@@ -65,8 +64,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -166,9 +163,17 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		// We don't want to ask again and again and again credentials if it failed once. Thus we memoize the potential error
 		if (cachedObjects.containsKey("opener.omero.connect."+host+".error")) throw new RuntimeException("Connection to OMERO failed");
 
+		long imageID = OmeroHelper.getImageID(datalocation);
+
 		IOMEROSession session = null;
 		try {
-			session = OmeroHelper.getGatewayAndSecurityContext(context, host);
+			session = OmeroHelper.getGatewayAndSecurityContext(context, host, -1);
+
+			long groupId = session.getGateway().getFacility(BrowseFacility.class)
+					.findObject(session.getSecurityContext(), "ImageData", imageID, true).getGroupId();
+
+			session = OmeroHelper.getGatewayAndSecurityContext(context, host, groupId);
+
 		} catch (Exception e) {
 			cachedObjects.put("opener.omero.connect."+host+".error", e);
 			exception = e;
@@ -183,13 +188,6 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 		this.gateway = session.getGateway();
 		this.securityContext = session.getSecurityContext();
-
-		List<Long> imageIDs = OmeroHelper.getImageIDs(datalocation, gateway, securityContext);
-
-		if (imageIDs.isEmpty()) throw new IllegalStateException("Could not found an image ID in url "+datalocation);
-		if (imageIDs.size()>1) throw new UnsupportedOperationException("Could not open multiple Omero IDs in a single URL, split them.");
-
-		long imageID = imageIDs.get(0);
 
 		// get pixels
 		PixelsData pixels = memoize("opener.omero.pixels."+host+"."+imageID, cachedObjects, () -> {

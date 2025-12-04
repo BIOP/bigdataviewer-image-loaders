@@ -31,6 +31,8 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Disconnect",
         description = "Disconnect from an OMERO server.")
@@ -59,13 +61,18 @@ public class OmeroDisconnectCommand implements Command {
                 success = false;
                 return;
             }
-            IOMEROSession session = OmeroHelper.getCachedOMEROSession(host);
-            if (session.getGateway().isConnected()) {
-                session.getGateway().disconnect();
-            } else {
-                logger.info("Session on host "+host+" was already disconnected.");
+            Collection<IOMEROSession> sessions = OmeroHelper.getCachedOMEROSessions(host);
+
+            for (IOMEROSession session: sessions) {
+                if (session.getGateway().isConnected()) {
+                    session.getGateway().disconnect();
+                } else {
+                    logger.info("Session on host " + host + " was already disconnected.");
+                }
             }
-            OmeroHelper.removeCachedSession(host);
+
+            OmeroHelper.removeCachedSessions(host);
+
             success = true;
         } catch (Exception e) {
             error = e;

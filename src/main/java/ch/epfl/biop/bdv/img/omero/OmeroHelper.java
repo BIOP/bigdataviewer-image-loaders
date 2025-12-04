@@ -23,20 +23,18 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.omero.command.OmeroConnectCommand;
+import ch.epfl.biop.bdv.img.omero.entity.DefaultOMEROSession;
 import fr.igred.omero.Client;
 import net.imagej.omero.OMEROCredentials;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
 import omero.gateway.Gateway;
-import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
 import omero.gateway.ServerInformation;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
 import omero.gateway.facility.BrowseFacility;
-import omero.gateway.model.ExperimenterData;
 import omero.gateway.model.ImageData;
-import omero.log.SimpleLogger;
 import omero.model.enums.UnitsLength;
 import org.apache.commons.lang.StringUtils;
 import org.scijava.Context;
@@ -70,55 +68,6 @@ public class OmeroHelper {
 	protected static final Logger logger = LoggerFactory.getLogger(OmeroHelper.class);
 
 	/**
-	 * OMERO connection with credentials and simpleLogger
-	 * 
-	 * @param hostname OMERO Host name
-	 * @param port Port (Usually 4064)
-	 * @param userName OMERO User
-	 * @param password Password for OMERO User
-	 * @return OMERO gateway (Gateway for simplifying access to an OMERO server)
-	 * @throws DSOutOfServiceException exception is the connection cannot proceed
-	 */
-	public static Gateway omeroConnect(String hostname, int port, String userName,
-		String password) throws DSOutOfServiceException
-	{
-		// Omero Connect with credentials and simpleLogger
-		LoginCredentials cred = new LoginCredentials();
-		cred.getServer().setHost(hostname);
-		cred.getServer().setPort(port);
-		cred.getUser().setUsername(userName);
-		cred.getUser().setPassword(password);
-		SimpleLogger simpleLogger = new SimpleLogger();
-		Gateway gateway = new Gateway(simpleLogger);
-		gateway.connect(cred);
-		return gateway;
-	}
-
-	public static Collection<ImageData> getImagesFromDataset(Gateway gateway,
-		long DatasetID) throws Exception
-	{
-		// List all images contained in a Dataset
-		BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
-		SecurityContext ctx = getSecurityContext(gateway);
-		Collection<Long> datasetIds = new ArrayList<>();
-		datasetIds.add(DatasetID);
-		return browse.getImagesForDatasets(ctx, datasetIds);
-	}
-
-	/**
-	 * @param gateway OMERO gateway
-	 * @return Security context hosting information required to access correct
-	 *         connector
-	 */
-	public static SecurityContext getSecurityContext(Gateway gateway)
-	{
-		ExperimenterData exp = gateway.getLoggedInUser();
-		long groupID = exp.getGroupId();
-		return new SecurityContext(groupID);
-	}
-
-
-	/**
 	 * Look into Fields of BioFormats UNITS class that matches the input string
 	 * Return the corresponding Unit Field Case insensitive
 	 *
@@ -148,10 +97,25 @@ public class OmeroHelper {
 		return null;
 	}
 
-	public static IOMEROSession getGatewayAndSecurityContext(Context context, String host) throws Exception {
-		OMEROHost oh = getOMEROInfos(host);
 
-		if (hasCachedSession(host)) return getCachedOMEROSession(host);
+	public static IOMEROSession getGatewayAndSecurityContext(Context context, String host, long groupID) throws Exception {
+		OMEROHost oh = getOMEROInfos(host);
+		if (hasCachedSession(host)) {
+			if (hasCachedSession(host, groupID)) {
+				return getCachedOMEROSession(host, groupID);
+			} if (groupID==-1) {
+				// Request a session, whatever the groupID is
+				OMEROHost infos = memoOmero.get(host);
+				return cachedSession.get(infos.webHost).values().iterator().next(); // Just take one
+			} else {
+				// There's a cached session but of the wrong groupID
+				OMEROHost infos = memoOmero.get(host);
+				IOMEROSession session = cachedSession.get(infos.webHost).values().iterator().next(); // Just take one
+				IOMEROSession modifiedSession = new DefaultOMEROSession(session.getGateway(), new SecurityContext(groupID));
+				registerOMEROSession(modifiedSession, host);
+				return getCachedOMEROSession(host, groupID);
+			}
+		}
 
 		logger.info("The OMERO session for "+ oh.webHost+" needs to be initialized");
 		CommandService command = context.getService(CommandService.class);
@@ -173,7 +137,7 @@ public class OmeroHelper {
 						"host", oh.iceHost,
 						"port", oh.port).get();
 				success = (Boolean) module.getOutput("success");
-				IOMEROSession omeroSession = (IOMEROSession) module.getOutput("omeroSession");
+				IOMEROSession omeroSession = (IOMEROSession) module.getOutput("omeroSession"); // Caching already happened
 				if (success) return omeroSession;
 				error = (Exception) module.getOutput("error");
 				if (error!=null) {
@@ -186,12 +150,6 @@ public class OmeroHelper {
 		}
 
 		throw  new RuntimeException("Could not create OMERO Session for host "+host);
-	}
-
-	static class OMEROHost {
-		String webHost;
-		String iceHost;
-		int port;
 	}
 
 	// Host memoization
@@ -227,7 +185,8 @@ public class OmeroHelper {
 		IOMEROSession session;
 
 		if (hasCachedSession(host)) {
-			session = getCachedOMEROSession(host);
+			OMEROHost infos = memoOmero.get(host);
+			session = cachedSession.get(infos.webHost).values().iterator().next(); // Just take one
 			switch (type) {
 				case IMAGEJ_OMERO:
 					if (!(session instanceof OMEROSessionImageJAdapter)) {
@@ -265,24 +224,18 @@ public class OmeroHelper {
 		return session;
 	}
 
-	static Map<String, IOMEROSession> cachedSession = new HashMap<>();
-
-	public synchronized static IOMEROSession getCachedOMEROSession(String host) {
-		OMEROHost infos = memoOmero.get(host);
-		IOMEROSession session = cachedSession.get(infos.webHost);
-
-		if (!session.getGateway().isConnected()) {
-			System.out.println("A cached session is retrieved but has been disconnected!");
-		}
-		return session;
-	}
+	static Map<String, Map<Long,IOMEROSession>> cachedSession = new HashMap<>();
 
 	public static synchronized void registerOMEROSession(IOMEROSession session, String host) throws IOException {
 		OMEROHost infos = memoOmero.get(host);
-		cachedSession.put(infos.webHost, session);
+		if (!cachedSession.containsKey(infos.webHost)) {
+			cachedSession.put(infos.webHost, new HashMap<>());
+		}
+		long groupID = session.getSecurityContext().getGroupID();
+		cachedSession.get(infos.webHost).put(groupID, session);
 	}
 
-	public static void removeCachedSession(String host) {
+	public static void removeCachedSessions(String host) {
 		OMEROHost infos = memoOmero.get(host);
 		cachedSession.remove(infos.webHost);
 	}
@@ -290,10 +243,34 @@ public class OmeroHelper {
 	public synchronized static boolean hasCachedSession(String host) {
 		if (memoOmero.containsKey(host)) {
 			OMEROHost infos = memoOmero.get(host);
-			return cachedSession.containsKey(infos.webHost);
+			return cachedSession.containsKey(infos.webHost) && !cachedSession.get(infos.webHost).isEmpty();
 		} else {
 			return false;
 		}
+	}
+
+	public synchronized static boolean hasCachedSession(String host, long groupID) {
+		if (memoOmero.containsKey(host)) {
+			OMEROHost infos = memoOmero.get(host);
+			return cachedSession.containsKey(infos.webHost) && cachedSession.get(infos.webHost).containsKey(groupID);
+		} else {
+			return false;
+		}
+	}
+
+	public synchronized static IOMEROSession getCachedOMEROSession(String host, long groupID) {
+		OMEROHost infos = memoOmero.get(host);
+		IOMEROSession session = cachedSession.get(infos.webHost).get(groupID);
+
+		if (!session.getGateway().isConnected()) {
+			System.out.println("A cached session is retrieved but has been disconnected!");
+		}
+		return session;
+	}
+
+	public synchronized static Collection<IOMEROSession> getCachedOMEROSessions(String host) {
+		OMEROHost infos = memoOmero.get(host);
+		return cachedSession.get(infos.webHost).values();
 	}
 
 	private static String queryIceHost(String host) throws IOException {
@@ -350,6 +327,40 @@ public class OmeroHelper {
 		JsonObject root = JsonParser.parseString(response.toString()).getAsJsonObject();
 		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
 		return server.get("port").getAsInt();
+	}
+
+	public static Long getImageID(String omeroURL) throws MalformedURLException {
+		URL url = new URL(omeroURL);
+		String query = url.getQuery();
+
+		// case single or multiple image(s) link, generated with the CREATE LINK BUTTON in OMERO.web
+		// Single image example: https://hostname/webclient/?show=image-4738
+		// Multiple images example: https://hostname/webclient/?show=image-4736|image-4737|image-4738
+		if (query.contains("show=image-")) {
+			List<Long> imageIDs = new ArrayList<>();
+			String[] parts = query.split("-");
+			// deal with links created while multiple images are selected
+			for (int i = 1; i < parts.length; i++) {
+				if (parts[i].contains("image")) {
+					String part = parts[i];
+					String[] subParts = part.split("\\|image");
+					imageIDs.add(Long.valueOf(subParts[0]));
+				}
+			}
+			imageIDs.add(Long.valueOf(parts[parts.length - 1]));
+
+			if (imageIDs.size()>1) {
+				throw new RuntimeException("Can't parse URL with multiple IDs "+omeroURL);
+			} else {
+				return imageIDs.get(0);
+			}
+
+			// case single or multiple dataset link, generated with the CREATE LINK BUTTON  in OMERO.web
+			// Single dataset example: https://hostname/webclient/?show=dataset-604
+			// Multiple datasets example: https://hostname/webclient/?show=dataset-604|dataset-603
+		} else {
+			throw new RuntimeException("Can't parse ImageID from URL "+omeroURL);
+		}
 	}
 
 	/**
@@ -461,6 +472,12 @@ public class OmeroHelper {
 			++idx;
 		}
 		return -1;
+	}
+
+	static class OMEROHost {
+		String webHost;
+		String iceHost;
+		int port;
 	}
 
 }
