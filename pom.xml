@@ -310,12 +310,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
 			<version>0.13.4</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 
 		<dependency> <!-- if you want to test the alternative CZI reader -->
 			<groupId>ch.epfl.biop</groupId>

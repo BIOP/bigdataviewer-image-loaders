@@ -271,7 +271,6 @@ public class OmeroHelper {
 		JsonObject server = root.getAsJsonArray("data").get(0).getAsJsonObject();
 		String retrievedHost = server.get("host").getAsString();
 		if (retrievedHost.equals("localhost")) {
-			System.err.println("Weird ICE host: localhost, deflecting to the original host name");
 			return host;
 		} else {
 			return retrievedHost;
