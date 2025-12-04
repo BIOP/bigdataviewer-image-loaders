@@ -164,7 +164,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>central</id>
+			<id>ome</id>
 			<name>repo</name>
 			<url>https://artifacts.openmicroscopy.org/artifactory/repo</url>
 		</repository>
