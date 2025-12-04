@@ -49,7 +49,6 @@ import java.net.HttpURLConnection;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -175,7 +174,7 @@ public class OmeroHelper {
 															 int port,
 															 String username,
 															 char[] password,
-															 @Nullable Context ctx) throws Exception {
+															 Context ctx) throws Exception {
 		IOMEROSession session;
 
 		if (hasCachedSession(host)) {
