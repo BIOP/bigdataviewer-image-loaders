@@ -60,7 +60,7 @@ import java.util.function.Supplier;
 public class OpenerHelper {
     private static final Logger logger = LoggerFactory.getLogger(OpenerHelper.class);
 
-    static public <T> T memoize(String key, Map<String, Object> cache, Supplier<T> getter) {
+    synchronized static public <T> T memoize(String key, Map<String, Object> cache, Supplier<T> getter) {
         if (!cache.containsKey(key)) {
             cache.put(key, getter.get());
         } else {

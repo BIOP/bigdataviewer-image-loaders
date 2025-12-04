@@ -25,22 +25,30 @@ package ch.epfl.biop.bdv.img;
 import bdv.ViewerImgLoader;
 import bdv.cache.SharedQueue;
 import bdv.img.cache.VolatileGlobalCellCache;
+import ch.epfl.biop.bdv.img.omero.IOMEROSession;
+import ch.epfl.biop.bdv.img.omero.OmeroHelper;
 import ch.epfl.biop.bdv.img.opener.EmptyOpener;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.sequence.MultiResolutionImgLoader;
+import omero.gateway.facility.BrowseFacility;
+import org.scijava.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static ch.epfl.biop.bdv.img.opener.OpenerHelper.memoize;
 
 /**
  * Generic class implementing how to load an image on BDV.
@@ -146,18 +154,76 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	public static List<Opener<?>> createOpeners(List<OpenerSettings> openerSettings) {
 		List<Opener<?>> openers = new ArrayList<>();
 		Map<String, Object> cachedObjects = new HashMap<>();
-		openerSettings.forEach(settings -> {
+		// --------------- Optimization for OMERO - batch queries are much more efficient than multiple queries per image
+
+		List<OpenerSettings> omeroOpeners = openerSettings
+				.stream()
+				.filter(settings -> settings.getType().equals(OpenerSettings.OpenerType.OMERO))
+				.collect(Collectors.toList());
+
+		if (!omeroOpeners.isEmpty()) {
+			// Let's ask for credentials from the start, first we collect all hosts, and a scijava context
+			Map<String, List<OpenerSettings>> openersByHost = omeroOpeners.stream()
+					.collect(Collectors.groupingBy(opener -> {
+						try {
+							URL url = new URL(opener.getLocation());
+							return url.getHost();
+						} catch (MalformedURLException e) {
+							throw new RuntimeException(e);
+						}
+					}));
+
+			Context context = omeroOpeners.get(0).getContext();
+
+			// Let's try to parallelize information collection
+			openersByHost.keySet().parallelStream().forEach(host -> {
+				// Let's connect
+				try {
+					OmeroHelper.getGatewayAndSecurityContext(context, host, -1);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+
+				// First make sure we've got all required security contexts, given that images can belong to different groups
+				List<OpenerSettings> openersOfHost = openersByHost.get(host);
+
+				openersOfHost.parallelStream().forEach(os -> {
+					try {
+						long imageID = OmeroHelper.getImageID(os.getLocation());
+						memoize("opened.omero.session." + host + "." + imageID, cachedObjects, () -> {
+							try {
+								IOMEROSession omeroSession = OmeroHelper.getGatewayAndSecurityContext(context, host, -1);
+
+								long groupId = omeroSession.getGateway().getFacility(BrowseFacility.class)
+										.findObject(omeroSession.getSecurityContext(), "ImageData", imageID, true).getGroupId();
+
+								return OmeroHelper.getGatewayAndSecurityContext(context, host, groupId);
+
+							} catch (Exception e) {
+								cachedObjects.put("opener.omero.connect." + host + ".error", e);
+								throw new RuntimeException(e);
+							}
+						});
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				});
+			});
+		}
+
+		// ---------------
+		openers = openerSettings.parallelStream().map(settings -> {
 			try {
-				Opener<?> opener = settings.create(cachedObjects);
-				openers.add(opener);
+				return settings.create(cachedObjects);
 			} catch (Exception e) {
 				System.err.println("Error in opener "+e.getMessage()+" : "+settings.toString());
 				logger.error(e.getMessage());
 				e.printStackTrace();
 				int nChannels = settings.getNChannels()>0?settings.getNChannels():1;
-				openers.add(new EmptyOpener(e.getMessage(), nChannels, e.getMessage(), false));
+				return new EmptyOpener(e.getMessage(), nChannels, e.getMessage(), false);
 			}
-		});
+		}).collect(Collectors.toList());
+
 		assert openerSettings.size() == openers.size();
 		return openers;
 	}

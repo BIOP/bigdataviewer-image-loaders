@@ -165,19 +165,21 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 		long imageID = OmeroHelper.getImageID(datalocation);
 
-		IOMEROSession session = null;
-		try {
-			session = OmeroHelper.getGatewayAndSecurityContext(context, host, -1);
+		IOMEROSession session = memoize("opened.omero.session."+host+"."+imageID, cachedObjects, () -> {
+			try {
+				IOMEROSession omeroSession = OmeroHelper.getGatewayAndSecurityContext(context, host, -1);
 
-			long groupId = session.getGateway().getFacility(BrowseFacility.class)
-					.findObject(session.getSecurityContext(), "ImageData", imageID, true).getGroupId();
+				long groupId = omeroSession.getGateway().getFacility(BrowseFacility.class)
+						.findObject(omeroSession.getSecurityContext(), "ImageData", imageID, true).getGroupId();
 
-			session = OmeroHelper.getGatewayAndSecurityContext(context, host, groupId);
+				return OmeroHelper.getGatewayAndSecurityContext(context, host, groupId);
 
-		} catch (Exception e) {
-			cachedObjects.put("opener.omero.connect."+host+".error", e);
-			exception = e;
-		}
+			} catch (Exception e) {
+				cachedObjects.put("opener.omero.connect."+host+".error", e);
+				exception = e;
+				throw new RuntimeException(e);
+			}
+		});
 
 		assert session!=null;
 

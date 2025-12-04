@@ -141,6 +141,10 @@ public class OpenerSettings {
         return this;
     }
 
+    public Context getContext() {
+        return this.scijavaContext;
+    }
+
     // ---- cache and readers
     public OpenerSettings readerPoolSize(int pSize){
         this.nReader = pSize;
