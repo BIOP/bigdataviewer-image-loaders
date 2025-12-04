@@ -1,6 +1,5 @@
-package ch.epfl.biop.bdv.img.omero.entity;
+package ch.epfl.biop.bdv.img.omero;
 
-import ch.epfl.biop.bdv.img.omero.IOMEROSession;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 

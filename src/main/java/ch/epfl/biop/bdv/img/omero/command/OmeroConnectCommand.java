@@ -52,9 +52,6 @@ public class OmeroConnectCommand implements Command {
     @Parameter
     Context ctx;
 
-    @Parameter(label = "OMERO Session type")
-    OmeroHelper.OMEROSessionType type;
-
     @Parameter
     OMEROService omeroService;
 
@@ -82,7 +79,7 @@ public class OmeroConnectCommand implements Command {
 
     public void run() {
         try {
-            omeroSession = OmeroHelper.getOMEROSession(type, host, port, username, password.toCharArray(), ctx);
+            omeroSession = OmeroHelper.getOMEROSession(host, port, username, password.toCharArray(), ctx);
             password = "";
             logger.info("Session active : " + omeroSession.getGateway().isConnected());
             omeroSession.getSecurityContext().setServerInformation(new ServerInformation(host));

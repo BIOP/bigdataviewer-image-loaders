@@ -23,11 +23,10 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import ch.epfl.biop.bdv.img.omero.command.OmeroConnectCommand;
-import ch.epfl.biop.bdv.img.omero.entity.DefaultOMEROSession;
-import fr.igred.omero.Client;
 import net.imagej.omero.OMEROCredentials;
 import net.imagej.omero.OMEROServer;
 import net.imagej.omero.OMEROService;
+import net.imagej.omero.OMEROSession;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.ServerInformation;
@@ -172,12 +171,7 @@ public class OmeroHelper {
 		return oh;
 	}
 
-	public enum OMEROSessionType {
-		IMAGEJ_OMERO, SIMPLE_OMERO_CLIENT
-	}
-
-	public synchronized static IOMEROSession getOMEROSession(OMEROSessionType type,
-															 String host,
+	public synchronized static IOMEROSession getOMEROSession(String host,
 															 int port,
 															 String username,
 															 char[] password,
@@ -187,37 +181,17 @@ public class OmeroHelper {
 		if (hasCachedSession(host)) {
 			OMEROHost infos = memoOmero.get(host);
 			session = cachedSession.get(infos.webHost).values().iterator().next(); // Just take one
-			switch (type) {
-				case IMAGEJ_OMERO:
-					if (!(session instanceof OMEROSessionImageJAdapter)) {
-						System.out.println("A session of a different type already exist! You can't create a session of a different type without removing it");
-					}
-					break;
-				case SIMPLE_OMERO_CLIENT:
-					if (!(session instanceof OMEROSessionSimpleOMEROClientAdapter)) {
-						System.out.println("A session of a different type already exist! You can't create a session of a different type without removing it");
-					}
-					break;
-			}
+
 			if (session.getGateway().isConnected()) {
 				return session;
 			} // Otherwise we need to recreate the session
 		}
 
-		switch (type) {
-			case IMAGEJ_OMERO:
-				assert ctx != null;
-				OMEROService omeroService = ctx.getService(OMEROService.class);
-				session = new OMEROSessionImageJAdapter(omeroService.session(new OMEROServer(host,port), new OMEROCredentials(username, new String(password))));
-				break;
-			case SIMPLE_OMERO_CLIENT:
-				Client client = new Client();
-				client.connect(host, port, username, password );
-				session = new OMEROSessionSimpleOMEROClientAdapter(client);
-				break;
-			default:
-				throw new RuntimeException("OMERO Session type not recognized "+type);
-		}
+		assert ctx != null;
+		OMEROService omeroService = ctx.getService(OMEROService.class);
+		OMEROSession omeroSession = omeroService.session(new OMEROServer(host,port), new OMEROCredentials(username, new String(password)));
+		session = new DefaultOMEROSession(omeroSession.getGateway(), omeroSession.getSecurityContext());
+
 		logger.info("Session active : " + session.getGateway().isConnected());
 		session.getSecurityContext().setServerInformation(new ServerInformation(host));
 		registerOMEROSession(session, host);

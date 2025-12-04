@@ -168,10 +168,6 @@
 			<name>repo</name>
 			<url>https://artifacts.openmicroscopy.org/artifactory/repo</url>
 		</repository>
-		<repository>
-			<id>gred-releases</id>
-			<url>https://artifacts.igred.fr/releases</url>
-		</repository>
 	</repositories>
 
 	<dependencies>
@@ -250,12 +246,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>fr.igred</groupId>
-			<artifactId>simple-omero-client</artifactId>
-			<version>5.19.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.openmicroscopy</groupId>
 			<artifactId>omero-blitz</artifactId>
 			<version>${omero-blitz.version}</version>
@@ -308,13 +298,6 @@
 
 		<!-- test dependencies -->
 
-		<!--dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-biop-tools</artifactId>
-			<version>${bigdataviewer-biop-tools.version}</version>
-			<scope>test</scope>
-		</dependency-->
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -327,34 +310,18 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>bigdataviewer-playground</artifactId>
-			<version>${bigdataviewer-playground.version}</version>
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-biop-tools</artifactId>
+			<version>0.13.4</version>
 			<scope>test</scope>
-		</dependency-->
+		</dependency>
 
 		<dependency> <!-- if you want to test the alternative CZI reader -->
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>${quick-start-czi-reader.version}</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>OMEZarrReader</artifactId>
-			<version>${OMEZarrReader.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>ch.systems.cisd</groupId>
-					<artifactId>jhdf5</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 	</dependencies>
