@@ -62,6 +62,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static ch.epfl.biop.bdv.img.omero.OmeroChecker.PromptUserIfOmeroDependenciesMissing;
+
 /**
  * QuPath Image Opener. This class builds a specific opener depending on the
  * image provider class that is used to convert QuPath data into BDV compatible
@@ -215,6 +217,7 @@ public class QuPathOpener<T> implements Opener<T> {
 					if (mostInnerBuilder.providerClassName.equals(
 							"qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
 
+						PromptUserIfOmeroDependenciesMissing(context);
 						this.opener = (Opener<T>) new OmeroOpener(
 								context,
 								URLDecoder.decode(mostInnerBuilder.uri.toString(), "UTF-8"),
@@ -234,7 +237,7 @@ public class QuPathOpener<T> implements Opener<T> {
 									mostInnerBuilder.providerClassName +
 									" because it is not using the Ice API");
 						}
-
+						PromptUserIfOmeroDependenciesMissing(context);
 						this.opener = (Opener<T>) new OmeroOpener(
 								context,
 								URLDecoder.decode(mostInnerBuilder.uri.toString(), "UTF-8"),

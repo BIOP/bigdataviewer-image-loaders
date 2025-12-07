@@ -40,6 +40,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import static ch.epfl.biop.bdv.img.omero.OmeroChecker.PromptUserIfOmeroDependenciesMissing;
+
 /**
  * Equivalent to a Builder class, serializable, which can create an {@link Opener}
  * An opener can open and stream data for a 5D image (XYZCT)
@@ -384,6 +386,7 @@ public class OpenerSettings {
         Opener<?> opener;
         switch (this.type) {
             case OMERO:
+                PromptUserIfOmeroDependenciesMissing(scijavaContext);
                 opener = new OmeroOpener(
                         scijavaContext,
                         location,
