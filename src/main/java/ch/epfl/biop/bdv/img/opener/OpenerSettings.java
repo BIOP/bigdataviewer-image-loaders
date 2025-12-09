@@ -205,7 +205,14 @@ public class OpenerSettings {
         return this;
     }
 
+    /**
+     * Should not be used anymore since it was a fix for a limitation of BVV, and it's not relevant anymore
+     * @param to16bits force conversion to 16 bits image
+     * @return builder
+     */
+    @Deprecated
     public OpenerSettings to16bits(boolean to16bits) {
+        System.err.println("Please remove to 16 bit option - this option will be removed in the next release.");
         this.to16bits = to16bits;
         return this;
     }

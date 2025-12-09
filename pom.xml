@@ -316,12 +316,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--dependency>
+		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
-			<version>0.13.4</version>
+			<version>0.13.6</version>
 			<scope>test</scope>
-		</dependency-->
+		</dependency>
 
 	</dependencies>
 </project>

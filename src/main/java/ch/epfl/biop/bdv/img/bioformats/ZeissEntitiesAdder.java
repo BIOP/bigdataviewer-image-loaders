@@ -53,13 +53,13 @@ public class ZeissEntitiesAdder {
                     int id = dimensions.get(dimension);
                     switch (dimension) {
                         case "R": // Rotation, maybe obsolete ?
-                            entityList.add(new Angle(id, r.rotationLabels[id]));
+                            entityList.add(new Angle(id, r.rotationLabels!=null?r.rotationLabels[id]: String.valueOf(id)));
                             break;
                         case "I": // Illumination
-                            entityList.add(new Illumination(id, r.illuminationLabels[id]));
+                            entityList.add(new Illumination(id, r.illuminationLabels!=null?r.illuminationLabels[id]: String.valueOf(id)));
                             break;
                         case "V": // View - how is this different from angle ?
-                            entityList.add(new Angle(id, r.rotationLabels[id]));
+                            entityList.add(new Angle(id, r.rotationLabels!=null?r.rotationLabels[id]: String.valueOf(id)));
                             break;
                     }
                 });
