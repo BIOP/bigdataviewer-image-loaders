@@ -236,8 +236,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
                     }
                 });
 		int pixelType;
-		{ // Indentation just for the pool / recycle operation -> force limiting the scope of reader
-			IFormatReader reader = pool.acquire();
+		IFormatReader reader = null;
+		try { // Indentation just for the pool / recycle operation -> force limiting the scope of reader
+			reader = pool.acquire();
 			reader.setSeries(iSerie);
 			this.omeMeta = (IMetadata) reader.getMetadataStore();
 			nChannels = this.omeMeta.getChannelCount(iSerie);//reader.getSizeC();
@@ -255,6 +256,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			this.isLittleEndian = reader.isLittleEndian();
 			this.isRGB = reader.isRGB();
 			this.hasAlphaChannel = reader.getSizeC() == 4;
+
+			// Collect class of reader - helps with the special handling of ZeissQuickStartCZIReader
 			this.format = reader.getFormat();
 
 			this.cellDimensions = new int[] {
@@ -268,7 +271,10 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 				this.dimensions[level] = getDimension(reader.getSizeX(), reader.getSizeY(), reader.getSizeZ());
 			}
 			pixelType = reader.getPixelType();
-			pool.recycle(reader);
+		} finally {
+			if (reader != null) {
+				pool.recycle(reader);
+			}
 		}
 
 		this.to16Bits = to16Bits;
@@ -309,6 +315,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					ArrayList<Entity> entityList = new ArrayList<>();
 					entityList.add(new FileName(idxFilename, filename));
 					entityList.add(new SeriesIndex(iSerie));
+					if (BioFormatsOpener.this.format.equals("Zeiss CZI (Quick Start)")) {
+						ZeissEntitiesAdder.addCZIAdditionalEntities(entityList, BioFormatsOpener.this, iSerie, iChannel);
+					}
 					addPlateInfo(entityList, options, iSerie, cachedObjects);
 					return entityList;
 				}

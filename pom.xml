@@ -141,7 +141,7 @@
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
 		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
 		<OMEZarrReader.version>0.6.0</OMEZarrReader.version>
-		<quick-start-czi-reader.version>0.2.5</quick-start-czi-reader.version>
+		<quick-start-czi-reader.version>0.2.7-SNAPSHOT-TMP2</quick-start-czi-reader.version>
 
 		<!-- only used in tests! -->
 		<!--bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
@@ -296,6 +296,12 @@
 			<artifactId>imagej-legacy</artifactId>
 		</dependency>
 
+		<dependency> <!-- to support illuminations, rotations and phases -->
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>quick-start-czi-reader</artifactId>
+			<version>${quick-start-czi-reader.version}</version>
+		</dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>
@@ -316,13 +322,6 @@
 			<version>0.13.4</version>
 			<scope>test</scope>
 		</dependency-->
-
-		<dependency> <!-- if you want to test the alternative CZI reader -->
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>quick-start-czi-reader</artifactId>
-			<version>${quick-start-czi-reader.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 	</dependencies>
 </project>
