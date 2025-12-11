@@ -39,7 +39,7 @@ public class PyramidizeOpener<T> implements Opener<T> {
 
     final int nResolutionLevels;
 
-    Dimensions[] dimensions;
+    final Dimensions[] dimensions;
 
     public PyramidizeOpener(Opener<T> origin) {
         this.origin = origin;
@@ -48,8 +48,8 @@ public class PyramidizeOpener<T> implements Opener<T> {
         int nResolutionLevels = 1;
         while ((nResolutionLevels<6)&&(maxX>64)&&(maxY>64)) {
             nResolutionLevels++;
-            maxX/=2.0;
-            maxY/=2.0;
+            maxX= (long) (maxX/2.0);
+            maxY= (long) (maxY/2.0);
         }
         this.nResolutionLevels = nResolutionLevels;
 

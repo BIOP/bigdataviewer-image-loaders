@@ -26,7 +26,6 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Sampler;
 import net.imglib2.type.numeric.NumericType;
 
 public class ZerosRAI<T extends NumericType<T>> implements
@@ -72,11 +71,6 @@ public class ZerosRAI<T extends NumericType<T>> implements
 	}
 
 	public class ZerosRandomAccess implements RandomAccess<T> {
-
-		@Override
-		public RandomAccess<T> copyRandomAccess() {
-			return new ZerosRandomAccess();
-		}
 
 		@Override
 		public RandomAccess<T> copy() {

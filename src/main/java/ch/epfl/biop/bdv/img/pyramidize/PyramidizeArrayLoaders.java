@@ -449,63 +449,6 @@ public class PyramidizeArrayLoaders {
 		}
 	}
 
-	/*protected static class PyramidizeUnsignedIntArrayLoader extends PyramidizeArrayLoader implements CacheArrayLoader<VolatileIntArray> {
-		final List<List<RandomAccessibleInterval<UnsignedIntType>>> rais00 = new ArrayList<>();
-		final List<List<RandomAccessibleInterval<UnsignedIntType>>> rais01 = new ArrayList<>();
-		final List<List<RandomAccessibleInterval<UnsignedIntType>>> rais10 = new ArrayList<>();
-		final List<List<RandomAccessibleInterval<UnsignedIntType>>> rais11 = new ArrayList<>();
-		protected PyramidizeUnsignedIntArrayLoader(PyramidizeSetupLoader psl)
-		{
-			super(psl);
-		}
-
-		void init() {
-			for (int tp = 0; tp<psl.opener.getNTimePoints(); tp++) {
-				rais00.add(new ArrayList<>());
-				rais01.add(new ArrayList<>());
-				rais10.add(new ArrayList<>());
-				rais11.add(new ArrayList<>());
-				for (int level = 1; level<psl.numMipmapLevels(); level++) {
-					RandomAccessibleInterval<UnsignedIntType> rai = Views.expandBorder(psl.getImage(tp, level-1),1,1,0);
-					rais00.get(tp).add(Views.subsample(rai,2,2,1));
-					rais01.get(tp).add(Views.subsample(Views.offsetInterval(rai, new long[]{1,0,0}, rai.dimensionsAsLongArray()),2,2,1));
-					rais10.get(tp).add(Views.subsample(Views.offsetInterval(rai, new long[]{0,1,0}, rai.dimensionsAsLongArray()),2,2,1));
-					rais11.get(tp).add(Views.subsample(Views.offsetInterval(rai, new long[]{1,1,0}, rai.dimensionsAsLongArray()),2,2,1));
-				}
-			}
-		}
-
-		@Override
-		public VolatileIntArray loadArray(int timepoint, int setup, int level,
-										  int[] dimensions, long[] min) {
-			assert dimensions[2]==1;
-			Interval cell = Intervals.createMinSize(min[0], min[1], min[2], dimensions[0], dimensions[1], dimensions[2]);
-
-			final Cursor<UnsignedIntType> c00 = Views.flatIterable(Views.interval(rais00.get(timepoint).get(level-1), cell)).cursor();
-			final Cursor<UnsignedIntType> c01 = Views.flatIterable(Views.interval(rais01.get(timepoint).get(level-1), cell)).cursor();
-			final Cursor<UnsignedIntType> c10 = Views.flatIterable(Views.interval(rais10.get(timepoint).get(level-1), cell)).cursor();
-			final Cursor<UnsignedIntType> c11 = Views.flatIterable(Views.interval(rais11.get(timepoint).get(level-1), cell)).cursor();
-			int nElements = (dimensions[0] * dimensions[1] * dimensions[2]);
-
-			long[] ints = new long[nElements];
-
-			int idx = 0;
-			while (c00.hasNext()) {
-				ints[idx] = (c00.next().get()
-						+c01.next().get()
-						+c10.next().get()
-						+c11.next().get())/4;
-				idx++;
-			}
-			return new VolatileUnsignedIntType(ints, true);
-		}
-
-		@Override
-		public int getBytesPerElement() {
-			return 4;
-		}
-	}*/
-
 	protected static class PyramidizeARGBArrayLoader extends PyramidizeArrayLoader implements CacheArrayLoader<VolatileIntArray> {
 		final List<List<RandomAccessibleInterval<ARGBType>>> rais00 = new ArrayList<>();
 		final List<List<RandomAccessibleInterval<ARGBType>>> rais01 = new ArrayList<>();

@@ -58,7 +58,7 @@ public class OmeroSetupLoader<T extends NumericType<T> & NativeType<T>, V extend
 	final private static Logger logger = LoggerFactory.getLogger(OmeroSetupLoader.class);
 
 	// -------- How to load an image
-	Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
+    final Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
 	final Converter<T, FloatType> cvt;
 	final Supplier<VolatileGlobalCellCache> cacheSupplier;
 	final CacheArrayLoader<A> loader;

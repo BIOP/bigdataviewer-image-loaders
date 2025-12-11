@@ -72,7 +72,7 @@ public class QuPathProjectToBDVDatasetLegacyCommand extends
 		try {
 			spimData = (new QuPathToSpimData()).getSpimDataInstance(quPathProject
 				.toURI(), getOpener(""));
-			if (datasetname.equals("")) {
+			if (datasetname.isEmpty()) {
 				datasetname = quPathProject.getParentFile().getName();
 			}
 		}

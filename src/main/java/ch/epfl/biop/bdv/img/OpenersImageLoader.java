@@ -152,7 +152,7 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	}
 
 	public static List<Opener<?>> createOpeners(List<OpenerSettings> openerSettings) {
-		List<Opener<?>> openers = new ArrayList<>();
+		List<Opener<?>> openers;
 		Map<String, Object> cachedObjects = new HashMap<>();
 		// --------------- Optimization for OMERO - batch queries are much more efficient than multiple queries per image
 

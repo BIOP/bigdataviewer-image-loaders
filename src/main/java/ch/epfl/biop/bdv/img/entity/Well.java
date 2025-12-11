@@ -22,8 +22,6 @@
 
 package ch.epfl.biop.bdv.img.entity;
 
-import mpicbg.spim.data.SpimDataException;
-import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.base.NamedEntity;
 
 

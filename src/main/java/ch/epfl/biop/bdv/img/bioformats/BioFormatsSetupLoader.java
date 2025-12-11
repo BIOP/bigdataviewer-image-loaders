@@ -64,8 +64,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 	// -------- How to load an image
 	private final Function<RandomAccessibleInterval<T>, RandomAccessibleInterval<FloatType>> cvtRaiToFloatRai;
 	private final Converter<T, FloatType> cvt;
-	private final ResourcePool<IFormatReader> readerPool;
-	private final Supplier<VolatileGlobalCellCache> cacheSupplier;
+    private final Supplier<VolatileGlobalCellCache> cacheSupplier;
 	private final CacheArrayLoader<A> loader;
 
 	// -------- Resolution levels
@@ -73,10 +72,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 	private final int[] cellDimensions;
 	private final int numMipmapLevels;
 
-	// Channel index
-	private final int iChannel;
-
-	// -------- ViewSetup
+    // -------- ViewSetup
 	private final int setup;
 
 	// Image dimension
@@ -93,7 +89,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		super(t, v);
 		this.setup = setup;
 		this.cacheSupplier = cacheSupplier;
-		this.readerPool = opener.getPixelReader();
+        ResourcePool<IFormatReader> readerPool = opener.getPixelReader();
 
 		// set RandomAccessibleInterval
 		if (t instanceof FloatType) {
@@ -127,9 +123,9 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		}
 
 		// channel options
-		iChannel = channelIndex;
+        // Channel index
 
-		// pixels characteristics
+        // pixels characteristics
 		boolean isLittleEndian = opener.isLittleEndian();
 		voxelsDimensions = opener.getVoxelDimensions();
 
@@ -179,21 +175,21 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		if (t instanceof UnsignedByteType) {
 			loader =
 					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteArrayLoader(
-							readerPool, iChannel, iSeries);
+                            readerPool, channelIndex, iSeries);
 		} else if (t instanceof ByteType) {
 			loader =
 					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsByteArrayLoader(
-							readerPool, iChannel, iSeries);
+                            readerPool, channelIndex, iSeries);
 		} else if (t instanceof UnsignedShortType) {
 			if (opener.to16bit()) {
 				// the data is originally 8 bits
 				loader =
 						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteToUnsignedShortArrayLoader(
-								readerPool, iChannel, iSeries);
+								readerPool, channelIndex, iSeries);
 			} else {
 				loader =
 						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-								readerPool, iChannel, iSeries, isLittleEndian);
+                                readerPool, channelIndex, iSeries, isLittleEndian);
 			}
 		} else if (t instanceof ShortType) {
 			if (opener.to16bit()) {
@@ -204,27 +200,27 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 			} else {
 				loader =
 						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsShortArrayLoader(
-								readerPool, iChannel, iSeries, isLittleEndian);
+                                readerPool, channelIndex, iSeries, isLittleEndian);
 			}
 		} else if (t instanceof FloatType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
-					readerPool, iChannel, iSeries, isLittleEndian);
+                        readerPool, channelIndex, iSeries, isLittleEndian);
 		}
 		else if (t instanceof IntType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-					readerPool, iChannel, iSeries, isLittleEndian);
+                        readerPool, channelIndex, iSeries, isLittleEndian);
 		}
 		else if (t instanceof ARGBType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
-					readerPool, iChannel, iSeries, opener.hasAlphaChannel());
+                        readerPool, channelIndex, iSeries, opener.hasAlphaChannel());
 		}
 		else if (t instanceof UnsignedIntType) {
 			loader =
 				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-						readerPool, iChannel, iSeries, opener.hasAlphaChannel());
+                        readerPool, channelIndex, iSeries, opener.hasAlphaChannel());
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()

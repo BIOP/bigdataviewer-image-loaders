@@ -278,7 +278,7 @@ public class OmeroArrayLoaders {
 
 		@Override
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
-										  int[] dimensions, long[] min) throws InterruptedException
+										  int[] dimensions, long[] min)
 		{
 			throw new IllegalStateException("OMERO is not really supposed to give RGB images. But apparently that's the case. Please reach out to the developers to fix this!");
 		}

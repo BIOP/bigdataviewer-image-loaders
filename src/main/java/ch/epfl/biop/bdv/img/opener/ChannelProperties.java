@@ -50,7 +50,7 @@ public class ChannelProperties {
     // Channel core
     String name = "";
     int nChannels = 1;
-    int iChannel;
+    final int iChannel;
 
 
     // pixel infos
@@ -269,7 +269,7 @@ public class ChannelProperties {
             logger.warn("Error: "+e.getMessage()+" caught when trying to get the channel name");
             channelName = null;
         }
-        if (channelName != null && !channelName.equals("")) {
+        if (channelName != null && !channelName.isEmpty()) {
             this.name = metadata.getChannelName(iSerie, this.iChannel);
         }
         else {

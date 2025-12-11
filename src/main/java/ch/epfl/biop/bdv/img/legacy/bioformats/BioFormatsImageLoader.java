@@ -193,16 +193,14 @@ public class BioFormatsImageLoader implements ViewerImgLoader,
 	@Override
 	public void close() {
 		synchronized (this) {
-			openers.forEach(opener -> {
-				opener.getReaderPool().shutDown(reader -> {
-					try {
-						reader.close();
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-				});
-			});
+			openers.forEach(opener -> opener.getReaderPool().shutDown(reader -> {
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }));
 			cache.clearCache();
 			sq.shutdown();
 		}

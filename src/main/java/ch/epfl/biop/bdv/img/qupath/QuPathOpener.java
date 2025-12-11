@@ -317,6 +317,7 @@ public class QuPathOpener<T> implements Opener<T> {
 	}
 
 	boolean pyramidize = false;
+
 	private void setPyramidize(boolean pyramidize) {
 		this.pyramidize = pyramidize;
 	}
@@ -363,8 +364,7 @@ public class QuPathOpener<T> implements Opener<T> {
 					Math.PI;
 		}
 		MinimalQuPathProject.ServerBuilderMetadata metadata =
-				image.serverBuilder.metadata; // To keep the metadata (pixel size for
-		// instance)
+				image.serverBuilder.metadata; // To keep the metadata (pixel size for instance)
 		image.serverBuilder = image.serverBuilder.builder; // Skips the rotation
 		image.serverBuilder.metadata = metadata;
 
@@ -529,8 +529,7 @@ public class QuPathOpener<T> implements Opener<T> {
 		VoxelDimensions voxelDimensions;
 
 		{
-			assert numDimensions == 3;
-			voxelDimensions = new VoxelDimensions() {
+            voxelDimensions = new VoxelDimensions() {
 
 				final Unit<Length> targetUnit = u;
 

@@ -6,7 +6,6 @@ import org.scijava.ui.UIService;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.Desktop;
 import java.net.URI;
 
 public class OmeroChecker {
@@ -104,7 +103,7 @@ public class OmeroChecker {
                 try {
                     Desktop.getDesktop().browse(new URI("https://imagej.net/software/omero"));
                 } catch (Exception ex) {
-                    // Silently fail if can't open browser
+                    // Silently fails if it can't open a browser
                 }
             });
 

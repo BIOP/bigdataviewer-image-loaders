@@ -297,7 +297,7 @@ public class BioFormatsToSpimData {
 
 	private String getChannelName(IMetadata omeMeta, int iSerie, int iCh) {
 		String channelName = omeMeta.getChannelName(iSerie, iCh);
-		channelName = (channelName == null || channelName.equals("")) ? "ch" + iCh
+		channelName = (channelName == null || channelName.isEmpty()) ? "ch" + iCh
 			: channelName;
 		return channelName;
 	}
@@ -312,7 +312,7 @@ public class BioFormatsToSpimData {
 																																							// only
 																																							// removes
 																																							// .tif
-		if (imageName == null || imageName.equals("")) {
+		if (imageName == null || imageName.isEmpty()) {
 			imageName = fileNameWithoutExtension;
 			if (seriesCount > 1) {
 				return imageName + "-s" + iSerie;

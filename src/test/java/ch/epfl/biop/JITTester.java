@@ -26,19 +26,19 @@ package ch.epfl.biop;
  * a JIT compiler should be able to do:
  * - Multiplications by ones
  * - Additions with zeros...
- *
+ * <p>
  * My wish is that special cases matrices computations could be auto-simplified.
  * (a translation matrix is only 3 additions in 3D)
  * Apparently we're not there yet, or simply I don't know how to trigger the magic
- *
+ * <p>
  * I tried OpenJDK 1.8, OpenJDK 18, Graalvm-ce-17, none of them were able to
  * discard what appears to be no-ops
- *
+ * <p>
  * Due to the simplicity of the code, please re-use and modify as you wish
  * @author Nicolas Chiaruttini, 25th July 2022
  */
 public class JITTester {
-    Multiplier mt;
+    final Multiplier mt;
 
     public JITTester(double factor) {
         mt = new Multiplier(factor);
@@ -189,7 +189,7 @@ public class JITTester {
 
 }
 
-/**
+/*
  * Results on my machines with graalvm-ce-17\bin\java.exe, only one situation leads to optimisation
  * ----------------------
  * Repeating 100000000 multiplication by factor1 = 1.0, a final variable

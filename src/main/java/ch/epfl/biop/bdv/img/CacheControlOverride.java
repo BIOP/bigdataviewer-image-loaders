@@ -30,7 +30,7 @@ public interface CacheControlOverride {
 
     void setCacheControl(VolatileGlobalCellCache cache);
 
-    public static class Tools {
+    class Tools {
         public static void shutdownCacheQueue(VolatileGlobalCellCache cache) {
             try {
                 Field queueField = VolatileGlobalCellCache.class.getDeclaredField(

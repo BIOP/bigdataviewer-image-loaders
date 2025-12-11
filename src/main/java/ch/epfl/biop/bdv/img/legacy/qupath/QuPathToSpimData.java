@@ -98,8 +98,7 @@ public class QuPathToSpimData {
 			logger.debug("Channel for series " + iSerie + ", channel " + iChannel +
 				", already known.");
 		}
-		int idChannel = channelIdToChannel.get(channelToId.get(channel)).getId();
-		return idChannel;
+        return channelIdToChannel.get(channelToId.get(channel)).getId();
 	}
 
 	int viewSetupCounter = 0;
@@ -493,9 +492,8 @@ public class QuPathToSpimData {
 			sd.setImgLoader(new QuPathImageLoader(quPathProject, openerModel, sd,
 				openerModel.nFetcherThread, openerModel.numPriorities));
 
-			final SpimData spimData = new SpimData((File) null, sd, new ViewRegistrations(
+            return new SpimData((File) null, sd, new ViewRegistrations(
 				registrations));
-			return spimData;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -506,7 +504,7 @@ public class QuPathToSpimData {
 
 	private String getChannelName(IMetadata omeMeta, int iSerie, int iCh) {
 		String channelName = omeMeta.getChannelName(iSerie, iCh);
-		channelName = (channelName == null || channelName.equals("")) ? "ch" + iCh
+		channelName = (channelName == null || channelName.isEmpty()) ? "ch" + iCh
 			: channelName;
 		return channelName;
 	}
@@ -521,7 +519,7 @@ public class QuPathToSpimData {
 																																							// only
 																																							// removes
 																																							// .tif
-		imageName = (imageName == null || imageName.equals(""))
+		imageName = (imageName == null || imageName.isEmpty())
 			? fileNameWithoutExtension : imageName;
 		imageName = seriesCount > 1 ? imageName + "-s" + iSerie : imageName;
 		return imageName;

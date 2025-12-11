@@ -142,7 +142,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	/**
 	 * Builder pattern: fills all the omerosourceopener fields that relates to the
-	 * image to open (i.e. image size for all resolution levels..)
+	 * image to open (i.e. image size for all resolution levels...)
 	 *
 	 */
 	public OmeroOpener(
@@ -160,7 +160,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		URL url = new URL(datalocation);
 		host = url.getHost();
 
-		// We don't want to ask again and again and again credentials if it failed once. Thus we memoize the potential error
+		// We don't want to ask again and again and again credentials if it failed once. Thus, we memoize the potential error
 		if (cachedObjects.containsKey("opener.omero.connect."+host+".error")) throw new RuntimeException("Connection to OMERO failed");
 
 		long imageID = OmeroHelper.getImageID(datalocation);
@@ -521,13 +521,13 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		dims[1] = sY;
 		dims[2] = sZ;
 
-		Dimensions dimensions = new Dimensions() {
+        return new Dimensions() {
 
 			@Override
-			public void dimensions(long[] dimensions) {
-				dimensions[0] = dims[0];
-				dimensions[1] = dims[1];
-				dimensions[2] = dims[2];
+			public void dimensions(long[] dimensions1) {
+				dimensions1[0] = dims[0];
+				dimensions1[1] = dims[1];
+				dimensions1[2] = dims[2];
 			}
 
 			@Override
@@ -540,8 +540,6 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 				return numDimensions;
 			}
 		};
-
-		return dimensions;
 	}
 
 	/**
@@ -592,8 +590,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 		VoxelDimensions voxelDimensions;
 
 		{
-			assert numDimensions == 3;
-			voxelDimensions = new VoxelDimensions() {
+            voxelDimensions = new VoxelDimensions() {
 
 				final double[] dims = { d[0], d[1], d[2] };
 

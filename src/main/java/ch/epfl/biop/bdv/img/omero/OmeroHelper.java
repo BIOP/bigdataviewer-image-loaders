@@ -76,20 +76,16 @@ public class OmeroHelper {
 		Field[] bfUnits = UnitsLength.class.getFields();
 		for (Field f : bfUnits) {
 			if (f.getType().equals(UnitsLength.class)) {
-				if (f.getName() != null) {
-					try {
-						if (f.getName().equalsIgnoreCase(unit_string.trim()))
-						{// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
-							// {
-							// Field found
-							return (UnitsLength) f.get(null); // Field is assumed to be static
-						}
-					}
-					catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
+                try {
+                    if (f.getName().equalsIgnoreCase(unit_string.trim())) {// (f.getName().toUpperCase().equals(unit_string.trim().toUpperCase()))
+// {
+// Field found
+                        return (UnitsLength) f.get(null); // Field is assumed to be static
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 		}
 		// Field not found
 		return null;
@@ -144,14 +140,14 @@ public class OmeroHelper {
 			} catch (Exception commandException) {
 				error = commandException;
 			}
-			if ((!success) && (iAttempt == nAttempts)) throw error;
+			if ((!success) && (iAttempt == nAttempts) && (error!=null)) throw error;
 		}
 
 		throw  new RuntimeException("Could not create OMERO Session for host "+host);
 	}
 
 	// Host memoization
-	static Map<String, OMEROHost> memoOmero = new HashMap<>();
+	static final Map<String, OMEROHost> memoOmero = new HashMap<>();
 
 	static synchronized OMEROHost getOMEROInfos(String host) throws IOException { // host could be for ICE or not
 		if (memoOmero.containsKey(host)) return memoOmero.get(host);
@@ -199,7 +195,7 @@ public class OmeroHelper {
 
 	static Map<String, Map<Long,IOMEROSession>> cachedSession = new HashMap<>();
 
-	public static synchronized void registerOMEROSession(IOMEROSession session, String host) throws IOException {
+	public static synchronized void registerOMEROSession(IOMEROSession session, String host) {
 		OMEROHost infos = memoOmero.get(host);
 		if (!cachedSession.containsKey(infos.webHost)) {
 			cachedSession.put(infos.webHost, new HashMap<>());
@@ -345,8 +341,8 @@ public class OmeroHelper {
 	 *              - Multiple datasets, e.g:  {@code "https://hostname/webclient/?show=dataset-604|dataset-603"}
 	 *      - URLs pasted from the OMERO.iviewer
 	 *              - Single image opened with a double clic on a thumbnail, e.g:  {@code "https://hostname/webclient/img_detail/4735/?dataset=604"}
-	 *              - Single image opened with the "open with.. iviewer" button, e.g:  {@code "https://hostname/iviewer/?images=4737&dataset=604"}
-	 *              - Multiple images opened with the "open with.. iviewer" button, e.g: {@code "https://hostname/iviewer/?images=4736,4737,4738,4739"}
+	 *              - Single image opened with the "open with... iviewer" button, e.g:  {@code "https://hostname/iviewer/?images=4737&dataset=604"}
+	 *              - Multiple images opened with the "open with... iviewer" button, e.g: {@code "https://hostname/iviewer/?images=4736,4737,4738,4739"}
 	 *
 	 * @param omeroURL OMERO dataset- or image- URL
 	 * @param gateway OMERO gateway

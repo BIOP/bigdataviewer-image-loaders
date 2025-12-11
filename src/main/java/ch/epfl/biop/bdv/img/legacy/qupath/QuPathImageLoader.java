@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +89,7 @@ public class QuPathImageLoader implements ViewerImgLoader,
 
 	final Map<Integer, NumericType<?>> tTypeGetter = new HashMap<>();
 
-	Map<Integer, Volatile<?>> vTypeGetter = new HashMap<>();
+	final Map<Integer, Volatile<?>> vTypeGetter = new HashMap<>();
 
 	final Map<Integer, QuPathEntryAndChannel> viewSetupToQuPathEntryAndChannel =
 		new HashMap<>();
@@ -156,10 +157,9 @@ public class QuPathImageLoader implements ViewerImgLoader,
 							String filePath = Paths.get(uri).toString();
 
 							if (!openerMap.containsKey(image.serverBuilder.uri)) {
-								String location = Paths.get(uri).toString();
-								logger.debug("Creating opener for data location " + location);
+								logger.debug("Creating opener for data location " + filePath);
 								BioFormatsBdvOpener opener = new BioFormatsBdvOpener(
-									openerModel).location(location);
+									openerModel).location(filePath);
 								opener.setCache(sq);
 								openerMap.put(image.serverBuilder.uri, opener);
 								cachedReaders.put(opener, opener.getNewReader());
@@ -205,15 +205,15 @@ public class QuPathImageLoader implements ViewerImgLoader,
 							IntStream channels = IntStream.range(0, omeMeta.getChannelCount(
 								identifier.bioformatsIndex));
 							// Register Setups (one per channel and one per timepoint)
-							Type<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(memo,
+							NumericType<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(memo,
 								identifier.bioformatsIndex);
 							Volatile<?> v = BioFormatsImageLoader.getVolatileOf(
-								(NumericType<?>) t);
+                                    t);
 							channels.forEach(iCh -> {
 								QuPathEntryAndChannel usc = new QuPathEntryAndChannel(
 									identifier, iCh);
 								viewSetupToQuPathEntryAndChannel.put(viewSetupCounter, usc);
-								tTypeGetter.put(viewSetupCounter, (NumericType<?>) t);
+								tTypeGetter.put(viewSetupCounter, t);
 								vTypeGetter.put(viewSetupCounter, v);
 								viewSetupCounter++;
 							});
@@ -293,16 +293,14 @@ public class QuPathImageLoader implements ViewerImgLoader,
 
 	@Override
 	public void close() {
-		openerMap.values().forEach(opener -> {
-			opener.getReaderPool().shutDown(reader -> {
-				try {
-					reader.close();
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-		});
+		openerMap.values().forEach(opener -> opener.getReaderPool().shutDown(reader -> {
+            try {
+                reader.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
 		cache.clearCache();
 		sq.shutdown();
 	}

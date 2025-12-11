@@ -22,7 +22,6 @@
 package ch.epfl.biop.bdv.img.pyramidize;
 
 import bdv.img.cache.CacheArrayLoader;
-import bdv.img.cache.VolatileCachedCellImg;
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;

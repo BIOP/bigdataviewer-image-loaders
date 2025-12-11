@@ -160,11 +160,9 @@ public class XmlIoOpenersImageLoader implements
 				for (int i = 0;i<in.length;i++) {
 					oldToNew.put(in[i], out[i].getAbsolutePath());
 				}
-				invalidLocations.values().forEach(openerSettingsL -> {
-					openerSettingsL.forEach(openerSettings -> {
-						openerSettings.location(oldToNew.get(openerSettings.getLocation()));
-					});
-				});
+				invalidLocations.values().forEach(openerSettingsL -> openerSettingsL.forEach(openerSettings -> {
+                    openerSettings.location(oldToNew.get(openerSettings.getLocation()));
+                }));
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}

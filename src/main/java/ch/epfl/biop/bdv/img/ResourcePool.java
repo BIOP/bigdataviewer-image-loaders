@@ -39,7 +39,7 @@ import java.util.function.Consumer;
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">...</a>
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -103,7 +103,7 @@ public abstract class ResourcePool<Resource> {
 		return pool.take();
 	}
 
-	public void recycle(Resource resource) throws Exception {
+	public void recycle(Resource resource) {
 		// Will throws Exception when the queue is full,
 		// but it should never happen.
 		pool.add(resource);

@@ -481,8 +481,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	}
 
 	// create OME-XML metadata store
-	static ServiceFactory factory;
-	static OMEXMLService service;
+	static final ServiceFactory factory;
+	static final OMEXMLService service;
 
 	static {
 		try {
@@ -565,7 +565,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		if (!readerOptions.isEmpty()) {
 			MetadataOptions metadataOptions = reader.getMetadataOptions();
 			if (metadataOptions instanceof DynamicMetadataOptions) {
-				// We need to set an xml metadata backend or else a Dummy metadata store is created and
+				// We need to set a xml metadata backend or else a Dummy metadata store is created and
 				// all metadata are discarded
 				try {
 					reader.setMetadataStore(service.createOMEXMLMetadata());

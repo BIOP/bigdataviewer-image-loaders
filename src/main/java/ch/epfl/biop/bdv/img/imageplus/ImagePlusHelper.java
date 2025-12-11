@@ -57,7 +57,6 @@ import net.imglib2.type.numeric.integer.GenericShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
@@ -436,38 +435,38 @@ public class ImagePlusHelper {
 		final Caches.RandomAccessibleLoader<T> loader =
 				new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
-		final T type = Util.getTypeFromInterval(source);
+		final T type = source.getType();
 
 		final CachedCellImg<T, ?> img;
 		final Cache<Long, Cell<?>> cache = new SoftRefLoaderCache().withLoader(
 				LoadedCellCacheLoader.get(grid, loader, type, AccessFlags.setOf(
 						VOLATILE)));
 
-		if (GenericByteType.class.isInstance(type)) {
+		if (type instanceof GenericByteType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
 					BYTE, AccessFlags.setOf(VOLATILE)));
 		}
-		else if (GenericShortType.class.isInstance(type)) {
+		else if (type instanceof GenericShortType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
 					SHORT, AccessFlags.setOf(VOLATILE)));
 		}
-		else if (GenericIntType.class.isInstance(type)) {
+		else if (type instanceof GenericIntType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
 					AccessFlags.setOf(VOLATILE)));
 		}
-		else if (GenericLongType.class.isInstance(type)) {
+		else if (type instanceof GenericLongType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
 					LONG, AccessFlags.setOf(VOLATILE)));
 		}
-		else if (FloatType.class.isInstance(type)) {
+		else if (type instanceof FloatType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
 					FLOAT, AccessFlags.setOf(VOLATILE)));
 		}
-		else if (DoubleType.class.isInstance(type)) {
+		else if (type instanceof DoubleType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
 					DOUBLE, AccessFlags.setOf(VOLATILE)));
 		}
-		else if (ARGBType.class.isInstance(type)) {
+		else if (type instanceof ARGBType) {
 			img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
 					AccessFlags.setOf(VOLATILE)));
 		}

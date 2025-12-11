@@ -79,25 +79,4 @@ public class ProjectIO {
 		}
 	}
 
-	/**
-	 * Get the default extension for a QuPath project file.
-	 *
-	 * @param includePeriod include or not the period
-	 * @return the project extension (with or without the period)
-	 */
-	public static String getProjectExtension(boolean includePeriod) {
-		return includePeriod ? "." + DEFAULT_PROJECT_EXTENSION
-			: DEFAULT_PROJECT_EXTENSION;
-	}
-
-	/**
-	 * Get the default extension for a QuPath project file, without the 'dot'.
-	 * 
-	 * @return the default extension for a QuPath project file, without the 'dot'.
-	 * @see ProjectIO#getProjectExtension(boolean)
-	 */
-	public static String getProjectExtension() {
-		return DEFAULT_PROJECT_EXTENSION;
-	}
-
 }
