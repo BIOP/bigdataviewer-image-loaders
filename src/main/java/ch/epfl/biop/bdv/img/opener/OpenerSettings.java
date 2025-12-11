@@ -439,7 +439,6 @@ public class OpenerSettings {
                         splitRGB,
                         cachedObjects,
                         nChannels, skipMeta,
-                        to16bits,
                         opt
                 );
                 break;

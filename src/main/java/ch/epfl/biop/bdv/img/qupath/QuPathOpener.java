@@ -208,7 +208,6 @@ public class QuPathOpener<T> implements Opener<T> {
 								cachedObjects,
 								defaultNumberOfChannels,
 								skipMeta,
-								false,
 								joinedArgs);
 					}
 

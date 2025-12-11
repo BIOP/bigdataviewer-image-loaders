@@ -32,7 +32,6 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
 
 // Copied from N5 Array Loader
 
@@ -559,62 +558,4 @@ public class BioFormatsArrayLoaders {
 		}
 	}
 
-	protected static class BioFormatsUnsignedByteToUnsignedShortArrayLoader extends
-			BioformatsArrayLoader implements CacheArrayLoader<VolatileShortArray>
-	{
-
-		protected BioFormatsUnsignedByteToUnsignedShortArrayLoader(ResourcePool<IFormatReader> readerPool,
-													int channel, int iSeries)
-		{
-			super(readerPool, channel, iSeries);
-		}
-
-		@Override
-		public VolatileShortArray loadArray(int timepoint, int setup, int level,
-										   int[] dimensions, long[] min) throws InterruptedException
-		{
-			try {
-				// get the reader
-				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(iSeries);
-				reader.setResolution(level);
-				int minX = (int) min[0];
-				int minY = (int) min[1];
-				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
-				int w = maxX - minX;
-				int h = maxY - minY;
-				int d = maxZ - minZ;
-				int nElements = (w * h * d);
-
-				// read pixels
-				ShortBuffer buffer = ShortBuffer.allocate(nElements);
-				for (int z = minZ; z < maxZ; z++)
-				{
-					byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
-							timepoint), minX, minY, w, h);
-					short[] shortsCurrentPlane = new short[bytesCurrentPlane.length];
-					for(int i = 0; i<bytesCurrentPlane.length;i++)
-					{
-						shortsCurrentPlane[i] = (short)Byte.toUnsignedInt(bytesCurrentPlane[i]);
-
-					}
-					buffer.put(shortsCurrentPlane);
-				}
-				// release the reader
-				readerPool.recycle(reader);
-				return new VolatileShortArray(buffer.array(), true);
-			}
-			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
-			}
-		}
-
-		@Override
-		public int getBytesPerElement() {
-			return 1;
-		}
-	}
 }

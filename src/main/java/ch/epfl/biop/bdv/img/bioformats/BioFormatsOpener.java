@@ -179,7 +179,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			Map<String, Object> cachedObjects,
 			int defaultNumberOfChannels,
 			boolean skipMeta,
-			boolean to16Bits,
 			String options
 	) throws Exception {
 
@@ -277,8 +276,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 		}
 
-		this.to16Bits = to16Bits;
-		this.t = to16Bits? new UnsignedShortType(): BioFormatsOpener.getBioformatsBdvSourceType(pixelType, this.isRGB, iSerie);
+		this.t = BioFormatsOpener.getBioformatsBdvSourceType(pixelType, this.isRGB, iSerie);
 
 		if (!skipMeta) {
 
@@ -745,16 +743,6 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			}
 		});
 	}
-
-	/**
-	 * Checks whether this opener converts bytes to shorts - that's for bvv compatibility
-	 * @return whether the data is converted to 16 bits
-	 */
-	public boolean to16bit() {
-		return to16Bits;
-	}
-
-	boolean to16Bits = false;
 
 	public boolean hasAlphaChannel() {
 		return hasAlphaChannel;

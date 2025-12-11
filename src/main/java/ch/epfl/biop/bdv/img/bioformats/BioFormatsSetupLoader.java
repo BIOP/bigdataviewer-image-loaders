@@ -181,45 +181,28 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsByteArrayLoader(
                             readerPool, channelIndex, iSeries);
 		} else if (t instanceof UnsignedShortType) {
-			if (opener.to16bit()) {
-				// the data is originally 8 bits
-				loader =
-						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedByteToUnsignedShortArrayLoader(
-								readerPool, channelIndex, iSeries);
-			} else {
-				loader =
-						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
-                                readerPool, channelIndex, iSeries, isLittleEndian);
-			}
+			loader =
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsUnsignedShortArrayLoader(
+							readerPool, channelIndex, iSeries, isLittleEndian);
 		} else if (t instanceof ShortType) {
-			if (opener.to16bit()) {
-				// the data is originally 8 bits
-				throw new UnsupportedOperationException("Pixel type " + t.getClass()
-						.getName() + " conversion to 16 bits unsupported in " + BioFormatsSetupLoader.class
-						.getName());
-			} else {
-				loader =
-						(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsShortArrayLoader(
-                                readerPool, channelIndex, iSeries, isLittleEndian);
-			}
+			loader =
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsShortArrayLoader(
+							readerPool, channelIndex, iSeries, isLittleEndian);
 		} else if (t instanceof FloatType) {
 			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsFloatArrayLoader(
                         readerPool, channelIndex, iSeries, isLittleEndian);
-		}
-		else if (t instanceof IntType) {
+		} else if (t instanceof IntType) {
 			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
                         readerPool, channelIndex, iSeries, isLittleEndian);
-		}
-		else if (t instanceof ARGBType) {
+		} else if (t instanceof ARGBType) {
 			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsRGBArrayLoader(
                         readerPool, channelIndex, iSeries, opener.hasAlphaChannel());
-		}
-		else if (t instanceof UnsignedIntType) {
+		} else if (t instanceof UnsignedIntType) {
 			loader =
-				(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
+					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
                         readerPool, channelIndex, iSeries, opener.hasAlphaChannel());
 		}
 		else {
