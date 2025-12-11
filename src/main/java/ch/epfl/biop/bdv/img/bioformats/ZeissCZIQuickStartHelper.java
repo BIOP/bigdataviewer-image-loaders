@@ -11,13 +11,14 @@ import loci.formats.ReaderWrapper;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.Angle;
 import mpicbg.spim.data.sequence.Illumination;
+import mpicbg.spim.data.sequence.Tile;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-public class ZeissEntitiesAdder {
+public class ZeissCZIQuickStartHelper {
 
-    public static void addCZIAdditionalEntities(ArrayList<Entity> entityList, BioFormatsOpener opener, int iSerie, int iChannel) {
+    protected static void addCZIAdditionalEntities(ArrayList<Entity> entityList, BioFormatsOpener opener, int iSerie, int iChannel) {
         IFormatReader inireader = null;
         try  {
             inireader = opener.getPixelReader().acquire();
@@ -30,10 +31,8 @@ public class ZeissEntitiesAdder {
                 reader = ((Memoizer) reader).getReader();
             }
 
-            boolean hasChannelSeparator = false;
             if (reader instanceof ChannelSeparator) {
                 reader = ((ChannelSeparator) reader).getReader();
-                hasChannelSeparator = true;
             }
 
             if (reader instanceof ImageReader) {
@@ -61,6 +60,9 @@ public class ZeissEntitiesAdder {
                         case "V": // View - how is this different from angle ?
                             entityList.add(new Angle(id, r.rotationLabels!=null?r.rotationLabels[id]: String.valueOf(id)));
                             break;
+                        case "M": // Mosaic = Tile
+                            entityList.add(new Tile(id, String.valueOf(id)));
+                            break;
                     }
                 });
             } else {
@@ -79,6 +81,57 @@ public class ZeissEntitiesAdder {
             }
         }
         
+    }
+
+    protected static boolean isLatticeLightSheet(BioFormatsOpener opener) {
+        IFormatReader inireader = null;
+        try  {
+            inireader = opener.getPixelReader().acquire();
+
+            // Try to get the underlying reader. Unwraps everything.
+
+            IFormatReader reader = inireader;
+
+            if (reader instanceof Memoizer) {
+                reader = ((Memoizer) reader).getReader();
+            }
+
+            if (reader instanceof ChannelSeparator) {
+                reader = ((ChannelSeparator) reader).getReader();
+            }
+
+            if (reader instanceof ImageReader) {
+                ImageReader ir = (ImageReader) reader;
+                reader = ir.getReader();
+            }
+
+            if (reader instanceof ReaderWrapper) {
+                ReaderWrapper rw = (ReaderWrapper) reader;
+                reader = rw.getReader();
+            }
+
+            if (reader instanceof ZeissQuickStartCZIReader) {
+                ZeissQuickStartCZIReader r = (ZeissQuickStartCZIReader) reader;
+                return r.isLatticeLightSheet();
+
+
+            } else {
+                System.err.println("Could not get underlying reader - skipping extra entities (phase, illumination, rotation) detection.");
+                return false;
+            }
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        } finally {
+            if (inireader!=null) {
+                try {
+                    opener.getPixelReader().recycle(inireader);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
     }
 
 }

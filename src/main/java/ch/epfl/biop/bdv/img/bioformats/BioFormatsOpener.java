@@ -296,6 +296,42 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					new boolean[]{false, false, false} // axesOfImageFlip
 			);
 
+			if (format.equals("Zeiss CZI (Quick Start)") && ZeissCZIQuickStartHelper.isLatticeLightSheet(this)) {
+				// Adds an extra transformation - corresponding to skew of Zeiss LLS7
+
+				AffineTransform3D latticeTransform = new AffineTransform3D();
+
+				double angle = -60.0/180*Math.PI;
+
+				latticeTransform.set(
+						1,0,0,0,
+						0,Math.cos(angle),0,0,
+						0,+Math.sin(angle),-1,0
+				);
+
+				AffineTransform3D rotateX = new AffineTransform3D();
+				rotateX.rotate(0, Math.PI/2.0);
+
+				latticeTransform.preConcatenate(rotateX);
+				AffineTransform3D addOffset = rootTransform.copy();
+
+				double ox = addOffset.get(0,3);
+				double oy = addOffset.get(1,3);
+				double oz = addOffset.get(2,3);
+
+				addOffset.identity();
+				addOffset.set(ox,0,3);
+				addOffset.set(oy,1,3);
+				addOffset.set(oz,2,3);
+
+				AffineTransform3D rmOffset = addOffset.inverse();
+
+				latticeTransform.preConcatenate(addOffset);
+				latticeTransform.concatenate(rmOffset);
+
+				rootTransform.preConcatenate(latticeTransform);
+			}
+
 			String imageName = getImageName(this.omeMeta,iSerie,dataLocation);
 			List<ChannelProperties> channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
 
@@ -316,7 +352,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					entityList.add(new FileName(idxFilename, filename));
 					entityList.add(new SeriesIndex(iSerie));
 					if (BioFormatsOpener.this.format.equals("Zeiss CZI (Quick Start)")) {
-						ZeissEntitiesAdder.addCZIAdditionalEntities(entityList, BioFormatsOpener.this, iSerie, iChannel);
+						ZeissCZIQuickStartHelper.addCZIAdditionalEntities(entityList, BioFormatsOpener.this, iSerie, iChannel);
 					}
 					addPlateInfo(entityList, options, iSerie, cachedObjects);
 					return entityList;

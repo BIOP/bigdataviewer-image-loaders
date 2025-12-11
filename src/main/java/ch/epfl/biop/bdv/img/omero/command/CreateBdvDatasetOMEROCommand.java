@@ -61,8 +61,10 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 	AbstractSpimData<?> spimdata;
 
 	// Parameter for dataset creation
-	@Parameter(required = false, label = "Physical units of the dataset",
-		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
+	@Parameter(required = false, label = "World coordinate units",
+			description = "Unit for the common coordinate system where all datasets will be positioned. "+
+					"Image calibrations will be converted to these units.",
+			choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
 	@Parameter(required = false,

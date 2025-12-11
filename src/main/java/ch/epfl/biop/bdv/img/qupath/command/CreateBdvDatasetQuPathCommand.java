@@ -64,7 +64,9 @@ public class CreateBdvDatasetQuPathCommand implements Command
 		persist = false)
 	public String datasetname = ""; // Cheat to allow dataset renaming
 
-	@Parameter(required = false, label = "Physical units of the dataset",
+	@Parameter(required = false, label = "World coordinate units",
+			description = "Unit for the common coordinate system where all datasets will be positioned. "+
+					"Image calibrations will be converted to these units.",
 			choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 

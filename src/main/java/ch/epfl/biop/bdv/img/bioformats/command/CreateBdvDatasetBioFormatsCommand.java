@@ -23,14 +23,20 @@
 package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import mpicbg.spim.data.sequence.ViewId;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import spimdata.SpimDataHelper;
+import spimdata.util.Displaysettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,8 +54,10 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	@Parameter(label = "Name of this dataset")
 	public String datasetname = "dataset";
 
-	@Parameter(required = false, label = "Physical units of the dataset",
-		choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
+	@Parameter(required = false, label = "World coordinate units",
+		description = "Unit for the common coordinate system where all datasets will be positioned. "+
+					  "Image calibrations will be converted to these units.",
+		choices = { "MILLIMETER", "MICROMETER", "NANOMETER", "BIGSTITCHER COMPATIBLE" })
 	public String unit = "MILLIMETER";
 
 	@Parameter(label = "Dataset files")
@@ -75,23 +83,54 @@ public class CreateBdvDatasetBioFormatsCommand implements
 	Context ctx;
 
 	public void run() {
+
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (File f : files) {
 			int nSeries = BioFormatsHelper.getNSeries(f, disable_memo? " --bfOptions " + OpenerSettings.BF_MEMO_KEY + "=false": "" );
+
+			String bfOptions = "";//--bfOptions zeissczi.autostitch=false";
+
+			if (FilenameUtils.getExtension(f.getAbsolutePath()).equals("czi") && unit.equals("BIGSTITCHER COMPATIBLE" )) {
+				bfOptions ="--bfOptions zeissczi.autostitch=false";
+			}
+
 			for (int i = 0; i < nSeries; i++) {
 				openerSettings.add(
 						OpenerSettings.BioFormats()
 								.location(f)
 								.setSerie(i)
-								.unit(unit)
+								.unit(unit.equals("BIGSTITCHER COMPATIBLE")?"MICROMETER":unit)
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
 								.pyramidize(auto_pyramidize)
 								.useBFMemo(!disable_memo)
+								.addOptions(bfOptions)
 								.context(ctx));
 			}
 		}
 		spimdata = OpenersToSpimData.getSpimData(openerSettings);
+
+		try {
+			if (unit.equals("BIGSTITCHER COMPATIBLE")) {
+				// We need to rescale the whole dataset in order to get a pixel size of 1
+				double scalingForBigStitcher =
+						1. / spimdata.getViewRegistrations().getViewRegistration(new ViewId(0, 0))
+								.getModel().get(0, 0);
+
+				// Scaling such as size of one pixel = 1
+				SpimDataHelper.scale(spimdata, "BigStitcher Scaling", scalingForBigStitcher);
+
+				// We also remove most of the extra tags
+				SpimDataHelper.removeEntities(spimdata,
+						Displaysettings.class,
+						SeriesIndex.class,
+						ImageName.class);
+			}
+
+		} catch (Exception e) {
+			System.err.println("Could not scale dataset for Bigstitcher: "+e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 }
