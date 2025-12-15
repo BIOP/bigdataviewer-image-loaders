@@ -140,7 +140,7 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
 		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
-		<OMEZarrReader.version>0.6.0</OMEZarrReader.version>
+		<!--OMEZarrReader.version>0.6.0</OMEZarrReader.version-->
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
 		<!-- only used in tests! -->
@@ -316,12 +316,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-biop-tools</artifactId>
 			<version>0.13.6</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 
 	</dependencies>
 </project>
