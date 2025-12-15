@@ -366,7 +366,7 @@ public class OpenerSettings {
     }
 
     public OpenerSettings addOptions(String options) {
-        opt = options;
+        opt = opt + options;
         return this;
     }
 

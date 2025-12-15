@@ -86,13 +86,18 @@ public class CreateBdvDatasetBioFormatsCommand implements
 
 		List<OpenerSettings> openerSettings = new ArrayList<>();
 		for (File f : files) {
-			int nSeries = BioFormatsHelper.getNSeries(f, disable_memo? " --bfOptions " + OpenerSettings.BF_MEMO_KEY + "=false": "" );
 
-			String bfOptions = "";//--bfOptions zeissczi.autostitch=false";
+			String bfOptions = "";
 
-			if (FilenameUtils.getExtension(f.getAbsolutePath()).equals("czi") && unit.equals("BIGSTITCHER COMPATIBLE" )) {
-				bfOptions ="--bfOptions zeissczi.autostitch=false";
+			if (FilenameUtils.getExtension(f.getAbsolutePath()).equals("czi") && unit.equals("BIGSTITCHER COMPATIBLE")) {
+				bfOptions+=" --bfOptions zeissczi.autostitch=false ";
 			}
+
+			if (disable_memo) {
+				bfOptions+=" --bfOptions " + OpenerSettings.BF_MEMO_KEY + "=false";
+			}
+
+			int nSeries = BioFormatsHelper.getNSeries(f, bfOptions );
 
 			for (int i = 0; i < nSeries; i++) {
 				openerSettings.add(
