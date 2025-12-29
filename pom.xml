@@ -143,6 +143,8 @@
 		<!--OMEZarrReader.version>0.6.0</OMEZarrReader.version-->
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
+		<reflections.version>0.10.2</reflections.version> <!-- for test only -->
+
 		<!-- only used in tests! -->
 		<!--bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
 		<bigdataviewer-biop-tools.version>0.10.0</bigdataviewer-biop-tools.version-->
@@ -273,6 +275,14 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>${reflections.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
