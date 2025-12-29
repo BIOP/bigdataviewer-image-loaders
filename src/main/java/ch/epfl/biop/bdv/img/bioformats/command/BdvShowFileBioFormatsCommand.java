@@ -38,27 +38,31 @@ import java.util.List;
 @SuppressWarnings({"Unused", "CanBeFinal", "unused"})
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer>Bio-Formats>Open File with Bio-Formats",
-	description = "Support Bio-Formats multiresolution API. Set colors based " +
-		"on bioformats metadata. Do not attempt auto contrast.")
+	description = "Opens a file in BigDataViewer using Bio-Formats, with colors from metadata.")
 public class BdvShowFileBioFormatsCommand
 	implements Command
 {
 
-	@Parameter(required = false, label = "World coordinate units",
-			description = "Unit for the common coordinate system where all datasets will be positioned. "+
-					"Image calibrations will be converted to these units.",
+	@Parameter(required = false,
+			label = "World coordinate units",
+			description = "Unit for the coordinate system where images will be positioned.",
 			choices = { "MILLIMETER", "MICROMETER", "NANOMETER"})
 	public String unit = "MILLIMETER";
 
-	@Parameter(label = "File to open", style = "open")
+	@Parameter(label = "Input File",
+			description = "The image file to open in BigDataViewer.",
+			style = "open")
 	File file;
 
 	@Parameter(required = false,
-		label = "Split RGB channels if you have 16 bits RGB images")
-	boolean splitrgbchannels = true; // Split rgb channels to allow for best
-																		// compatibility (RGB 16 bits)
+			label = "Split RGB Channels",
+			description = "When checked, splits RGB images into separate channels (recommended for 16-bit RGB).")
+	boolean splitrgbchannels = true;
+
 	@Parameter(required = false,
-			label = "Image metadata location = ", choices = {"CENTER", "TOP LEFT"})
+			label = "Plane Origin Convention",
+			description = "Defines where the image origin is located.",
+			choices = {"CENTER", "TOP LEFT"})
 	String position_convention = "CENTER";
 
 	public void run() {

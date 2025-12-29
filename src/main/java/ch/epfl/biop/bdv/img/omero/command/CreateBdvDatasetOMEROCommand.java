@@ -40,9 +40,7 @@ import java.util.List;
 @SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO]",
-	description = "Bridge between OMERO and BigDataViewer. You can create a BDV dataset" +
-			" from a set of OMERO URLs.")
-
+	description = "Creates a BDV dataset from one or more OMERO image URLs.")
 public class CreateBdvDatasetOMEROCommand implements Command {
 
 	final private static Logger logger = LoggerFactory.getLogger(
@@ -51,24 +49,30 @@ public class CreateBdvDatasetOMEROCommand implements Command {
 	@Parameter
 	Context context;
 
-	@Parameter(label = "Name of this dataset")
+	@Parameter(label = "Dataset Name",
+			description = "Name for the resulting BDV dataset.")
 	public String datasetname = "dataset";
 
-	@Parameter(label = "OMERO URLs", style = "text area")
+	@Parameter(label = "OMERO URLs",
+			description = "Comma-separated list of OMERO image URLs to include in the dataset.",
+			style = "text area")
 	public String omero_urls;
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimdata;
 
-	// Parameter for dataset creation
-	@Parameter(required = false, label = "World coordinate units",
-			description = "Unit for the common coordinate system where all datasets will be positioned. "+
-					"Image calibrations will be converted to these units.",
+	@Parameter(required = false,
+			label = "World coordinate units",
+			description = "Unit for the coordinate system where images will be positioned.",
 			choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
 	@Parameter(required = false,
-			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+			label = "Plane Origin Convention",
+			description = "Defines where the image origin is located.",
+			choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
 
 

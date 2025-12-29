@@ -42,16 +42,17 @@ import java.util.ArrayList;
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open sample dataset",
 	label = "Open sample datasets",
-	description = "Downloads and cache datasets on first open attempt.")
-
+	description = "Opens a sample dataset from a selection of test images (downloads and caches on first use).")
 public class OpenSampleCommand implements Command {
 
-	@Parameter(label = "Choose a sample dataset", choices = { "VSI", "JPG_RGB",
-		"OLYMPUS_OIR", "LIF", "TIF_TIMELAPSE_3D", "ND2_20X", "ND2_60X",
-		"BOTH_ND2" })
+	@Parameter(label = "Sample Dataset",
+			description = "The sample dataset to download and open.",
+			choices = { "VSI", "JPG_RGB", "OLYMPUS_OIR", "LIF", "TIF_TIMELAPSE_3D", "ND2_20X", "ND2_60X", "BOTH_ND2" })
 	String datasetname;
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimData;
 
 	public void run() {

@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Connect",
-        description = "Connect to an OMERO server", initializer = "init")
-
+        description = "Connects to an OMERO server using your credentials.",
+        initializer = "init")
 public class OmeroConnectCommand implements Command {
 
     final private static Logger logger = LoggerFactory.getLogger(
@@ -55,26 +55,37 @@ public class OmeroConnectCommand implements Command {
     @Parameter
     OMEROService omeroService;
 
-    @Parameter(label = "OMERO host")
+    @Parameter(label = "OMERO Host",
+            description = "The hostname or IP address of the OMERO server.")
     String host = "omero-server.epfl.ch";
 
-    @Parameter(label = "Enter your username")
+    @Parameter(label = "Username",
+            description = "Your OMERO username.")
     String username;
 
-    @Parameter(label = "Enter your password", style = "password",
+    @Parameter(label = "Password",
+            description = "Your OMERO password.",
+            style = "password",
             persist = false)
     String password;
 
-    @Parameter(label = "OMERO Ice port")
+    @Parameter(label = "Port",
+            description = "The OMERO Ice port (default is 4064).")
     int port = 4064;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "OMERO Session",
+            description = "The active OMERO session if connection succeeds.")
     IOMEROSession omeroSession;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Success",
+            description = "True if the connection was successful.")
     Boolean success;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Error",
+            description = "The exception if connection failed, null otherwise.")
     Exception error;
 
     public void run() {

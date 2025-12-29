@@ -35,8 +35,7 @@ import java.util.Collection;
 
 @Plugin(type = Command.class,
         menuPath = "Plugins>BIOP>OMERO>Omero - Disconnect",
-        description = "Disconnect from an OMERO server.")
-
+        description = "Disconnects from an OMERO server and closes all sessions.")
 public class OmeroDisconnectCommand implements Command {
 
     final private static Logger logger = LoggerFactory.getLogger(
@@ -45,13 +44,18 @@ public class OmeroDisconnectCommand implements Command {
     @Parameter
     OMEROService omeroService;
 
-    @Parameter(label = "OMERO host")
+    @Parameter(label = "OMERO Host",
+            description = "The hostname of the OMERO server to disconnect from.")
     String host;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Success",
+            description = "True if the disconnection was successful.")
     Boolean success;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Error",
+            description = "The exception if disconnection failed, null otherwise.")
     Exception error;
 
     public void run() {

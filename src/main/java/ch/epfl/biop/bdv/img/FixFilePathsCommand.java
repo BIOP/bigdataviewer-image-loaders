@@ -29,7 +29,9 @@ import org.scijava.plugin.Plugin;
 
 import java.io.File;
 
-@Plugin(type = Command.class, initializer = "init")
+@Plugin(type = Command.class,
+        description = "Allows fixing invalid file paths in a BDV dataset by providing replacement paths.",
+        initializer = "init")
 public class FixFilePathsCommand implements Command {
 
     public static String message_in = "";
@@ -37,10 +39,14 @@ public class FixFilePathsCommand implements Command {
     @Parameter(visibility = ItemVisibility.MESSAGE)
     String message = message_in;
 
-    @Parameter(label = "Non valid files", type = ItemIO.BOTH)
+    @Parameter(label = "Invalid Files",
+            description = "The files with invalid paths that need to be fixed.",
+            type = ItemIO.BOTH)
     File[] invalidFilePaths;
 
-    @Parameter(type = ItemIO.BOTH, label = "Replacement files (in the same order)")
+    @Parameter(label = "Replacement Files",
+            description = "The replacement files in the same order as the invalid files.",
+            type = ItemIO.BOTH)
     File[] fixedFilePaths;
 
     @Override

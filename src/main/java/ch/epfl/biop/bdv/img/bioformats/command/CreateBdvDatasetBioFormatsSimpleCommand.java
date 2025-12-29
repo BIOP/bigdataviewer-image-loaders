@@ -41,23 +41,28 @@ import java.util.List;
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset from file",
-	description = "Bridge between Bio-Formats (BioFormats) and BigDataViewer. You can create a BDV dataset" +
-			" from a Bio-Formats supported file.")
+	description = "Creates a BDV dataset from a single Bio-Formats compatible file.")
 public class CreateBdvDatasetBioFormatsSimpleCommand implements
 	Command
 {
 
-	@Parameter(visibility = ItemVisibility.MESSAGE)
+	@Parameter(visibility = ItemVisibility.MESSAGE,
+			label = "Dataset Name",
+			description = "Automatically generated from the file name.")
 	public String datasetname = "";
 
-	@Parameter(label = "File", callback = "setDatasetName")
+	@Parameter(label = "Input File",
+			description = "The image file to open.",
+			callback = "setDatasetName")
 	File file;
 
 	boolean auto_pyramidize = true;
 	public String unit = "MILLIMETER";
 	String plane_origin_convention = "TOP LEFT";
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimdata;
 
 	@Parameter

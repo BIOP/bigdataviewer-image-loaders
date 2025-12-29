@@ -45,38 +45,46 @@ import java.util.List;
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Bio-Formats]",
-	description = "Bridge between Bio-Formats (BioFormats) and BigDataViewer. You can create a BDV dataset" +
-			" from a set of Bio-Formats supported files.")
+	description = "Creates a BDV dataset from one or more Bio-Formats compatible files.")
 public class CreateBdvDatasetBioFormatsCommand implements
 	Command
 {
 
-	@Parameter(label = "Name of this dataset")
+	@Parameter(label = "Dataset Name",
+			description = "Name for the resulting BDV dataset.")
 	public String datasetname = "dataset";
 
-	@Parameter(required = false, label = "World coordinate units",
-		description = "Unit for the common coordinate system where all datasets will be positioned. "+
-					  "Image calibrations will be converted to these units.",
-		choices = { "MILLIMETER", "MICROMETER", "NANOMETER", "BIGSTITCHER COMPATIBLE" })
+	@Parameter(required = false,
+			label = "World coordinate units",
+			description = "Unit for the coordinate system where images will be positioned.",
+			choices = { "MILLIMETER", "MICROMETER", "NANOMETER", "BIGSTITCHER COMPATIBLE" })
 	public String unit = "MILLIMETER";
 
-	@Parameter(label = "Dataset files")
+	@Parameter(label = "Input Files",
+			description = "The image files to include in the dataset.")
 	File[] files;
 
-	@Parameter(label = "Split RGB channels")
+	@Parameter(label = "Split RGB Channels",
+			description = "When checked, splits RGB images into separate channels.")
 	boolean split_rgb_channels = false;
 
-	@Parameter(label = "Compute image pyramid for large images without multiresolution (recommended)")
+	@Parameter(label = "Auto-Pyramidize",
+			description = "Generates multi-resolution pyramids for large images without native multiresolution.")
 	boolean auto_pyramidize = true;
 
 	@Parameter(required = false,
-			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+			label = "Plane Origin Convention",
+			description = "Defines where the image origin is located.",
+			choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
 
-	@Parameter(label = "Check to disable memoization (not recommended)")
+	@Parameter(label = "Disable Memoization",
+			description = "Disables Bio-Formats file caching (not recommended for large files).")
 	boolean disable_memo = false;
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimdata;
 
 	@Parameter

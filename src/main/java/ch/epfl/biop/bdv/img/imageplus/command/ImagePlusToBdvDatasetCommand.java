@@ -33,20 +33,22 @@ import org.scijava.plugin.Plugin;
 @SuppressWarnings({ "unused", "CanBeFinal" })
 @Plugin(type = Command.class,
 		menuPath = "Plugins>BigDataViewer>ImagePlus>Open Image",
-		description = "Opens the current image plus as a Bdv Dataset ")
+		description = "Creates a BDV dataset from the current ImagePlus window.")
 public class ImagePlusToBdvDatasetCommand implements Command {
 
-	// Parameter for dataset creation
-	@Parameter()
+	@Parameter(label = "Input Image",
+			description = "The ImagePlus image to convert to a BDV dataset.")
 	public ImagePlus image;
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimdata;
 
-	@Parameter(
-			label = "Dataset name (leave empty to name it like the ImagePlus title)",
+	@Parameter(label = "Dataset Name",
+			description = "Name for the dataset (leave empty to use the image title).",
 			persist = false)
-	public String datasetname = ""; // Cheat to allow dataset renaming
+	public String datasetname = "";
 
 	@Override
 	public void run() {

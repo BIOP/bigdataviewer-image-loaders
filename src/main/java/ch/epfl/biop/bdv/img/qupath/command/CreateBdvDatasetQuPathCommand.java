@@ -41,43 +41,47 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- */
-
 @SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath]")
+	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath]",
+	description = "Creates a BDV dataset from all images in a QuPath project.")
 public class CreateBdvDatasetQuPathCommand implements Command
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
 		CreateBdvDatasetQuPathCommand.class);
 
-	@Parameter
+	@Parameter(label = "QuPath Project",
+			description = "The QuPath project file (project.qpproj) to import.")
 	File qupath_project;
 
 	@Parameter
 	Context context;
 
-	@Parameter(
-		label = "Dataset name (leave empty to name it like the QuPath project)",
-		persist = false)
-	public String datasetname = ""; // Cheat to allow dataset renaming
+	@Parameter(label = "Dataset Name",
+			description = "Name for the dataset (leave empty to use the project folder name).",
+			persist = false)
+	public String datasetname = "";
 
-	@Parameter(required = false, label = "World coordinate units",
-			description = "Unit for the common coordinate system where all datasets will be positioned. "+
-					"Image calibrations will be converted to these units.",
+	@Parameter(required = false,
+			label = "World coordinate units",
+			description = "Unit for the coordinate system where images will be positioned.",
 			choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
 	public String unit = "MILLIMETER";
 
-	@Parameter(type = ItemIO.OUTPUT)
+	@Parameter(type = ItemIO.OUTPUT,
+			label = "BDV Dataset",
+			description = "The resulting BDV dataset.")
 	AbstractSpimData<?> spimData;
 
-	@Parameter(label = "Split RGB channels")
+	@Parameter(label = "Split RGB Channels",
+			description = "When checked, splits RGB images into separate channels.")
 	boolean split_rgb_channels = false;
 
 	@Parameter(required = false,
-			label = "Plane Origin Convention", choices = {"CENTER", "TOP LEFT"})
+			label = "Plane Origin Convention",
+			description = "Defines where the image origin is located.",
+			choices = {"CENTER", "TOP LEFT"})
 	String plane_origin_convention = "CENTER";
 
 	@Override
