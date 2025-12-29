@@ -42,7 +42,7 @@ public class OmeroChecker {
         if (alreadyChecked) return;
         alreadyChecked = true;
         try {
-            Class.forName("omero.gateway.Gateway");
+            Class.forName("net.imagej.omero.OMEROService");
         } catch (ClassNotFoundException e) {
             if ((ctx!=null)&&(ctx.getService(UIService.class) != null) && (!ctx.getService(UIService.class).isHeadless())) {
                 // Graphical user interface available
