@@ -99,8 +99,8 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 	}
 	/**
 	 * Constructor
-	 * @param openerSettings
-	 * @param sequenceDescription
+	 * @param openerSettings list of opener settings defining data sources
+	 * @param sequenceDescription the sequence description for this image loader
 	 */
 	public OpenersImageLoader(List<OpenerSettings> openerSettings,
 							  final AbstractSequenceDescription<?, ?, ?> sequenceDescription)
@@ -110,8 +110,9 @@ public class OpenersImageLoader implements ViewerImgLoader, MultiResolutionImgLo
 
 	/**
 	 * Constructor
-	 * @param openerSettings
-	 * @param sequenceDescription
+	 * @param openerSettings list of opener settings defining data sources
+	 * @param openers list of openers corresponding to the settings
+	 * @param sequenceDescription the sequence description for this image loader
 	 */
 	public OpenersImageLoader(List<OpenerSettings> openerSettings,
 							  List<Opener<?>> openers,

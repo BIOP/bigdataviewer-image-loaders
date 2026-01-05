@@ -48,14 +48,16 @@ import static ch.epfl.biop.bdv.img.omero.OmeroChecker.PromptUserIfOmeroDependenc
  * <p>
  * This builder class should be easily serializable
  * <p>
- * Opener can open data from
- * - BioFormats
- * - Omero
- * - More to come...
+ * Opener can open data from:
+ * <ul>
+ * <li>BioFormats</li>
+ * <li>Omero</li>
+ * <li>QuPath</li>
+ * </ul>
  * <p>
- * Depending on the kind of opener, transient fields are required (Gateway and Context) for Omero
- * <p>
- * */
+ * Depending on the kind of opener, transient fields are required (Gateway and Context) for Omero.
+ * </p>
+ */
 public class OpenerSettings {
 
     static Logger logger = LoggerFactory.getLogger(OpenerSettings.class);

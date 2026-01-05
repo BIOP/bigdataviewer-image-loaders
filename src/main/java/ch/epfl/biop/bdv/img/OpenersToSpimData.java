@@ -88,8 +88,8 @@ public class OpenersToSpimData {
      * Build a SpimData object from a list of OpenerSettings
      * A SpimData is made of many ViewSetups, and
      * there is one ViewSetup per channel/serie/timepoint/slice
-     * @param openerSettings
-     * @return
+     * @param openerSettings list of opener settings to open
+     * @return the constructed SpimData instance
      */
     protected AbstractSpimData<?> getSpimDataInstance(List<OpenerSettings> openerSettings) {
 
@@ -247,8 +247,8 @@ public class OpenersToSpimData {
 
     /**
      * Create {@link SpimData} from a list of {@link OpenerSettings}
-     * @param openersSettings
-     * @return
+     * @param openersSettings list of opener settings to open
+     * @return the constructed SpimData instance
      */
     public static AbstractSpimData<?> getSpimData(List<OpenerSettings> openersSettings) {
         return new OpenersToSpimData().getSpimDataInstance(openersSettings);
@@ -256,8 +256,8 @@ public class OpenersToSpimData {
 
     /**
      * Create {@link SpimData} from one {@link OpenerSettings}
-     * @param openerSetting
-     * @return
+     * @param openerSetting single opener setting to convert
+     * @return the constructed SpimData instance
      */
     public static AbstractSpimData<?> getSpimData(OpenerSettings openerSetting) {
         ArrayList<OpenerSettings> singleOpenerList = new ArrayList<>();

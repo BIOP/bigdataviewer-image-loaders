@@ -100,6 +100,10 @@ public interface Opener<T> extends Closeable {
     String getImageFormat();
 
     /**
+     * Returns the setup loader for a specific channel and setup.
+     * @param channelIdx the channel index
+     * @param setupIdx the setup index
+     * @param cacheSupplier supplier for the volatile global cell cache
      * @return opener's setup loader
      */
     OpenerSetupLoader<?,?,?> getSetupLoader(int channelIdx, int setupIdx,
@@ -132,7 +136,7 @@ public interface Opener<T> extends Closeable {
         AffineTransform3D getTransform();
 
         /**
-         * @param iChannel
+         * @param iChannel the channel index
          * @return the list of {@link Entity} for the specified channel
          * that are then added to a {@link mpicbg.spim.data.sequence.ViewSetup}
          */

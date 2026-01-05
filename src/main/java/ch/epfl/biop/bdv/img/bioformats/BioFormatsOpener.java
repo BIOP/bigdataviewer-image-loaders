@@ -137,24 +137,26 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 	private final Map<String, String> readerOptions;
 
 	/**
+	 * Creates a BioFormats opener for reading image data.
 	 *
-	 * @param context
-	 * @param dataLocation
-	 * @param iSerie
-	 * @param positionPreTransformMatrixArray
-	 * @param positionPostTransformMatrixArray
-	 * @param positionIsImageCenter
-	 * @param defaultSpaceUnit
-	 * @param defaultVoxelUnit
-	 * @param unit
-	 * @param poolSize
-	 * @param useDefaultXYBlockSize
-	 * @param cacheBlockSize
-	 * @param splitRGBChannels
-	 * @param cachedObjects
-	 * @param defaultNumberOfChannels
-	 * @param skipMeta
-	 * @throws Exception
+	 * @param context SciJava context (not used but kept for API consistency)
+	 * @param dataLocation file path or URL to the image data
+	 * @param iSerie series index within the file
+	 * @param positionPreTransformMatrixArray pre-transform matrix for position adjustment
+	 * @param positionPostTransformMatrixArray post-transform matrix for position adjustment
+	 * @param positionIsImageCenter whether position refers to image center (true) or corner (false)
+	 * @param defaultSpaceUnit default unit for spatial coordinates
+	 * @param defaultVoxelUnit default unit for voxel dimensions
+	 * @param unit target (world coordinates) unit for the opened image
+	 * @param poolSize number of reader instances in the pool
+	 * @param useDefaultXYBlockSize whether to use default block size for caching
+	 * @param cacheBlockSize custom block size [x,y,z] for caching
+	 * @param splitRGBChannels whether to split RGB channels into separate channels (compulsory for 16-bits RGB)
+	 * @param cachedObjects shared cache for metadata across openers
+	 * @param defaultNumberOfChannels fallback channel count if opener fails
+	 * @param skipMeta whether to skip metadata initialization
+	 * @param options additional Bio-Formats reader options
+	 * @throws Exception if the opener cannot be created
 	 */
 	public BioFormatsOpener(
 			Context context, // not used

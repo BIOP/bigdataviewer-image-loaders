@@ -236,6 +236,8 @@ public class ImagePlusHelper {
 	}
 
 	/**
+	 * Wraps a source into an ImagePlus.
+	 * @param <T> the pixel type (must be NativeType and NumericType)
 	 * @param sac source
 	 * @param mipmapLevel mipmap level of the source to wrap
 	 * @param beginTimePoint start timepoint (included)
@@ -316,6 +318,8 @@ public class ImagePlusHelper {
 	}
 
 	/**
+	 * Wraps multiple sources into a multichannel ImagePlus.
+	 * @param <T> the pixel type (must be NumericType and NativeType)
 	 * @param sacs sources
 	 * @param mipmapMap mipmap level of each source
 	 * @param beginTimePoint start timepoint (included)

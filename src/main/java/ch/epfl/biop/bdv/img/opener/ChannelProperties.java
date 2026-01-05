@@ -87,7 +87,7 @@ public class ChannelProperties {
 
     /**
      * Constructor with the channel ID
-     * @param iChannel
+     * @param iChannel the channel index
      */
     public ChannelProperties(int iChannel){
         this.iChannel = iChannel;
@@ -97,9 +97,9 @@ public class ChannelProperties {
 
     /**
      * For BioFormats
-     * @param iSerie
-     * @param metadata
-     * @return
+     * @param iSerie the series index within the file
+     * @param metadata Bio-Formats metadata object
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setEmissionWavelength(int iSerie, IMetadata metadata){
         try {
@@ -118,9 +118,9 @@ public class ChannelProperties {
 
     /**
      * For OMERO
-     * @param channelData
-     * @return
-     * @throws BigResult
+     * @param channelData OMERO channel data object
+     * @return this ChannelProperties for method chaining
+     * @throws BigResult if wavelength value exceeds expected range
      */
     public ChannelProperties setEmissionWavelength(ChannelData channelData) throws BigResult {
         if (channelData.getEmissionWavelength(UnitsLength.NANOMETER) != null) {
@@ -135,9 +135,9 @@ public class ChannelProperties {
 
     /**
      * For BioFormats
-     * @param iSerie
-     * @param metadata
-     * @return
+     * @param iSerie the series index within the file
+     * @param metadata Bio-Formats metadata object
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setExcitationWavelength(int iSerie, IMetadata metadata){
         try {
@@ -156,9 +156,9 @@ public class ChannelProperties {
 
     /**
      * For OMERO
-     * @param channelData
-     * @return
-     * @throws BigResult
+     * @param channelData OMERO channel data object
+     * @return this ChannelProperties for method chaining
+     * @throws BigResult if wavelength value exceeds expected range
      */
     public ChannelProperties setExcitationWavelength(ChannelData channelData) throws BigResult {
         if (channelData.getExcitationWavelength(UnitsLength.NANOMETER) != null) {
@@ -174,9 +174,9 @@ public class ChannelProperties {
 
     /**
      * For BioFormats
-     * @param iSerie
-     * @param metadata
-     * @return
+     * @param iSerie the series index within the file
+     * @param metadata Bio-Formats metadata object
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelColor(int iSerie, IMetadata metadata){
             try {
@@ -214,8 +214,8 @@ public class ChannelProperties {
 
     /**
      * For OMERO
-     * @param renderingDef
-     * @return
+     * @param renderingDef OMERO rendering definition containing channel colors
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelColor(RenderingDef renderingDef){
        if (renderingDef == null) {
@@ -239,8 +239,8 @@ public class ChannelProperties {
 
     /**
      * Generic builder for channel color
-     * @param colorIdx
-     * @return
+     * @param colorIdx RGB color value as a packed integer
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelColor(int colorIdx){
         Color color = new Color(colorIdx);
@@ -257,9 +257,9 @@ public class ChannelProperties {
 
     /**
      * For BioFormats
-     * @param iSerie
-     * @param metadata
-     * @return
+     * @param iSerie the series index within the file
+     * @param metadata Bio-Formats metadata object
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelName(int iSerie, IMetadata metadata){
         String channelName;
@@ -282,8 +282,8 @@ public class ChannelProperties {
 
     /**
      * For OMERO
-     * @param channelData
-     * @return
+     * @param channelData OMERO channel data object
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelName(ChannelData channelData){
        this.name = channelData.getChannelLabeling();
@@ -293,8 +293,8 @@ public class ChannelProperties {
 
     /**
      * Generic builder for channel name
-     * @param name
-     * @return
+     * @param name the channel name to set
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setChannelName(String name){
         this.name = name;
@@ -303,8 +303,8 @@ public class ChannelProperties {
 
     /**
      * For OMERO
-     * @param rd
-     * @return
+     * @param rd OMERO rendering definition containing display range
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setDynamicRange(RenderingDef rd){
         if (rd == null) {
@@ -319,7 +319,9 @@ public class ChannelProperties {
 
     /**
      * Default Dynamic range
-     * @return
+     * @param min minimum display value
+     * @param max maximum display value
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setDisplayRange(double min, double max){
         this.displayRangeMin = min;
@@ -329,8 +331,8 @@ public class ChannelProperties {
 
     /**
      * Generic builder
-     * @param pixelType
-     * @return
+     * @param pixelType the pixel type for this channel
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setPixelType(Type<? extends  NumericType<?>> pixelType){
         this.pixelType = pixelType;
@@ -339,8 +341,8 @@ public class ChannelProperties {
 
     /**
      * is the channel part of an RGB image
-     * @param RGB
-     * @return
+     * @param RGB true if channel is part of an RGB image, false otherwise
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setRGB(Boolean RGB) {
         this.isRGB = RGB;
@@ -349,8 +351,8 @@ public class ChannelProperties {
 
     /**
      * How many channels the image containing the current channel is made of.
-     * @param nChannels
-     * @return
+     * @param nChannels total number of channels in the image
+     * @return this ChannelProperties for method chaining
      */
     public ChannelProperties setNChannels(int nChannels) {
         this.nChannels = nChannels;
@@ -360,8 +362,8 @@ public class ChannelProperties {
 
     /**
      * taken from <a href="https://stackoverflow.com/questions/1472514/convert-light-frequency-to-rgb">...</a>
-     * @param wv
-     * @return
+     * @param wv wavelength in nanometers
+     * @return Color object corresponding to the wavelength
      */
     public static Color getColorFromWavelength(int wv) {
         int[] res = waveLengthToRGB(wv);
@@ -373,6 +375,8 @@ public class ChannelProperties {
      * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra
      * Lab Report</a> Return an RGB array encoding a color from an input wavelength
      * in nm
+     * @param Wavelength the wavelength in nanometers
+     * @return RGB array [red, green, blue] with values from 0-255
      */
     public static int[] waveLengthToRGB(double Wavelength) {
         double Gamma = 0.80;

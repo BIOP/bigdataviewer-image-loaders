@@ -458,8 +458,9 @@ public class BioFormatsTools {
 	 * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra
 	 * Lab Report</a> Return an RGB array encoding a color from an input wavelength
 	 * in nm
+	 * @param Wavelength the wavelength in nanometers
+	 * @return RGB array [red, green, blue] with values from 0-255
 	 */
-
 	public static int[] waveLengthToRGB(double Wavelength) {
 		double Gamma = 0.80;
 		double IntensityMax = 255;

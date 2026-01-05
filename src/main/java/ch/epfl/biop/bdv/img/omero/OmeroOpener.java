@@ -141,9 +141,17 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	final String format;
 
 	/**
-	 * Builder pattern: fills all the omerosourceopener fields that relates to the
-	 * image to open (i.e. image size for all resolution levels...)
+	 * Creates an OMERO opener for reading image data from an OMERO server.
 	 *
+	 * @param context SciJava context for service access
+	 * @param datalocation OMERO URL pointing to the image
+	 * @param poolSize number of raw pixel store instances in the pool
+	 * @param unit target (world coordinate units) for the opened image
+	 * @param positionIsImageCenter whether position refers to image center (true) or corner (false)
+	 * @param cachedObjects shared cache for metadata across openers
+	 * @param defaultNumberOfChannels fallback channel count if opener fails
+	 * @param skipMeta whether to skip metadata initialization
+	 * @throws Exception if the opener cannot be created
 	 */
 	public OmeroOpener(
 			Context context,
@@ -426,11 +434,12 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	}
 
 	/**
+	 * Retrieves pixel data for an OMERO image.
 	 * @param imageID ID of the OMERO image to access
 	 * @param gateway OMERO gateway
 	 * @param ctx OMERO Security context
 	 * @return OMERO raw pixel data
-	 * @throws Exception
+	 * @throws Exception if access to the image fails
 	 */
 	public static PixelsData getPixelsDataFromOmeroID(long imageID,
 		Gateway gateway, SecurityContext ctx) throws Exception
@@ -440,12 +449,12 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	}
 
 	/**
-	 *
+	 * Retrieves image data for an OMERO image.
 	 * @param imageID ID of the OMERO image to access
 	 * @param gateway OMERO gateway
 	 * @param ctx OMERO Security context
-	 * @return OMERIO raw image data
-	 * @throws Exception
+	 * @return OMERO raw image data
+	 * @throws Exception if access to the image fails
 	 */
 	public static ImageData getImageData(long imageID, Gateway gateway,
 		SecurityContext ctx) throws Exception
@@ -457,6 +466,7 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 
 	/**
 	 * RawPixelStore supplier method for the RawPixelsStorePool.
+	 * @return a new RawPixelsStorePrx instance, or null if creation fails
 	 */
 	public RawPixelsStorePrx getNewStore() {
 		try {
@@ -505,11 +515,11 @@ public class OmeroOpener implements Opener<RawPixelsStorePrx> {
 	}
 
 	/**
-	 *
-	 * @param sX
-	 * @param sY
-	 * @param sZ
-	 * @return image dimensions
+	 * Creates a Dimensions object for the given sizes.
+	 * @param sX size in X dimension
+	 * @param sY size in Y dimension
+	 * @param sZ size in Z dimension
+	 * @return image dimensions object
 	 */
 	public Dimensions getDimension(long sX, long sY, long sZ){
 		// Always set 3d to allow for Big Stitcher compatibility

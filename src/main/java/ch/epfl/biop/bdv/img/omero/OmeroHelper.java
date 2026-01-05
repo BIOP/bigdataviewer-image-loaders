@@ -347,11 +347,11 @@ public class OmeroHelper {
 	 * @param omeroURL OMERO dataset- or image- URL
 	 * @param gateway OMERO gateway
 	 * @param ctx OMERO security context
-	 * @throws ExecutionException
-	 * @throws DSOutOfServiceException
-	 * @throws DSAccessException
-	 * @throws MalformedURLException
-	 *
+	 * @return list of image IDs extracted from the URL
+	 * @throws ExecutionException if an error occurs during execution
+	 * @throws DSOutOfServiceException if connection to OMERO fails
+	 * @throws DSAccessException if access to data is denied
+	 * @throws MalformedURLException if the URL is invalid
 	 */
 	public static List<Long> getImageIDs(String omeroURL, Gateway gateway, SecurityContext ctx) throws ExecutionException, DSOutOfServiceException, DSAccessException, MalformedURLException {
 		List<Long> imageIDs = new ArrayList<>();
