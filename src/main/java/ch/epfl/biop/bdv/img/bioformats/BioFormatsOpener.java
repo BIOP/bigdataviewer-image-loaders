@@ -419,16 +419,23 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			WellSample ws = idToWellSample.get(iSerie);
 			System.out.println("ws="+ws.getID());
 			// WellSample:0:0:2
-			int id = Integer.parseInt(ws.getID().split(":")[3]);
-			entityList.add(new Field(id));
-			if (ws.getWell()!=null) {
-				Well w = ws.getWell();
-				entityList.add(
-						new ch.epfl.biop.bdv.img.entity.Well(
-								Integer.parseInt(w.getID().split(":")[2]),
-								(char)(w.getRow().getValue()+'A')+Integer.toString(w.getColumn().getValue()+1),
-						w.getRow().getValue(), w.getColumn().getValue()));
-			}
+            // WellSample:0
+            // Just takes last index
+            try {
+                String[] split = ws.getID().split(":");
+                int id = Integer.parseInt(split[split.length - 1]);
+                entityList.add(new Field(id));
+                if (ws.getWell() != null) {
+                    Well w = ws.getWell();
+                    entityList.add(
+                            new ch.epfl.biop.bdv.img.entity.Well(
+                                    Integer.parseInt(split[split.length - 2]),
+                                    (char) (w.getRow().getValue() + 'A') + Integer.toString(w.getColumn().getValue() + 1),
+                                    w.getRow().getValue(), w.getColumn().getValue()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 		}
 
 	}
