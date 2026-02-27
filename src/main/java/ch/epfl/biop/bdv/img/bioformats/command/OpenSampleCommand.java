@@ -22,15 +22,28 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
+import bdv.cache.SharedQueue;
+import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import net.imglib2.FinalInterval;
+import net.imglib2.display.LinearRange;
+import net.imglib2.position.FunctionRandomAccessible;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.command.CommandService;
+import org.scijava.module.ModuleService;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -40,89 +53,127 @@ import java.util.ArrayList;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Open sample dataset",
-	label = "Open sample datasets",
+	//menuPath = "Plugins>BigDataViewer-Playground>Import>Dataset - Samples",
+		menu = {
+				@Menu(label = "Plugins"),
+				@Menu(label = "BigDataViewer-Playground"),
+				@Menu(label = "Import", weight = -8),
+				@Menu(label = "Dataset - Samples", weight = 19)
+		},
+	//label = "Open sample datasets",
 	description = "Opens a sample dataset from a selection of test images (downloads and caches on first use).")
 public class OpenSampleCommand implements Command {
 
-	@Parameter(label = "Sample Dataset",
-			description = "The sample dataset to download and open.",
-			choices = { "VSI", "JPG_RGB", "OLYMPUS_OIR", "LIF", "TIF_TIMELAPSE_3D", "ND2_20X", "ND2_60X", "BOTH_ND2" })
-	String datasetname;
+	@Parameter(persist = false)
+	OpenSampleCommand.DemoDataset dataset_name;
 
-	@Parameter(type = ItemIO.OUTPUT,
+	@Parameter
+	CommandService cs;
+
+	/*@Parameter(type = ItemIO.OUTPUT,
 			label = "BDV Dataset",
 			description = "The resulting BDV dataset.")
-	AbstractSpimData<?> spimData;
+	AbstractSpimData<?> spimData;*/
 
 	public void run() {
-		// Find the datasetname through reflection
-		Field[] fields = DatasetHelper.class.getFields();
-		if (datasetname.equals("BOTH_ND2")) {
-			File f20 = DatasetHelper.getDataset(DatasetHelper.ND2_20X);
-			File f60 = DatasetHelper.getDataset(DatasetHelper.ND2_60X);
+		try {
+			switch (dataset_name) {
+				case EGG_CHAMBER:
+					File eggChamber = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/1472859/files/DrosophilaEggChamber.tif");
+					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
+					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+							true,
+							"datasetname", "Egg_Chamber",
+							"unit", "MICROMETER",
+							"files", new File[]{eggChamber},
+							"split_rgb_channels", false,
+							"plane_origin_convention", "CENTER",
+							"auto_pyramidize", true,
+							"disable_memo", false
+					).get();
+					break;
 
-			Length micron = new Length(1, UNITS.MICROMETER);
-			Length millimeter = new Length(1, UNITS.MILLIMETER);
+				case BRAIN_SLICES:
+					String path = ch.epfl.biop.DatasetHelper.dowloadBrainVSIDataset(3);
+					File wsiBrainSlices = new File(path,"Slide_03.vsi");
+					System.out.println(wsiBrainSlices.getAbsolutePath());
+					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
+					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+							true,
+							"datasetname", "Slide_03",
+							"unit", "MICROMETER",
+							"files", new File[]{wsiBrainSlices},
+							"split_rgb_channels", false,
+							"plane_origin_convention", "TOP LEFT",
+							"auto_pyramidize", true,
+							"disable_memo", false
+					).get();
+					break;
 
-			ArrayList<OpenerSettings> settings = new ArrayList<>();
+				case LATTICE_HELA_SKEWED:
+					File f = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/14203207/files/Hela-Kyoto-1-Timepoint-LLS7.czi");
+					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+							true,
+							"datasetname", "Hela Cells - LLS7",
+							"unit", "MICROMETER",
+							"files", new File[]{f},
+							"split_rgb_channels", false,
+							"plane_origin_convention", "CENTER",
+							"auto_pyramidize", true,
+							"disable_memo", false
+					).get();
+					break;
+				case LATTICE_PSF:
+					File psf = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/psf-200nm.tif");
+					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+							true,
+							"datasetname", "PSF - LLS7",
+							"unit", "MICROMETER",
+							"files", new File[]{psf},
+							"split_rgb_channels", false,
+							"plane_origin_convention", "CENTER",
+							"auto_pyramidize", true,
+							"disable_memo", false
+					).get();
+					break;
+				case EUROPE:
+					File europePyramidize = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/12738352/files/easterness_edtm_m_240m_s_20000101_20221231_eu_epsg.3035_v20240528.tif");
+					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
+					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+							true,
+							"datasetname", "Egg_Chamber",
+							"unit", "MICROMETER",
+							"files", new File[]{europePyramidize},
+							"split_rgb_channels", false,
+							"plane_origin_convention", "CENTER",
+							"auto_pyramidize", true,
+							"disable_memo", false
+					).get();
+					break;
 
-			for (int i = 0; i< BioFormatsHelper.getNSeries(f20); i++) {
-				OpenerSettings opener20 = new OpenerSettings()
-								.location(f20)
-								.centerPositionConvention()
-								.millimeter()
-								.voxSizeReferenceFrameLength(millimeter)
-								.positionReferenceFrameLength(micron)
-								.bioFormatsBuilder()
-								.setSerie(i)
-								.cornerPositionConvention();
-
-				settings.add(opener20);
 			}
-
-			for (int i = 0; i< BioFormatsHelper.getNSeries(f60); i++) {
-				OpenerSettings opener60 = new OpenerSettings()
-						.location(f60)
-						.centerPositionConvention()
-						.millimeter()
-						.voxSizeReferenceFrameLength(millimeter)
-						.positionReferenceFrameLength(micron)
-						.bioFormatsBuilder()
-						.setSerie(i)
-						.cornerPositionConvention();
-
-				settings.add(opener60);
-			}
-
-			spimData = OpenersToSpimData.getSpimData(settings);
-
-			return;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		for (Field f : fields) {
-			if (f.getName().equals(datasetname.toUpperCase())) {
-				try {
-					// Dataset found
-					datasetname = (String) f.get(null);
-					//System.out.println(datasetName);
-					if (datasetname.equals(DatasetHelper.VSI)) {
-						DatasetHelper.getSampleVSIDataset();
-					}
+	}
 
-					File file = DatasetHelper.getDataset(datasetname);
 
-					spimData = OpenersToSpimData.getSpimData(new OpenerSettings().location(file).voxSizeReferenceFrameLength(
-							new Length(1, UNITS.MILLIMETER)).positionReferenceFrameLength(
-								new Length(1, UNITS.MILLIMETER)).bioFormatsBuilder());
+	public enum DemoDataset {
+		BRAIN_SLICES("Mouse Brain Sections (SXYC)"),
+		EGG_CHAMBER("Fly Egg Chamber (XYZC)"),
+		LATTICE_HELA_SKEWED("LLS7 Hela Cells (XYz'C) (Skewed)"),
+		LATTICE_PSF("LLS7 Point Spread Function (XYz') (Skewed)"),
+		EUROPE("Europe Height Map (XY)");
 
-					return;
-				}
-				catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
+		final String name;
+
+		DemoDataset(String name) {
+			this.name = name;
 		}
 
-		System.err.println("Dataset not found!");
+		@Override
+		public String toString() {
+			return name;
+		}
 	}
 }

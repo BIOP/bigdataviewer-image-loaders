@@ -27,12 +27,19 @@ import ij.ImagePlus;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 @SuppressWarnings({ "unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-		menuPath = "Plugins>BigDataViewer>ImagePlus>Open Image",
+		//menuPath = "Plugins>BigDataViewer>Import>Dataset - Create [Current ImagePlus]",
+		menu = {
+				@Menu(label = "Plugins"),
+				@Menu(label = "BigDataViewer-Playground"),
+				@Menu(label = "Import", weight = -8),
+				@Menu(label = "Dataset - Create [Current ImagePlus]", weight = 2)
+		},
 		description = "Creates a BDV dataset from the current ImagePlus window.")
 public class ImagePlusToBdvDatasetCommand implements Command {
 

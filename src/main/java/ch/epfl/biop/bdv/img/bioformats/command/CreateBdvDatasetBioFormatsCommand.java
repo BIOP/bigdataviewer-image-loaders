@@ -33,6 +33,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import spimdata.SpimDataHelper;
@@ -44,7 +45,13 @@ import java.util.List;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Bio-Formats]",
+	//menuPath = "Plugins>BigDataViewer-Playground>Import>Dataset - Create [Bio-Formats]",
+		menu = {
+				@Menu(label = "Plugins"),
+				@Menu(label = "BigDataViewer-Playground"),
+				@Menu(label = "Import", weight = -8),
+				@Menu(label = "Dataset - Create [Bio-Formats]", weight = 1)
+		},
 	description = "Creates a BDV dataset from one or more Bio-Formats compatible files.")
 public class CreateBdvDatasetBioFormatsCommand implements
 	Command

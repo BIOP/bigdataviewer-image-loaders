@@ -32,6 +32,7 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -43,7 +44,13 @@ import java.util.List;
 
 @SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [QuPath]",
+	//menuPath = "Plugins>BigDataViewer-Playground>Import>Dataset - Create [QuPath]",
+		menu = {
+				@Menu(label = "Plugins"),
+				@Menu(label = "BigDataViewer-Playground"),
+				@Menu(label = "Import", weight = -8),
+				@Menu(label = "Dataset - Create [QuPath]", weight = 3)
+		},
 	description = "Creates a BDV dataset from all images in a QuPath project.")
 public class CreateBdvDatasetQuPathCommand implements Command
 {

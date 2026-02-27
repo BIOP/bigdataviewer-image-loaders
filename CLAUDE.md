@@ -60,7 +60,7 @@ Opener → OpenersToSpimData → SpimData
 
 ### SciJava Plugin Commands
 
-Commands are exposed as Fiji menu items under `Plugins>BigDataViewer-Playground>BDVDataset>`. Key commands:
+Commands are exposed as Fiji menu items under `Plugins>BigDataViewer-Playground>XML Dataset>`. Key commands:
 - `CreateBdvDatasetBioFormatsCommand` - Create BDV dataset from file
 - `CreateBdvDatasetOMEROCommand` - Create BDV dataset from OMERO
 - `CreateBdvDatasetQuPathCommand` - Create BDV dataset from QuPath project

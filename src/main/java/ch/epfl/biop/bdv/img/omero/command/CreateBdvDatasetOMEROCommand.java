@@ -29,6 +29,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -39,7 +40,13 @@ import java.util.List;
 
 @SuppressWarnings("CanBeFinal")
 @Plugin(type = Command.class,
-	menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [OMERO]",
+	//menuPath = "Plugins>BigDataViewer-Playground>Import>Dataset - Create [OMERO]",
+		menu = {
+				@Menu(label = "Plugins"),
+				@Menu(label = "BigDataViewer-Playground"),
+				@Menu(label = "Import", weight = -8),
+				@Menu(label = "Dataset - Create [OMERO]", weight = 4)
+		},
 	description = "Creates a BDV dataset from one or more OMERO image URLs.")
 public class CreateBdvDatasetOMEROCommand implements Command {
 
