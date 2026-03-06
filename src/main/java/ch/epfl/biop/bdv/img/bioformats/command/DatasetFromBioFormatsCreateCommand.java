@@ -45,7 +45,6 @@ import java.util.List;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
-	//menuPath = "Plugins>BigDataViewer-Playground>Import>Dataset - Create [Bio-Formats]",
 		menu = {
 				@Menu(label = "Plugins"),
 				@Menu(label = "BigDataViewer-Playground"),
@@ -53,7 +52,7 @@ import java.util.List;
 				@Menu(label = "Dataset - Create [Bio-Formats]", weight = 1)
 		},
 	description = "Creates a BDV dataset from one or more Bio-Formats compatible files.")
-public class CreateBdvDatasetBioFormatsCommand implements
+public class DatasetFromBioFormatsCreateCommand implements
 	Command
 {
 

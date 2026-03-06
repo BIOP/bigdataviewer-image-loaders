@@ -22,34 +22,13 @@
 
 package ch.epfl.biop.bdv.img.bioformats.command;
 
-import bdv.cache.SharedQueue;
-import bdv.viewer.Source;
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.OpenersToSpimData;
-import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import mpicbg.spim.data.generic.AbstractSpimData;
-import net.imglib2.FinalInterval;
-import net.imglib2.display.LinearRange;
-import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
-import ome.units.UNITS;
-import ome.units.quantity.Length;
-import org.apache.commons.io.FilenameUtils;
-import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
-import org.scijava.module.ModuleService;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 @SuppressWarnings({ "Unused", "CanBeFinal" })
 @Plugin(type = Command.class,
@@ -81,7 +60,7 @@ public class OpenSampleCommand implements Command {
 				case EGG_CHAMBER:
 					File eggChamber = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/1472859/files/DrosophilaEggChamber.tif");
 					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
-					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+					cs.run(DatasetFromBioFormatsCreateCommand.class,
 							true,
 							"datasetname", "Egg_Chamber",
 							"unit", "MICROMETER",
@@ -98,7 +77,7 @@ public class OpenSampleCommand implements Command {
 					File wsiBrainSlices = new File(path,"Slide_03.vsi");
 					System.out.println(wsiBrainSlices.getAbsolutePath());
 					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
-					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+					cs.run(DatasetFromBioFormatsCreateCommand.class,
 							true,
 							"datasetname", "Slide_03",
 							"unit", "MICROMETER",
@@ -112,7 +91,7 @@ public class OpenSampleCommand implements Command {
 
 				case LATTICE_HELA_SKEWED:
 					File f = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/14203207/files/Hela-Kyoto-1-Timepoint-LLS7.czi");
-					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+					cs.run(DatasetFromBioFormatsCreateCommand.class,
 							true,
 							"datasetname", "Hela Cells - LLS7",
 							"unit", "MICROMETER",
@@ -125,7 +104,7 @@ public class OpenSampleCommand implements Command {
 					break;
 				case LATTICE_PSF:
 					File psf = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/psf-200nm.tif");
-					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+					cs.run(DatasetFromBioFormatsCreateCommand.class,
 							true,
 							"datasetname", "PSF - LLS7",
 							"unit", "MICROMETER",
@@ -139,7 +118,7 @@ public class OpenSampleCommand implements Command {
 				case EUROPE:
 					File europePyramidize = ch.epfl.biop.DatasetHelper.getDataset("https://zenodo.org/records/12738352/files/easterness_edtm_m_240m_s_20000101_20221231_eu_epsg.3035_v20240528.tif");
 					// Retrieve the dataset, that's a SpimData object, it holds metadata and the 'recipe' to load pixel data
-					cs.run(CreateBdvDatasetBioFormatsCommand.class,
+					cs.run(DatasetFromBioFormatsCreateCommand.class,
 							true,
 							"datasetname", "Egg_Chamber",
 							"unit", "MICROMETER",

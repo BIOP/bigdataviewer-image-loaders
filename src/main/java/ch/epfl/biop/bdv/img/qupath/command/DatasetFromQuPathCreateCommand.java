@@ -52,11 +52,11 @@ import java.util.List;
 				@Menu(label = "Dataset - Create [QuPath]", weight = 3)
 		},
 	description = "Creates a BDV dataset from all images in a QuPath project.")
-public class CreateBdvDatasetQuPathCommand implements Command
+public class DatasetFromQuPathCreateCommand implements Command
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(
-		CreateBdvDatasetQuPathCommand.class);
+		DatasetFromQuPathCreateCommand.class);
 
 	@Parameter(label = "QuPath Project",
 			description = "The QuPath project file (project.qpproj) to import.")

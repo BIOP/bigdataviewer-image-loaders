@@ -41,7 +41,7 @@ import org.scijava.plugin.Plugin;
 				@Menu(label = "Dataset - Create [Current ImagePlus]", weight = 2)
 		},
 		description = "Creates a BDV dataset from the current ImagePlus window.")
-public class ImagePlusToBdvDatasetCommand implements Command {
+public class DatasetFromImagePlusCreateCommand implements Command {
 
 	@Parameter(label = "Input Image",
 			description = "The ImagePlus image to convert to a BDV dataset.")

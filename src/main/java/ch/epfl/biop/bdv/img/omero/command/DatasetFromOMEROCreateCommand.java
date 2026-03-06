@@ -48,10 +48,10 @@ import java.util.List;
 				@Menu(label = "Dataset - Create [OMERO]", weight = 4)
 		},
 	description = "Creates a BDV dataset from one or more OMERO image URLs.")
-public class CreateBdvDatasetOMEROCommand implements Command {
+public class DatasetFromOMEROCreateCommand implements Command {
 
 	final private static Logger logger = LoggerFactory.getLogger(
-		CreateBdvDatasetOMEROCommand.class);
+		DatasetFromOMEROCreateCommand.class);
 
 	@Parameter
 	Context context;
