@@ -272,7 +272,7 @@ public class BioFormatsHelper {
 				Length l = new Length(voxSize[iDimension].value().doubleValue() *
 					voxSizeReferenceFrameLength.value().doubleValue(),
 					voxSizeReferenceFrameLength.unit());
-				d[iDimension] = l.value(u).doubleValue();
+				d[iDimension] = l.value().doubleValue();
 			}
 			else {
 				d[iDimension] = 1;
@@ -294,7 +294,7 @@ public class BioFormatsHelper {
 				Length l = new Length(pos[iDimension].value().doubleValue() *
 					positionReferenceFrameLength.value().doubleValue(),
 					positionReferenceFrameLength.unit());
-				p[iDimension] = l.value(u).doubleValue();
+				p[iDimension] = l.value().doubleValue();
 			}
 			else {
 				p[iDimension] = 0;
@@ -362,7 +362,7 @@ public class BioFormatsHelper {
 				Length l = new Length(voxSize[iDimension].value().doubleValue() *
 					voxSizeReferenceFrameLength.value().doubleValue(),
 					voxSizeReferenceFrameLength.unit());
-				d[iDimension] = l.value(u).doubleValue();
+				d[iDimension] = l.value().doubleValue();
 			}
 			else {
 				d[iDimension] = 1;

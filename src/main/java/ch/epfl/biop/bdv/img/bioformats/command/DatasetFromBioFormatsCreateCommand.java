@@ -63,7 +63,7 @@ public class DatasetFromBioFormatsCreateCommand implements
 	@Parameter(required = false,
 			label = "World coordinate units",
 			description = "Unit for the coordinate system where images will be positioned.",
-			choices = { "MILLIMETER", "MICROMETER", "NANOMETER", "BIGSTITCHER COMPATIBLE" })
+			choices = { "MILLIMETER", "MICROMETER", "NANOMETER",  "PIXEL", "BIGSTITCHER COMPATIBLE"})
 	public String unit = "MILLIMETER";
 
 	@Parameter(label = "Input Files",
@@ -118,7 +118,7 @@ public class DatasetFromBioFormatsCreateCommand implements
 						OpenerSettings.BioFormats()
 								.location(f)
 								.setSerie(i)
-								.unit(unit.equals("BIGSTITCHER COMPATIBLE")?"MICROMETER":unit)
+								.unit(unit.equals("BIGSTITCHER COMPATIBLE")?"PIXEL":unit)
 								.splitRGBChannels(split_rgb_channels)
 								.positionConvention(plane_origin_convention)
 								.pyramidize(auto_pyramidize)
