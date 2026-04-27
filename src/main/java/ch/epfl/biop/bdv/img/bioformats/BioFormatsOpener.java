@@ -218,11 +218,15 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		logger.debug("Using memoization for bio-formats opener: "+memoize);
 
 		this.filename = new File(dataLocation).getName();
-		Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
-		this.idxFilename = memoize("opener.bioformats.fileindex."+dataLocation+"."+options, cachedObjects, () -> {
-			cachedObjects.put("opener.bioformats.currentfileindex", currentIndexFilename + 1 );
-			return currentIndexFilename;
-		});
+
+        // Very important: we need to keep these two memoize lines into a single block, else we get some nasty race conditions.
+        synchronized (BioFormatsOpener.class) {
+            Integer currentIndexFilename = memoize("opener.bioformats.currentfileindex", cachedObjects, () -> 0);
+            this.idxFilename = memoize("opener.bioformats.fileindex." + dataLocation + "." + options, cachedObjects, () -> {
+                cachedObjects.put("opener.bioformats.currentfileindex", currentIndexFilename + 1);
+                return currentIndexFilename;
+            });
+        }
 
 		this.pool = memoize("opener.bioformats."+splitRGBChannels+"."+dataLocation+"."+options,
 				cachedObjects,
@@ -393,14 +397,15 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		ome.xml.model.Plate plate = r.getPlate(0);
 
 		// Gets a unique identifier for the plate
-
-		Integer currentPlateIndex = memoize("opener.bioformats.currentplateindex", cachedObjects, () -> 0);
-		int idxPlate = memoize("opener.bioformats.plateIndex."+dataLocation+"."+options, cachedObjects, () -> {
-			cachedObjects.put("opener.bioformats.currentplateindex", currentPlateIndex + 1 );
-			return currentPlateIndex;
-		});
-
-		entityList.add(new Plate(idxPlate, plate.getName()));
+        // Same issue as above: we need to do a single atomic call between the index creation and its iteration
+        synchronized (BioFormatsOpener.class) {
+            Integer currentPlateIndex = memoize("opener.bioformats.currentplateindex", cachedObjects, () -> 0);
+            int idxPlate = memoize("opener.bioformats.plateIndex." + dataLocation + "." + options, cachedObjects, () -> {
+                cachedObjects.put("opener.bioformats.currentplateindex", currentPlateIndex + 1);
+                return currentPlateIndex;
+            });
+		    entityList.add(new Plate(idxPlate, plate.getName()));
+        }
 
 		Map<Integer, WellSample> idToWellSample = memoize("opener.bioformats.idtowell."+dataLocation+"."+options, cachedObjects, () -> {
 			Map<Integer, WellSample> idToWS = new HashMap<>();
