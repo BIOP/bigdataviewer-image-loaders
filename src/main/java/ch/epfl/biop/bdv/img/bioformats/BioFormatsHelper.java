@@ -52,6 +52,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.prefs.Preferences;
 
 public class BioFormatsHelper {
 	/**
@@ -74,6 +75,119 @@ public class BioFormatsHelper {
 		}
 	}
 
+	// ---------------------------------------------------------------------
+	// Bio-Formats memo (.bfmemo) directory configuration
+	//
+	// By default Bio-Formats writes memo files next to the image data, which
+	// fails when the data folder is read-only and scatters memo files around.
+	// We instead store them in a single configurable directory. The directory
+	// is resolved with the following precedence:
+	//   1. session override set via setMemoDir(File)
+	//   2. system property MEMO_DIR_PROPERTY (handy for clusters / headless)
+	//   3. value persisted through setPersistedMemoDir(File) (GUI setting)
+	//   4. default: <user.home>/.bf-memo
+	// ---------------------------------------------------------------------
+
+	/** System property to override the Bio-Formats memo directory, e.g.
+	 *  {@code -Dbigdataviewer.bioformats.memodir=/scratch/$USER/bfmemo}. */
+	public static final String MEMO_DIR_PROPERTY = "bigdataviewer.bioformats.memodir";
+
+	/** System property to globally disable Bio-Formats memoization, e.g.
+	 *  {@code -Dbigdataviewer.bioformats.memo.disable=true} (handy for tests).
+	 *  When set to true it overrides per-opener settings. */
+	public static final String MEMO_DISABLE_PROPERTY = "bigdataviewer.bioformats.memo.disable";
+
+	/**
+	 * Decides whether memoization should be used, given the parsed reader
+	 * options. Memoization is on by default; it can be turned off per opener
+	 * through the {@link OpenerSettings#BF_MEMO_KEY} option, or globally through
+	 * the {@link #MEMO_DISABLE_PROPERTY} system property (which wins over the
+	 * per-opener option).
+	 *
+	 * @param readerOptions parsed Bio-Formats options (see {@code bfOptionsToMap})
+	 * @return true if the reader should be wrapped in a {@link Memoizer}
+	 */
+	public static boolean isMemoizationEnabled(Map<String, String> readerOptions) {
+		// Global kill switch (Boolean.getBoolean reads the system property by name)
+		if (Boolean.getBoolean(MEMO_DISABLE_PROPERTY)) return false;
+		if (readerOptions.containsKey(OpenerSettings.BF_MEMO_KEY)) {
+			return Boolean.parseBoolean(readerOptions.get(OpenerSettings.BF_MEMO_KEY));
+		}
+		return true;
+	}
+
+	/** Preferences key used to persist the memo directory across sessions. */
+	private static final String MEMO_DIR_PREF_KEY = "bf_memo_dir";
+
+	/** Session override; takes precedence over everything else. Null = unset. */
+	private static volatile File memoDirOverride = null;
+
+	/**
+	 * Sets the Bio-Formats memo directory for the current session only. Takes
+	 * precedence over the system property and the persisted preference.
+	 *
+	 * @param dir the directory to store memo files in, or null to clear the override
+	 */
+	public static void setMemoDir(File dir) {
+		memoDirOverride = dir;
+	}
+
+	/**
+	 * Persists the Bio-Formats memo directory across sessions (stored in the
+	 * user preferences). Intended for a configuration command / GUI.
+	 *
+	 * @param dir the directory to store memo files in, or null to clear it
+	 */
+	public static void setPersistedMemoDir(File dir) {
+		Preferences prefs = Preferences.userNodeForPackage(BioFormatsHelper.class);
+		if (dir == null) {
+			prefs.remove(MEMO_DIR_PREF_KEY);
+		} else {
+			prefs.put(MEMO_DIR_PREF_KEY, dir.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * Resolves the directory used to store Bio-Formats memo files. See the
+	 * precedence rules documented above.
+	 *
+	 * @return the configured memo directory (never null)
+	 */
+	public static File getMemoDir() {
+		if (memoDirOverride != null) return memoDirOverride;
+
+		String fromProperty = System.getProperty(MEMO_DIR_PROPERTY);
+		if (fromProperty != null && !fromProperty.trim().isEmpty()) {
+			return new File(fromProperty.trim());
+		}
+
+		String fromPrefs = Preferences.userNodeForPackage(BioFormatsHelper.class)
+			.get(MEMO_DIR_PREF_KEY, null);
+		if (fromPrefs != null && !fromPrefs.trim().isEmpty()) {
+			return new File(fromPrefs.trim());
+		}
+
+		return new File(System.getProperty("user.home"), ".bf-memo");
+	}
+
+	/**
+	 * Wraps the given reader into a {@link Memoizer} that stores its memo files
+	 * in the configured memo directory (see {@link #getMemoDir()}) instead of
+	 * next to the image data. The caller is still responsible for calling
+	 * {@code setId} on the returned reader.
+	 *
+	 * @param reader the reader to wrap
+	 * @return a Memoizer writing memo files to the configured directory
+	 */
+	public static Memoizer wrapInMemoizer(IFormatReader reader) {
+		File memoDir = getMemoDir();
+		if (!memoDir.exists() && !memoDir.mkdirs()) {
+			logger.warn("Could not create Bio-Formats memo directory: " +
+				memoDir.getAbsolutePath());
+		}
+		return new Memoizer(reader, Memoizer.DEFAULT_MINIMUM_ELAPSED, memoDir);
+	}
+
 	// TODO : avoid creating more than one reader on initialization
 	public static int getNSeries(File f){
 		return getNSeries(f, "");
@@ -84,8 +198,13 @@ public class BioFormatsHelper {
 		IFormatReader reader = new ImageReader();
 		reader.setFlattenedResolutions(false);
 		Map<String, String> readerOptions = BioFormatsOpener.bfOptionsToMap(options);
+
+		// Memoization is on by default; it can be disabled per opener through the
+		// BF_MEMO_KEY option or globally through MEMO_DISABLE_PROPERTY. This must
+		// be honoured regardless of whether any other reader option is present.
+		boolean memoize = isMemoizationEnabled(readerOptions);
+
 		MetadataOptions metadataOptions = reader.getMetadataOptions();
-		boolean memoize = true;
 		if (!readerOptions.isEmpty() && metadataOptions instanceof DynamicMetadataOptions) {
 			// We need to set a xml metadata backend or else a Dummy metadata store is created and
 			// all metadata are discarded
@@ -96,15 +215,15 @@ public class BioFormatsHelper {
 			}
 			for (Map.Entry<String,String> option : readerOptions.entrySet()) {
 				if (option.getKey().equals(OpenerSettings.BF_MEMO_KEY)) {
-					// We ignore this: it's an option specific to the opener
-					memoize = Boolean.getBoolean(option.getValue());
+					// Opener-specific option, not a real Bio-Formats reader option: don't forward it
+					continue;
 				}
 				logger.debug("setting reader option:"+option.getKey()+":"+option.getValue());
 				((DynamicMetadataOptions)metadataOptions).set(option.getKey(), option.getValue());
 			}
 		}
 
-		if (memoize) reader = new Memoizer(reader); // memoize
+		if (memoize) reader = wrapInMemoizer(reader); // memoize
 		int nSeries = 0;
 		try {
 			logger.debug("setId for reader " + f.getAbsolutePath());

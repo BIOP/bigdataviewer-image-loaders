@@ -207,12 +207,9 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 		this.rawPixelDataKey = buildRawPixelDataKey;
 
-		// Reads potential disabling of memoization
-		if (readerOptions.containsKey(OpenerSettings.BF_MEMO_KEY)) {
-			memoize = Boolean.getBoolean(readerOptions.get(OpenerSettings.BF_MEMO_KEY));
-		} else {
-			memoize = true;
-		}
+		// Reads potential disabling of memoization (per-opener option or global
+		// MEMO_DISABLE_PROPERTY system property)
+		memoize = BioFormatsHelper.isMemoizationEnabled(readerOptions);
 
 		logger.debug("Unique key for bio-formats opener: "+rawPixelDataKey);
 		logger.debug("Using memoization for bio-formats opener: "+memoize);
@@ -596,7 +593,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		}
 
 		if (memoize) {
-			Memoizer memo = new Memoizer(reader);
+			Memoizer memo = BioFormatsHelper.wrapInMemoizer(reader);
 			try {
 				memo.setId(dataLocation);
 			} catch (FormatException | IOException e) {
