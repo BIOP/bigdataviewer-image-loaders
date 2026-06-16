@@ -45,7 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -223,6 +222,11 @@ public class BioFormatsHelper {
 			}
 		}
 
+		// --- SLD WORKAROUND (remove when fixed) -------------------------------
+		// Clear any stale .sld memo from a previous JVM session before reading.
+		if (memoize) SldWorkaround.prepareMemoization(f.getAbsolutePath(), getMemoDir());
+		// --- END SLD WORKAROUND ----------------------------------------------
+
 		if (memoize) reader = wrapInMemoizer(reader); // memoize
 		int nSeries = 0;
 		try {
@@ -237,11 +241,10 @@ public class BioFormatsHelper {
 			System.err.println("Error in file "+f.getAbsolutePath()+": "+e.getMessage());
 			e.printStackTrace();
 		}
-        try {
-            reader.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // --- SLD WORKAROUND (remove when fixed) -------------------------------
+        // Skip closing .sld readers, whose close breaks subsequent reopening.
+        SldWorkaround.closeUnlessSld(reader);
+        // --- END SLD WORKAROUND ----------------------------------------------
         return nSeries;
 	}
 

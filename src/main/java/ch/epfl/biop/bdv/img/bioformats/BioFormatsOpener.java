@@ -211,6 +211,12 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 		// MEMO_DISABLE_PROPERTY system property)
 		memoize = BioFormatsHelper.isMemoizationEnabled(readerOptions);
 
+		// --- SLD WORKAROUND (remove when fixed) -------------------------------
+		// .sld memo files written by a previous JVM session fail to load; clear
+		// any stale one so Bio-Formats regenerates a fresh, working memo.
+		if (memoize) SldWorkaround.prepareMemoization(dataLocation, BioFormatsHelper.getMemoDir());
+		// --- END SLD WORKAROUND ----------------------------------------------
+
 		logger.debug("Unique key for bio-formats opener: "+rawPixelDataKey);
 		logger.debug("Using memoization for bio-formats opener: "+memoize);
 
@@ -746,13 +752,12 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 
 	@Override
 	public void close() {
-		getPixelReader().shutDown(reader -> {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
+		// --- SLD WORKAROUND (remove when fixed) -------------------------------
+		// closeUnlessSld closes readers normally but skips .sld readers, whose
+		// close breaks subsequent reopening. This closer is also applied to the
+		// pool's CZI "model" reader, so it is the single close site for the pool.
+		getPixelReader().shutDown(SldWorkaround::closeUnlessSld);
+		// --- END SLD WORKAROUND ----------------------------------------------
 	}
 
 	public boolean hasAlphaChannel() {
