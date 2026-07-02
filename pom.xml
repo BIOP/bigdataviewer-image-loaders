@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>40.0.0</version>
+		<version>45.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -139,8 +139,7 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
-		<!--OMEZarrReader.version>0.6.0</OMEZarrReader.version-->
+		<bigdataviewer-spimdata-extras.version>0.22.0</bigdataviewer-spimdata-extras.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
 		<reflections.version>0.10.2</reflections.version> <!-- for test only -->
