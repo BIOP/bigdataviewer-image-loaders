@@ -24,15 +24,14 @@ package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.VolatileGlobalCellCache;
 import ch.epfl.biop.bdv.img.OpenerSetupLoader;
-import ch.epfl.biop.bdv.img.entity.Field;
-import ch.epfl.biop.bdv.img.entity.Plate;
+import spimdata.util.Field;
+import spimdata.util.Plate;
 import ch.epfl.biop.bdv.img.opener.ChannelProperties;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
-import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
@@ -436,7 +435,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
                 if (ws.getWell() != null) {
                     Well w = ws.getWell();
                     entityList.add(
-                            new ch.epfl.biop.bdv.img.entity.Well(
+                            new spimdata.util.Well(
                                     Integer.parseInt(split[split.length - 2]),
                                     (char) (w.getRow().getValue() + 'A') + Integer.toString(w.getColumn().getValue() + 1),
                                     w.getRow().getValue(), w.getColumn().getValue()));

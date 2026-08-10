@@ -74,7 +74,7 @@ Commands are exposed as Fiji menu items under `Plugins>BigDataViewer-Playground>
 - `ch.epfl.biop.bdv.img.imageplus/` - ImagePlus (Fiji) bridge
 - `ch.epfl.biop.bdv.img.pyramidize/` - Multi-resolution generation
 - `ch.epfl.biop.bdv.img.legacy/` - Deprecated implementations (maintain for compatibility)
-- `ch.epfl.biop.bdv.img.entity/` - Domain entities for XML serialization
+- `spimdata.util/` - Domain entities for XML serialization
 
 ## Key Dependencies
 

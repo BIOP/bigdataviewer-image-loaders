@@ -139,9 +139,8 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.22.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.23.0</bigdataviewer-spimdata-extras.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
-
 		<reflections.version>0.10.2</reflections.version> <!-- for test only -->
 
 		<!-- only used in tests! -->

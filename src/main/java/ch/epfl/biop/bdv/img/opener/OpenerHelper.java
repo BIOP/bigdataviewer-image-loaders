@@ -23,7 +23,7 @@ package ch.epfl.biop.bdv.img.opener;
 
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import ch.epfl.biop.bdv.img.entity.ImageName;
+import spimdata.util.ImageName;
 import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.Angle;

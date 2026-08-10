@@ -23,7 +23,7 @@ package ch.epfl.biop.bdv.img;
  */
 
 
-import ch.epfl.biop.bdv.img.entity.ImageName;
+import spimdata.util.ImageName;
 import ch.epfl.biop.bdv.img.opener.ChannelProperties;
 import ch.epfl.biop.bdv.img.opener.Opener;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;

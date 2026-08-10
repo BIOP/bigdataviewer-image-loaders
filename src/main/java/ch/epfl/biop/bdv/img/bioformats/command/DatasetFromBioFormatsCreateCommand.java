@@ -24,7 +24,7 @@ package ch.epfl.biop.bdv.img.bioformats.command;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import ch.epfl.biop.bdv.img.entity.ImageName;
+import spimdata.util.ImageName;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
