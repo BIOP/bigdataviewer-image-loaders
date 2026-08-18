@@ -776,7 +776,13 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			super(size, dynamicCreation);
 			this.readerSupplier = readerSupplier;
 			if (createBase) {
-				model = this.acquire();
+				// The model is only a template that createObject copies from: it is
+				// never handed out to a caller, so it must not take one of the pool's
+				// permits. Acquiring it here used to consume one, which left a pool of
+				// size 1 with no reader at all: every later acquire() then blocked
+				// forever on an empty queue - multi series CZI files could not be
+				// opened at all.
+				model = readerSupplier.get();
 			} else {
 				model = null;
 			}
@@ -800,11 +806,8 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 			if (!modelHasBeenRecycled) {
 				modelHasBeenRecycled = true;
 				if (model != null) {
-					try {
-						recycle(model);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					// The model never was in the pool, so it is closed directly rather
+					// than recycled: adding it to a full queue would throw
 					closer.accept(model);
 				}
 			}
