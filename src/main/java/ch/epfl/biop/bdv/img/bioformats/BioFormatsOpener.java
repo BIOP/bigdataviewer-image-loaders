@@ -262,7 +262,10 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					this.iSerie, u, defaultVoxelUnit);
 			this.isLittleEndian = reader.isLittleEndian();
 			this.isRGB = reader.isRGB();
-			this.hasAlphaChannel = reader.getSizeC() == 4;
+			// Number of samples packed in a single pixel: 4 means RGB + alpha.
+			// getSizeC() cannot be used here, it counts all channels of the image,
+			// so it misses e.g. an RGBA image holding several such channels.
+			this.hasAlphaChannel = reader.getRGBChannelCount() == 4;
 
 			// Collect class of reader - helps with the special handling of ZeissQuickStartCZIReader
 			this.format = reader.getFormat();

@@ -203,7 +203,7 @@ public class BioFormatsSetupLoader<T extends NumericType<T> & NativeType<T>, V e
 		} else if (t instanceof UnsignedIntType) {
 			loader =
 					(CacheArrayLoader<A>) new BioFormatsArrayLoaders.BioFormatsIntArrayLoader(
-                        readerPool, channelIndex, iSeries, opener.hasAlphaChannel());
+                        readerPool, channelIndex, iSeries, isLittleEndian);
 		}
 		else {
 			throw new UnsupportedOperationException("Pixel type " + t.getClass()

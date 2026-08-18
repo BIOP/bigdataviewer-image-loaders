@@ -455,7 +455,7 @@ public class BioFormatsArrayLoaders {
 				if (interleaved) {
 					if (hasAlphaChannel) {
 						for (int i = 0; i < nElements; i++) {
-							ints[i] = (((255 - bytes[idxPx + 3]) & 0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
+							ints[i] = ((bytes[idxPx + 3] & 0xff) << 24) | ((bytes[idxPx] & 0xff) << 16) |
 									((bytes[idxPx + 1] & 0xff) << 8) | (bytes[idxPx + 2] & 0xff);
 							idxPx += 4;
 						}
@@ -467,13 +467,22 @@ public class BioFormatsArrayLoaders {
 						}
 					}
 				} else {
-					if (hasAlphaChannel) {
-						throw new UnsupportedOperationException("Non interleaved ARGB pixels unsupported");
-					}
+					// Samples are stored as consecutive planes: [R..][G..][B..] (+ [A..])
+					int gOffset = nElements;
 					int bOffset = 2*nElements;
-					for (int i = 0; i < nElements; i++) {
-						ints[i] = ((bytes[idxPx] & 0xff) << 16 ) | ((bytes[idxPx+nElements] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
-						idxPx += 1;
+					if (hasAlphaChannel) {
+						int aOffset = 3*nElements;
+						for (int i = 0; i < nElements; i++) {
+							ints[i] = ((bytes[idxPx+aOffset] & 0xff) << 24) | ((bytes[idxPx] & 0xff) << 16 ) |
+									((bytes[idxPx+gOffset] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
+							idxPx += 1;
+						}
+					} else {
+						for (int i = 0; i < nElements; i++) {
+							ints[i] = (0xff << 24) | ((bytes[idxPx] & 0xff) << 16 ) |
+									((bytes[idxPx+gOffset] & 0xff) << 8) | (bytes[idxPx+bOffset] & 0xff);
+							idxPx += 1;
+						}
 					}
 				}
 				return new VolatileIntArray(ints, true);
