@@ -305,7 +305,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 					new boolean[]{false, false, false} // axesOfImageFlip
 			);
 
-			if (format.equals("Zeiss CZI (Quick Start)") && ZeissCZIQuickStartHelper.isLatticeLightSheet(this)) {
+			/*if (format.equals("Zeiss CZI (Quick Start)") && ZeissCZIQuickStartHelper.isLatticeLightSheet(this)) {
 				// Adds an extra transformation - corresponding to skew of Zeiss LLS7
 
 				AffineTransform3D latticeTransform = new AffineTransform3D();
@@ -339,7 +339,7 @@ public class BioFormatsOpener implements Opener<IFormatReader> {
 				latticeTransform.concatenate(rmOffset);
 
 				rootTransform.preConcatenate(latticeTransform);
-			}
+			}*/
 
 			String imageName = getImageName(this.omeMeta,iSerie,dataLocation);
 			List<ChannelProperties> channelPropertiesList = getChannelProperties(this.omeMeta, iSerie, this.nChannels);
