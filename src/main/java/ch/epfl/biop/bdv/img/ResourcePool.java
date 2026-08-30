@@ -70,32 +70,34 @@ public abstract class ResourcePool<Resource> {
 	 */
 	public Resource takeOrCreate() throws Exception {
 		if (isClosed) throw new IllegalStateException("The pool has been closed");
+		checkNotInterrupted();
 		if (createdObjects>0) {
 			return pool.take();
 		}
-		if (!lock.isLocked()) {
-			if (lock.tryLock()) {
-				try {
-					++createdObjects;
-					return createObject();
-				}
-				finally {
-					if (createdObjects < size) lock.unlock();
-				}
-			}
-		}
-		return pool.take();
+		return createOrTake();
 	}
 
 	public Resource acquire() throws Exception {
 		if (isClosed) throw new IllegalStateException("The pool has been closed");
+		checkNotInterrupted();
+		return createOrTake();
+	}
+
+	private Resource createOrTake() throws Exception {
 		if (!lock.isLocked()) {
 			if (lock.tryLock()) {
+				boolean created = false;
 				try {
 					++createdObjects;
-					return createObject();
+					Resource resource = createObject();
+					created = true;
+					return resource;
 				}
 				finally {
+					// createObject() failed, so no resource will ever be recycled for
+					// the permit that was just taken: give it back, otherwise the pool
+					// shrinks on every failure and eventually blocks forever
+					if (!created) --createdObjects;
 					if (createdObjects < size) lock.unlock();
 				}
 			}
@@ -103,6 +105,28 @@ public abstract class ResourcePool<Resource> {
 		return pool.take();
 	}
 
+	/**
+	 * Creating a resource means opening a file or a connection, and both die in
+	 * confusing ways when the calling thread is already interrupted: Bio-Formats,
+	 * for instance, fails inside NIO with a
+	 * {@link java.nio.channels.ClosedByInterruptException} naming neither the file
+	 * nor the reason. Since an interrupted thread is being cancelled anyway, say so
+	 * plainly and stop here.
+	 */
+	private void checkNotInterrupted() throws InterruptedException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new InterruptedException(
+				"Interrupted before a resource could be taken from the pool");
+		}
+	}
+
+	/**
+	 * Gives a resource back to the pool. Every {@link #acquire()} and
+	 * {@link #takeOrCreate()} must be paired with a call to this method, in a
+	 * {@code finally} block: a resource that is never recycled costs the pool one
+	 * permit for good, and once all of them are gone every further acquisition
+	 * blocks forever.
+	 */
 	public void recycle(Resource resource) {
 		// Will throws Exception when the queue is full,
 		// but it should never happen.

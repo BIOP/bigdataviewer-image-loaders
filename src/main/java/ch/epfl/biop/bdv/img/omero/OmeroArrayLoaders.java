@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.omero;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.PixelReadingException;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
@@ -85,9 +86,10 @@ public class OmeroArrayLoaders {
 		public VolatileByteArray loadArray(int timepoint, int setup, int level,
 										   int[] dimensions, long[] min) throws InterruptedException
 		{
+			RawPixelsStorePrx rawPixStore = null;
 			try {
 				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -108,13 +110,14 @@ public class OmeroArrayLoaders {
 					buffer.put(bytesCurrentPlane);
 				}
 
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
 
 				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (rawPixStore != null) pixelStorePool.recycle(rawPixStore);
 			}
 		}
 
@@ -152,9 +155,10 @@ public class OmeroArrayLoaders {
 		public VolatileShortArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			RawPixelsStorePrx rawPixStore = null;
 			try {
 				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -175,8 +179,6 @@ public class OmeroArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
 
 				// unsigned short specific transform
 				short[] shorts = new short[nElements];
@@ -185,7 +187,10 @@ public class OmeroArrayLoaders {
 				return new VolatileShortArray(shorts, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (rawPixStore != null) pixelStorePool.recycle(rawPixStore);
 			}
 		}
 
@@ -220,9 +225,10 @@ public class OmeroArrayLoaders {
 		public VolatileFloatArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			RawPixelsStorePrx rawPixStore = null;
 			try {
 				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -243,8 +249,6 @@ public class OmeroArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
 
 				// float specific transform
 				float[] floats = new float[nElements];
@@ -253,7 +257,10 @@ public class OmeroArrayLoaders {
 				return new VolatileFloatArray(floats, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (rawPixStore != null) pixelStorePool.recycle(rawPixStore);
 			}
 		}
 
@@ -314,9 +321,10 @@ public class OmeroArrayLoaders {
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			RawPixelsStorePrx rawPixStore = null;
 			try {
 				// get the reader
-				RawPixelsStorePrx rawPixStore = pixelStorePool.acquire();
+				rawPixStore = pixelStorePool.acquire();
 				rawPixStore.setResolutionLevel(nResolutionLevels - 1 - level);
 				int minX = (int) min[0];
 				int minY = (int) min[1];
@@ -337,8 +345,6 @@ public class OmeroArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				pixelStorePool.recycle(rawPixStore);
 
 				// int specific transform
 				int[] ints = new int[nElements];
@@ -347,7 +353,10 @@ public class OmeroArrayLoaders {
 				return new VolatileIntArray(ints, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (rawPixStore != null) pixelStorePool.recycle(rawPixStore);
 			}
 		}
 

@@ -23,6 +23,7 @@
 package ch.epfl.biop.bdv.img.bioformats;
 
 import bdv.img.cache.CacheArrayLoader;
+import ch.epfl.biop.bdv.img.PixelReadingException;
 import ch.epfl.biop.bdv.img.ResourcePool;
 import loci.formats.IFormatReader;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
@@ -86,9 +87,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileByteArray loadArray(int timepoint, int setup, int level,
 										   int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -110,12 +112,13 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytesCurrentPlane);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
@@ -142,9 +145,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileByteArray loadArray(int timepoint, int setup, int level,
 										   int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -166,12 +170,13 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytesCurrentPlane);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 				return new VolatileByteArray(buffer.array(), true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
@@ -206,9 +211,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileShortArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -230,8 +236,6 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 
 				// unsigned short specific transform
 				short[] shorts = new short[nElements];
@@ -240,7 +244,10 @@ public class BioFormatsArrayLoaders {
 				return new VolatileShortArray(shorts, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
@@ -275,9 +282,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileShortArray loadArray(int timepoint, int setup, int level,
 											int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -299,8 +307,6 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 
 				// unsigned short specific transform
 				short[] shorts = new short[nElements];
@@ -309,7 +315,10 @@ public class BioFormatsArrayLoaders {
 				return new VolatileShortArray(shorts, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
@@ -344,9 +353,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileFloatArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -368,8 +378,6 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 
 				// float specific transform
 				float[] floats = new float[nElements];
@@ -378,7 +386,10 @@ public class BioFormatsArrayLoaders {
 				return new VolatileFloatArray(floats, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
@@ -409,45 +420,52 @@ public class BioFormatsArrayLoaders {
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
 										  int[] dimensions, long[] min) throws InterruptedException
 		{
+			final int nElements;
+			final byte[] bytes;
+			final boolean interleaved;
 			try {
-				// get the reader
+				// The reader is held for this block only. Unlike the other loaders,
+				// the transform below is a per pixel loop rather than a bulk copy:
+				// about a millisecond for a 1024x1024 tile, which is a large share of
+				// the time a reader would otherwise spend checked out of the pool.
 				IFormatReader reader = readerPool.acquire();
-				reader.setSeries(iSeries);
-				reader.setResolution(level);
-				int minX = (int) min[0];
-				int minY = (int) min[1];
-				int minZ = (int) min[2];
-				int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
-				int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
-				int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
-				int w = maxX - minX;
-				int h = maxY - minY;
-				int d = maxZ - minZ;
-				int nElements = (w * h * d);
+				try {
+					reader.setSeries(iSeries);
+					reader.setResolution(level);
+					int minX = (int) min[0];
+					int minY = (int) min[1];
+					int minZ = (int) min[2];
+					int maxX = Math.min(minX + dimensions[0], reader.getSizeX());
+					int maxY = Math.min(minY + dimensions[1], reader.getSizeY());
+					int maxZ = Math.min(minZ + dimensions[2], reader.getSizeZ());
+					int w = maxX - minX;
+					int h = maxY - minY;
+					int d = maxZ - minZ;
+					nElements = (w * h * d);
 
-				// read pixels
-				byte[] bytes;
-				if (d == 1) {
-					bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
-							w, h);
+					// read pixels
+					if (d == 1) {
+						bytes = reader.openBytes(reader.getIndex(minZ, channel, timepoint), minX, minY,
+								w, h);
+					}
+					else {
+						/*int nBytesPerPlane = nElements * (hasAlphaChannel ? 4 : 3);
+						bytes = new byte[nBytesPerPlane];
+						int offset = 0;
+						for (int z = minZ; z < maxZ; z++) {
+							byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
+									timepoint), minX, minY, w, h);
+							System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
+									nBytesPerPlane);
+							offset += nBytesPerPlane;
+						}*/
+						throw new UnsupportedOperationException("RGB image block of size above 1 unsupported");
+					}
+					interleaved = reader.isInterleaved();
 				}
-				else {
-					/*int nBytesPerPlane = nElements * (hasAlphaChannel ? 4 : 3);
-					bytes = new byte[nBytesPerPlane];
-					int offset = 0;
-					for (int z = minZ; z < maxZ; z++) {
-						byte[] bytesCurrentPlane = reader.openBytes(reader.getIndex(z, channel,
-								timepoint), minX, minY, w, h);
-						System.arraycopy(bytesCurrentPlane, 0, bytes, offset,
-								nBytesPerPlane);
-						offset += nBytesPerPlane;
-					}*/
-					throw new UnsupportedOperationException("RGB image block of size above 1 unsupported");
+				finally {
+					readerPool.recycle(reader);
 				}
-				boolean interleaved = reader.isInterleaved();
-
-				// release the reader
-				readerPool.recycle(reader);
 
 				// RGB specific transform
 				int[] ints = new int[nElements];
@@ -488,7 +506,7 @@ public class BioFormatsArrayLoaders {
 				return new VolatileIntArray(ints, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
 			}
 		}
 
@@ -523,9 +541,10 @@ public class BioFormatsArrayLoaders {
 		public VolatileIntArray loadArray(int timepoint, int setup, int level,
 			int[] dimensions, long[] min) throws InterruptedException
 		{
+			IFormatReader reader = null;
 			try {
 				// get the reader
-				IFormatReader reader = readerPool.acquire();
+				reader = readerPool.acquire();
 				reader.setSeries(iSeries);
 				reader.setResolution(level);
 				int minX = (int) min[0];
@@ -547,8 +566,6 @@ public class BioFormatsArrayLoaders {
 					buffer.put(bytes);
 				}
 
-				// release the reader
-				readerPool.recycle(reader);
 
 				// int specific transform
 				int[] ints = new int[nElements];
@@ -557,7 +574,10 @@ public class BioFormatsArrayLoaders {
 				return new VolatileIntArray(ints, true);
 			}
 			catch (Exception e) {
-				throw new InterruptedException(e.getMessage());
+				throw PixelReadingException.rethrow(e);
+			}
+			finally {
+				if (reader != null) readerPool.recycle(reader);
 			}
 		}
 
