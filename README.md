@@ -1,7 +1,7 @@
 # Image loaders for BigDataViewer
 
-[![](https://github.com/BIOP/bigdataviewer-image-loaders/actions/workflows/build-main.yml/badge.svg)](https://github.com/BIOP/bigdataviewer-image-loaders/actions/workflows/build-main.yml)
-[![Maven Scijava Version](https://img.shields.io/github/v/tag/BIOP/bigdataviewer-image-loaders?label=Version-[Maven%20Scijava])](https://maven.scijava.org/#browse/browse:releases:ch%2Fepfl%2Fbiop%2Fbigdataviewer-image-loaders)
+[![Build Status](https://github.com/BIOP/bigdataviewer-image-loaders/actions/workflows/build.yml/badge.svg)](https://github.com/BIOP/bigdataviewer-image-loaders/actions/workflows/build.yml)
+[![Maven SciJava Version](https://img.shields.io/github/v/tag/BIOP/bigdataviewer-image-loaders?label=Version-[Maven%20Scijava])](https://maven.scijava.org/#browse/browse:releases:ch%2Fepfl%2Fbiop%2Fbigdataviewer-image-loaders)
 
 This library provides image loaders that bridge various image sources to
 [BigDataViewer](https://imagej.net/plugins/bdv/) (BDV) and the SpimData format.

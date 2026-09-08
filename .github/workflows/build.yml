@@ -6,6 +6,9 @@ on:
       - main
     tags:
       - "*-[0-9]+.*"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -13,30 +16,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Cache local Maven repository
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-m2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '8'
           distribution: 'zulu'
+          cache: 'maven'
       - name: Set up CI environment
         run: .github/setup.sh
+        shell: bash
       - name: Execute the build
         run: .github/build.sh
+        shell: bash
         env:
           GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
-          OSSRH_PASS: ${{ secrets.OSSRH_PASS }}
+          CENTRAL_USER: ${{ secrets.CENTRAL_USER }}
+          CENTRAL_PASS: ${{ secrets.CENTRAL_PASS }}
           SIGNING_ASC: ${{ secrets.SIGNING_ASC }}
