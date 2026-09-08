@@ -139,9 +139,18 @@
 		<package-name>ch.epfl.biop.bdv.img</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, BioImaging And Optics Platform (BIOP)</license.copyrightOwners>
-		<bigdataviewer-spimdata-extras.version>0.23.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.23.2</bigdataviewer-spimdata-extras.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 		<reflections.version>0.10.2</reflections.version> <!-- for test only -->
+
+		<!-- NB: Parent pom-scijava sets Java 11. We override it here to stay compatible with FIJI stable / Java 8. -->
+		<scijava.jvm.version>8</scijava.jvm.version>
+		<scijava.jvm.build.version>[1.8.0-101,)</scijava.jvm.build.version>
+		<!-- Use older versions of dependencies to stay compatible with FIJI stable / Java 8. -->
+		<bigdataviewer-core.version>10.6.8</bigdataviewer-core.version>
+		<scifio.version>0.48.0</scifio.version>
+		<imagej.version>2.17.0</imagej.version> <!-- test only; 2.18.0 is compiled for Java 11 -->
+		<scifio-labeling.version>0.3.2</scifio-labeling.version> <!-- test only; 0.4.0 is compiled for Java 11 -->
 
 		<!-- only used in tests! -->
 		<!--bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
