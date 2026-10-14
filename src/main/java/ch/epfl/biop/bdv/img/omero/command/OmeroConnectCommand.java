@@ -97,7 +97,7 @@ public class OmeroConnectCommand implements Command {
             success = omeroSession.getGateway().isConnected();
         } catch (Exception e) {
             error = e;
-            logger.error(e.getMessage());
+            logger.error("Could not connect to OMERO host " + host + ": " + e.getMessage(), e);
             success = false;
         }
     }

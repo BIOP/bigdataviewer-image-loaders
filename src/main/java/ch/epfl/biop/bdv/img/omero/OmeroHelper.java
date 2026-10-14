@@ -173,6 +173,8 @@ public class OmeroHelper {
 															 Context ctx) throws Exception {
 		IOMEROSession session;
 
+		getOMEROInfos(host); // Memoizes the host infos, needed to cache the session in registerOMEROSession
+
 		if (hasCachedSession(host)) {
 			OMEROHost infos = memoOmero.get(host);
 			session = cachedSession.get(infos.webHost).values().iterator().next(); // Just take one
@@ -205,6 +207,7 @@ public class OmeroHelper {
 	}
 
 	public static void removeCachedSessions(String host) {
+		if (!memoOmero.containsKey(host)) return; // Unknown host: no session can have been cached
 		OMEROHost infos = memoOmero.get(host);
 		cachedSession.remove(infos.webHost);
 	}
